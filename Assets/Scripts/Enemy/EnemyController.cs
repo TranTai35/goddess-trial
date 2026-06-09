@@ -73,8 +73,7 @@ public class EnemyController : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
     }
 
-    public virtual void OnSpawn(
-        Transform targetPlayer)
+    public virtual void OnSpawn(Transform targetPlayer)
     {
         StopAllCoroutines();
 
@@ -90,8 +89,13 @@ public class EnemyController : MonoBehaviour
         agent.enabled = true;
         agent.isStopped = false;
 
+        agent.ResetPath();
+
         animator.Rebind();
-        animator.Update(0);
+        animator.Update(0f);
+
+        animator.SetBool(WalkHash, false);
+        animator.SetBool(RunHash, false);
 
         CreatePatrolPoints();
 
@@ -357,6 +361,7 @@ public class EnemyController : MonoBehaviour
         isTakingDamage = false;
 
         agent.isStopped = false;
+        agent.ResetPath();
 
         currentState =
             Vector3.Distance(
@@ -383,27 +388,21 @@ public class EnemyController : MonoBehaviour
         currentState = State.Dead;
 
         agent.isStopped = true;
+        agent.ResetPath();
 
-        animator.SetBool(
-            WalkHash,
-            false);
+        animator.SetBool(WalkHash, false);
+        animator.SetBool(RunHash, false);
 
-        animator.SetBool(
-            RunHash,
-            false);
+        animator.SetTrigger(DieHash);
 
-        animator.SetTrigger(
-            DieHash);
-
-        StartCoroutine(
-            ReturnToPool());
+        StartCoroutine(ReturnToPool());
     }
 
     private IEnumerator ReturnToPool()
     {
         yield return new WaitForSeconds(3f);
 
-        EnemyPoolManager
+        PoolManager
             .Instance
             .EnemyKilled(this);
     }
@@ -426,6 +425,23 @@ public class EnemyController : MonoBehaviour
             : State.Patrol;
     }
 
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+
+        if (agent != null &&
+            agent.enabled &&
+            agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.ResetPath();
+        }
+
+        isDead = false;
+        isAttacking = false;
+        isCoolingDown = false;
+        isTakingDamage = false;
+    }
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;

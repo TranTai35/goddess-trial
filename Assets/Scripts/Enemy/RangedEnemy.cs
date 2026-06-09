@@ -63,11 +63,18 @@ public class RangedEnemy : EnemyController
         if (projectilePrefab != null &&
             firePoint != null)
         {
+            GameObject obj =
+                PoolManager.Instance.GetObject(
+                    projectilePrefab.gameObject);
+
             Projectile projectile =
-                Instantiate(
-                    projectilePrefab,
-                    firePoint.position,
-                    firePoint.rotation);
+                obj.GetComponent<Projectile>();
+
+            projectile.transform.position =
+                firePoint.position;
+
+            projectile.transform.rotation =
+                firePoint.rotation;
 
             projectile.Initialize(
                 player,
