@@ -1,12 +1,11 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemyController : MonoBehaviour
 {
-    private enum State
+    protected enum State
     {
         Patrol,
         Chase,
@@ -29,43 +28,58 @@ public class EnemyController : MonoBehaviour
     public float runSpeed = 4.5f;
     public float attackRange = 2f;
     public float cooldownTime = 2f;
-    public float damage = 10f;
 
     [Header("Health")]
     public float maxHP = 100f;
-    public float currentHP;
 
-    private NavMeshAgent agent;
-    private State currentState;
+    protected float currentHP;
+
+    protected NavMeshAgent agent;
+    protected State currentState;
+
+    protected bool isDead;
+    protected bool isAttacking;
+    protected bool isCoolingDown;
+    protected bool isTakingDamage;
+
+    private bool goingToA;
+
     private Vector3 patrolPointA;
     private Vector3 patrolPointB;
     private Vector3 currentPatrolTarget;
+
     private Coroutine damageRoutine;
 
-    private bool goingToA;
-    private bool isDead;
-    private bool isAttacking;
-    private bool isCoolingDown;
-    private bool isTakingDamage;
+    protected readonly int WalkHash =
+        Animator.StringToHash("Walk");
 
-    // Animator Hashes
-    private readonly int WalkHash = Animator.StringToHash("Walk");
-    private readonly int RunHash = Animator.StringToHash("Run");
-    private readonly int AttackHash = Animator.StringToHash("Attack");
-    private readonly int CooldownHash = Animator.StringToHash("Cooldown");
-    private readonly int DamageHash = Animator.StringToHash("Take Damage");
-    private readonly int DieHash = Animator.StringToHash("Die");
+    protected readonly int RunHash =
+        Animator.StringToHash("Run");
 
-    private void Awake()
+    protected readonly int AttackHash =
+        Animator.StringToHash("Attack");
+
+    protected readonly int CooldownHash =
+        Animator.StringToHash("Cooldown");
+
+    protected readonly int DamageHash =
+        Animator.StringToHash("Take Damage");
+
+    protected readonly int DieHash =
+        Animator.StringToHash("Die");
+
+    protected virtual void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
     }
 
-    public void OnSpawn(Transform targetPlayer)
+    public virtual void OnSpawn(
+        Transform targetPlayer)
     {
         StopAllCoroutines();
 
         player = targetPlayer;
+
         currentHP = maxHP;
 
         isDead = false;
@@ -75,26 +89,21 @@ public class EnemyController : MonoBehaviour
 
         agent.enabled = true;
         agent.isStopped = false;
-        agent.Warp(transform.position);
 
         animator.Rebind();
-        animator.Update(0f);
+        animator.Update(0);
 
         CreatePatrolPoints();
 
-        float distance = Vector3.Distance(transform.position, player.position);
-        if (distance <= detectRadius)
-        {
-            currentState = State.Chase;
-            animator.SetBool(WalkHash, false);
-            animator.SetBool(RunHash, true);
-        }
-        else
-        {
-            currentState = State.Patrol;
-            animator.SetBool(WalkHash, true);
-            animator.SetBool(RunHash, false);
-        }
+        float distance =
+            Vector3.Distance(
+                transform.position,
+                player.position);
+
+        currentState =
+            distance <= detectRadius
+            ? State.Chase
+            : State.Patrol;
 
         gameObject.SetActive(true);
     }
@@ -109,68 +118,95 @@ public class EnemyController : MonoBehaviour
             case State.Patrol:
                 Patrol();
                 break;
+
             case State.Chase:
                 ChasePlayer();
                 break;
         }
 
-        CheckPlayerDetection();
+        CheckDetection();
+    }
+
+    #region PATROL
+
+    protected virtual void Patrol()
+    {
+        agent.speed = walkSpeed;
+        agent.isStopped = false;
+
+        animator.SetBool(WalkHash, true);
+        animator.SetBool(RunHash, false);
+
+        agent.SetDestination(
+            currentPatrolTarget);
+
+        if (Vector3.Distance(
+                transform.position,
+                currentPatrolTarget) < 1f)
+        {
+            goingToA = !goingToA;
+
+            currentPatrolTarget =
+                goingToA
+                ? patrolPointA
+                : patrolPointB;
+        }
     }
 
     private void CreatePatrolPoints()
     {
-        patrolPointA = GetRandomNavMeshPoint(transform.position, patrolRadius);
+        patrolPointA =
+            GetRandomNavMeshPoint(
+                transform.position,
+                patrolRadius);
 
         do
         {
-            patrolPointB = GetRandomNavMeshPoint(transform.position, patrolRadius);
+            patrolPointB =
+                GetRandomNavMeshPoint(
+                    transform.position,
+                    patrolRadius);
         }
-        while (Vector3.Distance(patrolPointA, patrolPointB) < 5f);
+        while (
+            Vector3.Distance(
+                patrolPointA,
+                patrolPointB) < 5f);
 
         goingToA = false;
         currentPatrolTarget = patrolPointB;
     }
 
-    private Vector3 GetRandomNavMeshPoint(Vector3 center, float radius)
+    private Vector3 GetRandomNavMeshPoint(
+        Vector3 center,
+        float radius)
     {
         for (int i = 0; i < 20; i++)
         {
-            Vector3 randomPos = center + new Vector3(Random.Range(-radius, radius), 0f, Random.Range(-radius, radius));
+            Vector3 randomPos =
+                center +
+                new Vector3(
+                    Random.Range(-radius, radius),
+                    0,
+                    Random.Range(-radius, radius));
 
-            if (NavMesh.SamplePosition(randomPos, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(
+                randomPos,
+                out NavMeshHit hit,
+                2f,
+                NavMesh.AllAreas))
             {
                 return hit.position;
             }
         }
+
         return center;
     }
 
-    private void Patrol()
-    {
-        agent.speed = walkSpeed;
-        agent.isStopped = false;
-        agent.SetDestination(currentPatrolTarget);
+    #endregion
 
-        animator.SetBool(WalkHash, true);
-        animator.SetBool(RunHash, false);
+    #region CHASE
 
-        if (Vector3.Distance(transform.position, currentPatrolTarget) < 1f)
-        {
-            goingToA = !goingToA;
-            currentPatrolTarget = goingToA ? patrolPointA : patrolPointB;
-        }
-    }
-
-    private void CheckPlayerDetection()
-    {
-        if (player == null || isAttacking || isCoolingDown || isTakingDamage)
-            return;
-
-        float distance = Vector3.Distance(transform.position, player.position);
-        currentState = (distance <= detectRadius) ? State.Chase : State.Patrol;
-    }
-
-    private void ChasePlayer()
+    protected virtual void ChasePlayer()
     {
         if (player == null)
             return;
@@ -181,80 +217,110 @@ public class EnemyController : MonoBehaviour
         animator.SetBool(WalkHash, false);
         animator.SetBool(RunHash, true);
 
-        Vector3 dir = (transform.position - player.position).normalized;
-        Vector3 targetPos = player.position + dir * 1f;
+        Vector3 dir =
+            (transform.position -
+             player.position).normalized;
+
+        Vector3 targetPos =
+            player.position +
+            dir * 1f;
+
         agent.SetDestination(targetPos);
 
-        float distance = Vector3.Distance(transform.position, player.position);
-        if (distance <= attackRange && !isAttacking && !isCoolingDown)
+        float distance =
+            Vector3.Distance(
+                transform.position,
+                player.position);
+
+        if (distance <= attackRange &&
+            !isAttacking &&
+            !isCoolingDown)
         {
-            StartCoroutine(AttackRoutine());
+            StartCoroutine(
+                AttackRoutine());
         }
     }
 
-    private IEnumerator AttackRoutine()
+    #endregion
+
+    #region ATTACK
+
+    protected virtual IEnumerator Attack()
+    {
+        yield return null;
+    }
+
+    protected virtual IEnumerator AttackRoutine()
     {
         isAttacking = true;
+
         currentState = State.Attack;
+
         agent.isStopped = true;
 
-        animator.SetBool(RunHash, false);
+        animator.SetBool(
+            RunHash,
+            false);
 
-        Vector3 lookPos = player.position;
-        lookPos.y = transform.position.y;
-        transform.LookAt(lookPos);
+        Vector3 lookPos =
+            player.position;
 
-        animator.SetTrigger(AttackHash);
+        lookPos.y =
+            transform.position.y;
 
-        yield return new WaitForSeconds(0.5f);
-        DealDamage();
+        transform.LookAt(
+            lookPos);
 
-        yield return new WaitForSeconds(0.5f);
+        animator.SetTrigger(
+            AttackHash);
+
+        yield return StartCoroutine(
+            Attack());
+
         isAttacking = false;
 
-        StartCoroutine(CooldownRoutine());
+        StartCoroutine(
+            CooldownRoutine());
     }
 
-    private void DealDamage()
-    {
-        Collider[] hits = Physics.OverlapSphere(transform.position, attackRange);
-
-        foreach (Collider hit in hits)
-        {
-            if (!hit.CompareTag("Player"))
-                continue;
-
-            PlayerStats stats = hit.GetComponent<PlayerStats>();
-            if (stats != null)
-            {
-                stats.TakeDamage(damage);
-            }
-            break;
-        }
-    }
-
-    private IEnumerator CooldownRoutine()
+    protected IEnumerator CooldownRoutine()
     {
         isCoolingDown = true;
-        animator.SetTrigger(CooldownHash);
 
-        yield return new WaitForSeconds(cooldownTime);
+        animator.SetTrigger(
+            CooldownHash);
+
+        yield return new WaitForSeconds(
+            cooldownTime);
 
         if (isDead)
             yield break;
 
         isCoolingDown = false;
 
-        float distance = Vector3.Distance(transform.position, player.position);
-        currentState = (distance <= detectRadius) ? State.Chase : State.Patrol;
+        float distance =
+            Vector3.Distance(
+                transform.position,
+                player.position);
+
+        currentState =
+            distance <= detectRadius
+            ? State.Chase
+            : State.Patrol;
     }
 
-    public void TakeDamage(float damage)
+    #endregion
+
+    #region DAMAGE
+
+    public virtual void TakeDamage(
+        float damage)
     {
         if (isDead)
             return;
 
         currentHP -= damage;
+        Debug.Log("HP: " + currentHP);
 
         if (currentHP <= 0)
         {
@@ -262,75 +328,119 @@ public class EnemyController : MonoBehaviour
             return;
         }
 
-        PlayTakeDamageAnimation();
-    }
-
-    private void PlayTakeDamageAnimation()
-    {
         if (damageRoutine != null)
         {
-            StopCoroutine(damageRoutine);
+            StopCoroutine(
+                damageRoutine);
         }
-        damageRoutine = StartCoroutine(TakeDamageRoutine());
+
+        damageRoutine =
+            StartCoroutine(
+                TakeDamageRoutine());
     }
 
     private IEnumerator TakeDamageRoutine()
     {
         isTakingDamage = true;
+
         agent.isStopped = true;
 
-        animator.ResetTrigger(DamageHash);
-        animator.SetTrigger(DamageHash);
+        animator.SetTrigger(
+            DamageHash);
 
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(
+            0.5f);
 
         if (isDead)
             yield break;
 
         isTakingDamage = false;
+
         agent.isStopped = false;
 
-        if (player != null)
-        {
-            float distance = Vector3.Distance(transform.position, player.position);
-            currentState = (distance <= detectRadius) ? State.Chase : State.Patrol;
-        }
-
-        damageRoutine = null;
+        currentState =
+            Vector3.Distance(
+                transform.position,
+                player.position)
+            <= detectRadius
+            ? State.Chase
+            : State.Patrol;
     }
 
-    private void Die()
+    #endregion
+
+    #region DEATH
+
+    protected virtual void Die()
     {
         if (isDead)
             return;
 
         StopAllCoroutines();
+
         isDead = true;
+
         currentState = State.Dead;
+
         agent.isStopped = true;
 
-        animator.SetBool(WalkHash, false);
-        animator.SetBool(RunHash, false);
-        animator.SetTrigger(DieHash);
+        animator.SetBool(
+            WalkHash,
+            false);
 
-        StartCoroutine(ReturnToPool());
+        animator.SetBool(
+            RunHash,
+            false);
+
+        animator.SetTrigger(
+            DieHash);
+
+        StartCoroutine(
+            ReturnToPool());
     }
 
     private IEnumerator ReturnToPool()
     {
         yield return new WaitForSeconds(3f);
-        EnemyPoolManager.Instance.EnemyKilled(this);
+
+        EnemyPoolManager
+            .Instance
+            .EnemyKilled(this);
+    }
+
+    #endregion
+
+    private void CheckDetection()
+    {
+        if (player == null ||
+            isAttacking ||
+            isCoolingDown)
+            return;
+
+        currentState =
+            Vector3.Distance(
+                transform.position,
+                player.position)
+            <= detectRadius
+            ? State.Chase
+            : State.Patrol;
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, detectRadius);
+        Gizmos.DrawWireSphere(
+            transform.position,
+            detectRadius);
 
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.DrawWireSphere(
+            transform.position,
+            attackRange);
 
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(transform.position, patrolRadius);
+        Gizmos.DrawWireSphere(
+            transform.position,
+            patrolRadius);
     }
 }

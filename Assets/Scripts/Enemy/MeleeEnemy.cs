@@ -1,9 +1,10 @@
 using System.Collections;
 using UnityEngine;
 
-public class MeleeEnemy : BaseEnemy
+public class MeleeEnemy : EnemyController
 {
-    public float damage = 10;
+    [Header("Melee")]
+    public float damage = 10f;
 
     protected override IEnumerator Attack()
     {

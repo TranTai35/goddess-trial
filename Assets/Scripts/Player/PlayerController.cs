@@ -194,7 +194,6 @@ public class PlayerController : MonoBehaviour
 
             hasHitThisAttack = true;
 
-            Debug.Log("Damage From: " + attackName);
         }
     }
 

@@ -1,43 +1,45 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
-    public float speed = 15f;
-    public float damage = 10f;
+    [Header("Movement")]
+    public float speed = 10f;
 
-    private Transform target;
+    public float lifeTime = 5f;
 
-    public void Initialize(
-        Transform targetTransform,
-        float projectileDamage)
+    private Vector3 direction;
+
+    private float damage;
+
+    public void Initialize(Transform target, float damage)
     {
-        target = targetTransform;
-        damage = projectileDamage;
+        this.damage = damage;
+
+        Vector3 targetPos = target.position;
+        targetPos.y = transform.position.y;
+
+        direction = (targetPos - transform.position).normalized;
+
+        transform.forward = direction;
+
+        Destroy(gameObject, lifeTime);
     }
 
     private void Update()
     {
-        if (target == null)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        transform.position +=
+            direction *
+            speed *
+            Time.deltaTime;
+    }
 
-        transform.position =
-            Vector3.MoveTowards(
-                transform.position,
-                target.position,
-                speed * Time.deltaTime);
-
-        transform.LookAt(
-            target.position);
-
-        if (Vector3.Distance(
-            transform.position,
-            target.position) < 0.3f)
+    private void OnTriggerEnter(Collider other)
+    {
+        // Trúng player -> gây damage rồi hủy
+        if (other.CompareTag("Player"))
         {
             PlayerStats stats =
-                target.GetComponent<PlayerStats>();
+                other.GetComponent<PlayerStats>();
 
             if (stats != null)
             {
@@ -45,6 +47,14 @@ public class Projectile : MonoBehaviour
             }
 
             Destroy(gameObject);
+            return;
         }
+
+        // Không phải player thì bỏ qua trigger
+        if (other.isTrigger)
+            return;
+
+        // Đụng bất kỳ object vật lý nào khác -> hủy
+        Destroy(gameObject);
     }
 }
