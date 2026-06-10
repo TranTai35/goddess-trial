@@ -10,10 +10,9 @@ public class GameUIManager : MonoBehaviour
     public GameObject settingsPanel;
     public GameObject deathPanel;
 
-    [Header("Respawn")]
-    public Transform respawnPoint;
+    [Header("Stats")]
     public PlayerStats playerStats;
-    public GameObject player;
+   
 
     private bool isPaused;
     private bool isDead;
@@ -106,29 +105,19 @@ public class GameUIManager : MonoBehaviour
         deathPanel.SetActive(true);
 
         Animator animator =
-            player.GetComponent<Animator>();
+     playerStats.GetComponent<Animator>();
 
         if (animator != null)
         {
             animator.SetTrigger("Die");
         }
     }
-    
+
 
     public void Respawn()
     {
-        player.transform.position =
-            respawnPoint.position;
-
-        playerStats.baseStats.currentHealth =
-            playerStats.baseStats.maxHealth;
-
-        playerStats.baseStats.currentMana =
-            playerStats.baseStats.maxMana;
-
-        Animator animator =  player.GetComponent<Animator>();
-
-        animator.Play("Idle", 0, 0f);
+        GameManager.Instance
+            .RespawnPlayer(playerStats);
 
         deathPanel.SetActive(false);
 

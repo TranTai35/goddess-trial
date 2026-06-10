@@ -1080,7 +1080,7 @@ MonoBehaviour:
   walkSpeed: 2
   detectRadius: 10
   runSpeed: 4.5
-  attackRange: 7
+  attackRange: 8
   cooldownTime: 2
   maxHP: 100
   projectilePrefab: {fileID: -6660416141123945062, guid: e94aa7667d018ca42b38098c89b6332b,

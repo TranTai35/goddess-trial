@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: PlayerStats
   m_EditorClassIdentifier: 
   maxHealth: 100
-  currentHealth: 0
+  currentHealth: 100
   maxMana: 100
-  currentMana: 70
+  currentMana: 100
   gold: 100
-  diamond: 190
+  diamond: 150
   damage: 10
   moveSpeed: 5
