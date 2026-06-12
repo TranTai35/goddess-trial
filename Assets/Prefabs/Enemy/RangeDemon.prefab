@@ -1078,9 +1078,9 @@ MonoBehaviour:
   player: {fileID: 0}
   patrolRadius: 4
   walkSpeed: 2
-  detectRadius: 10
+  detectRadius: 15
   runSpeed: 4.5
-  attackRange: 8
+  attackRange: 10
   cooldownTime: 2
   maxHP: 100
   projectilePrefab: {fileID: -6660416141123945062, guid: e94aa7667d018ca42b38098c89b6332b,

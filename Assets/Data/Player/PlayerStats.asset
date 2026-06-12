@@ -16,7 +16,7 @@ MonoBehaviour:
   currentHealth: 100
   maxMana: 100
   currentMana: 100
-  gold: 100
+  gold: 1000
   diamond: 150
   damage: 10
   moveSpeed: 5

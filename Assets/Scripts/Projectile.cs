@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using Unity.Burst.CompilerServices;
+using Unity.VisualScripting;
+using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
@@ -45,6 +47,16 @@ public class Projectile : MonoBehaviour
         // Trúng player
         if (other.CompareTag("Player"))
         {
+            PlayerController player =
+                other.GetComponent<PlayerController>();
+
+            // Nếu đang Dash hoặc có trạng thái bất tử
+            // thì đạn đi xuyên qua luôn
+            if (player != null && player.IsInvincible)
+            {
+                return;
+            }
+
             PlayerStats stats =
                 other.GetComponent<PlayerStats>();
 
@@ -54,7 +66,20 @@ public class Projectile : MonoBehaviour
             }
 
             PoolManager.Instance.ReturnObject(gameObject);
+            return;        
+        }else if (other.CompareTag("Enemy"))
+        {
+            EnemyController enemy =
+                other.GetComponent<EnemyController>();
+
+            if (enemy != null)
+            {
+                enemy.TakeDamage(damage);
+            }
+
+            PoolManager.Instance.ReturnObject(gameObject);
             return;
+
         }
 
         // Bỏ qua trigger khác
