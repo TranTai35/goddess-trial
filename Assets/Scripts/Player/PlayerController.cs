@@ -146,16 +146,36 @@ public class PlayerController : MonoBehaviour
 
     #region Attack
 
+    private void RotateTowardsMouse()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        Plane plane = new Plane(Vector3.up, transform.position);
+
+        if (plane.Raycast(ray, out float enter))
+        {
+            Vector3 hitPoint = ray.GetPoint(enter);
+
+            Vector3 direction = hitPoint - transform.position;
+            direction.y = 0;
+
+            if (direction.sqrMagnitude > 0.001f)
+            {
+                transform.rotation = Quaternion.LookRotation(direction);
+            }
+        }
+    }
     private void HandleAttack()
     {
         if (isUltimateActive || isDashing)
             return;
-        
+
 
         if (Input.GetMouseButtonDown(0))
         {
-            lastClickTime =
-                Time.time;
+            //RotateTowardsMouse();
+
+            lastClickTime = Time.time;
         }
 
         attackPressed =
@@ -251,7 +271,7 @@ public class PlayerController : MonoBehaviour
     {
         if (isDashing)
             return;
-        if (Input.GetKeyDown(KeyCode.Alpha1) &&
+        if (Input.GetMouseButtonDown(1) &&
             !isUltimateActive)
         {
             if (swordTrail != null)
@@ -338,7 +358,7 @@ public class PlayerController : MonoBehaviour
     {
         if (isDashing)
             return;
-        if (Input.GetKeyDown(KeyCode.Alpha2))
+        if (Input.GetKeyDown(KeyCode.Q))
         {
             StartCoroutine(
                 CastSpellRoutine());
