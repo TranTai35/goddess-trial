@@ -27,7 +27,7 @@ public class EnemyController : MonoBehaviour
     [Header("Combat")]
     public float runSpeed = 4.5f;
     public float attackRange = 2f;
-    public float cooldownTime = 2f;
+    public float cooldownTime = 1f;
 
     [Header("Health")]
     public float maxHP = 100f;
@@ -287,7 +287,7 @@ public class EnemyController : MonoBehaviour
             CooldownRoutine());
     }
 
-    protected IEnumerator CooldownRoutine()
+    protected virtual IEnumerator CooldownRoutine()
     {
         isCoolingDown = true;
 
@@ -343,7 +343,7 @@ public class EnemyController : MonoBehaviour
                 TakeDamageRoutine());
     }
 
-    private IEnumerator TakeDamageRoutine()
+    protected virtual IEnumerator TakeDamageRoutine()
     {
         isTakingDamage = true;
 

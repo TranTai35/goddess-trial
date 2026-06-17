@@ -21,12 +21,12 @@ public class SpellCaster : MonoBehaviour
         if (equippedSpell == null)
             return;
 
-        if (!equippedSpell. CanCast())
-        {
-            Debug.Log(
-                $"Cooldown: {equippedSpell.GetRemainingCooldown():F1}s");
-            return;
-        }
+        //if (!equippedSpell. CanCast())
+        //{
+        //    Debug.Log(
+        //        $"Cooldown: {equippedSpell.GetRemainingCooldown():F1}s");
+        //    return;
+        //}
 
         if (stats.baseStats.currentMana <
             equippedSpell.manaCost)

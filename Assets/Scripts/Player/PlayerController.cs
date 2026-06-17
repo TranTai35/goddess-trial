@@ -453,7 +453,6 @@ public class PlayerController : MonoBehaviour
     {
         return
             !isDashing &&
-            !isCastingSpell &&
             !isUltimateActive &&
             Time.time >= nextDashTime;
     }

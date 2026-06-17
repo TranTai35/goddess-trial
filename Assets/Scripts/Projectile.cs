@@ -30,8 +30,7 @@ public class Projectile : MonoBehaviour
 
         direction =
             (targetPos - transform.position).normalized;
-
-        transform.forward = direction;
+        transform.right = direction;
     }
 
     private void Update()
@@ -85,6 +84,18 @@ public class Projectile : MonoBehaviour
             if (enemy != null)
             {
                 enemy.TakeDamage(damage);
+            }
+
+            BossController boss =
+            other.GetComponent<BossController>();
+
+            if (boss != null)
+            {
+                boss.TakeDamage(damage);
+
+               
+
+               
             }
 
             PoolManager.Instance.ReturnObject(gameObject);
