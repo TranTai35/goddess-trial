@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -17,6 +18,8 @@ public class PlayerController : MonoBehaviour
     public float ultimateDuration = 2f;
     public GameObject swordTrail;
     public float ultimateDamageInterval = 0.2f;
+    float lastUltiTime = -999f;
+    float cooldownUlti = 10f;
 
     [Header("Dash")]
     public float dashDistance = 3f;
@@ -44,6 +47,10 @@ public class PlayerController : MonoBehaviour
     private bool hasHitThisAttack;
 
     private SpellCaster spellCaster;
+
+    private AttackSpellCaster attackSpellCaster;
+    private bool isAimingAttackSpell;
+
     private PlayerStats playerStats;
 
     private const string IsMoving = "Moving";
@@ -65,6 +72,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         spellCaster = GetComponent<SpellCaster>();
+        attackSpellCaster = GetComponent<AttackSpellCaster>();
         playerStats = GetComponent<PlayerStats>();
     }
 
@@ -80,6 +88,8 @@ public class PlayerController : MonoBehaviour
         HandleUltimate();
 
         HandleSpell();
+
+        HandleAttackSpell();
 
         HandleDash();
     }
@@ -267,13 +277,38 @@ public class PlayerController : MonoBehaviour
 
     #region Ultimate
 
+    public bool CanUltimate()
+    {
+        return Time.time >= lastUltiTime + cooldownUlti;
+    }
+
+    public float GetUltiCooldown()
+    {
+        return Mathf.Max(
+            0,
+            lastUltiTime + cooldownUlti - Time.time);
+    }
+
+    protected void StartUltiCooldown()
+    {
+        lastUltiTime = Time.time;
+    }
     private void HandleUltimate()
     {
         if (isDashing)
             return;
-        if (Input.GetMouseButtonDown(1) &&
-            !isUltimateActive)
+        if (!CanUltimate())
         {
+            Debug.Log(
+                $"Cooldown: {GetUltiCooldown():F1}s");
+            return;
+        }
+
+        
+
+        if (Input.GetMouseButtonDown(1) && !isUltimateActive)
+        {
+            StartUltiCooldown();
             if (swordTrail != null)
             {
                 swordTrail.SetActive(true);
@@ -379,10 +414,34 @@ public class PlayerController : MonoBehaviour
 
         isCastingSpell = false;
     }
+
+    private void HandleAttackSpell()
+    {
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            attackSpellCaster.StartAim();
+            isAimingAttackSpell = true;
+        }
+
+        if (!isAimingAttackSpell)
+            return;
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            attackSpellCaster.CastSpell();
+            isAimingAttackSpell = false;
+        }
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            attackSpellCaster.CancelAim();
+            isAimingAttackSpell = false;
+        }
+    }
     private void HandleDash()
     {
 
-        if ( isCastingSpell || isUltimateActive)
+        if (  isUltimateActive)
             return;
         if (Input.GetKeyDown(KeyCode.Space))
         {

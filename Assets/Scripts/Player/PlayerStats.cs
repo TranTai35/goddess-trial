@@ -4,13 +4,19 @@ public class PlayerStats : MonoBehaviour
 {
     public PlayerStatsData baseStats;
 
+    private Animator animator;
+
+    private const string TakeDamageTrigger = "TakeDamage";
+
     private void Awake()
     {
+        animator = GetComponent<Animator>();
+
         baseStats.currentHealth = baseStats.maxHealth;
         baseStats.currentMana = baseStats.maxMana;
     }
 
-  
+
 
     public void TakeDamage(float damage)
     {
@@ -25,9 +31,19 @@ public class PlayerStats : MonoBehaviour
 
         baseStats.currentHealth -= damage;
 
+        if (animator != null && damage >= 20)
+        {
+            animator.SetTrigger(TakeDamageTrigger);
+        }
+
         Debug.Log(
             "Player HP: " +
             baseStats.currentHealth);
+
+        if (baseStats.currentHealth <= 0)
+        {
+            Die();
+        }
     }
 
     private void Die()

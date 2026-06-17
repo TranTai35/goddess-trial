@@ -11,7 +11,14 @@ public class Projectile : MonoBehaviour
     private Vector3 direction;
     private float damage;
     private float timer;
+    private GameObject owner;
 
+    public void SetOwner(GameObject owner)
+    {
+        this.owner = owner;
+    }
+
+  
     public void Initialize(Transform target, float damage)
     {
         this.damage = damage;
@@ -44,6 +51,9 @@ public class Projectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log("Hit: " + other.name);
+        if (other.gameObject == owner)
+            return;
         // Trúng player
         if (other.CompareTag("Player"))
         {
@@ -88,6 +98,15 @@ public class Projectile : MonoBehaviour
 
         // Đụng tường hoặc object khác
         PoolManager.Instance.ReturnObject(gameObject);
+    }
+
+    public void InitializeDirection(Vector3 direction, float damage)
+    {
+        this.direction = direction.normalized;
+        this.damage = damage;
+        timer = lifeTime;
+
+        transform.forward = this.direction;
     }
 
     private void OnDisable()

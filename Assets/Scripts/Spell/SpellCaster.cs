@@ -15,10 +15,18 @@ public class SpellCaster : MonoBehaviour
         stats = GetComponent<PlayerStats>();
     }
 
+
     public void CastSpell()
     {
         if (equippedSpell == null)
             return;
+
+        if (!equippedSpell. CanCast())
+        {
+            Debug.Log(
+                $"Cooldown: {equippedSpell.GetRemainingCooldown():F1}s");
+            return;
+        }
 
         if (stats.baseStats.currentMana <
             equippedSpell.manaCost)

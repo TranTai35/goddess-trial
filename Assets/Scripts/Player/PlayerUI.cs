@@ -19,9 +19,13 @@ public class PlayerUI : MonoBehaviour
     public Image UltimateIcon;
     public Image spellIcon;
 
+    [Header("Fade Image")]
+    public Image blackOverlay;
+
     private void Update()
     {
         hpBar.value =  stats.baseStats.currentHealth /stats.baseStats.maxHealth;
+        SetImagePercent(hpBar.value);
 
         manaBar.value =stats.baseStats.currentMana / stats.baseStats.maxMana;
 
@@ -33,5 +37,14 @@ public class PlayerUI : MonoBehaviour
         {
             spellIcon.sprite = spellCaster.equippedSpell.icon;
         }
+    }
+
+    public void SetImagePercent(float percent)
+    {
+        float alpha = (1f - percent) * 0.5f;
+
+        Color c = blackOverlay.color;
+        c.a = alpha;
+        blackOverlay.color = c;
     }
 }

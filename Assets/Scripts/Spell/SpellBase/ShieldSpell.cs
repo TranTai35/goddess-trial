@@ -10,9 +10,11 @@ public class ShieldSpell : SpellBase
 
     public override void Cast(PlayerController player)
     {
+        
+        StartCooldown();
+
         player.StartCoroutine(
-            ShieldRoutine(player)
-        );
+            ShieldRoutine(player));
     }
 
     private IEnumerator ShieldRoutine(
