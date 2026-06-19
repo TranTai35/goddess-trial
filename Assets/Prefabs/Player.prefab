@@ -1390,9 +1390,10 @@ GameObject:
   - component: {fileID: 1518059011571545057}
   - component: {fileID: 2421333642102880746}
   - component: {fileID: 8675705257874652513}
+  - component: {fileID: 8870732267497301310}
   m_Layer: 7
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1407,8 +1408,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -30.01, y: 0, z: -38}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 9192378015037647359}
   - {fileID: 5969693987177432588}
@@ -1451,9 +1452,22 @@ MonoBehaviour:
   animator: {fileID: 1208488497654401974}
   moveSpeed: 5
   rotationSpeed: 15
-  attackBufferTime: 0.3
-  swordTrail: {fileID: 5778305584063291063}
+  attackBufferTime: 0.2
+  attackRange: 1
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 256
   ultimateDuration: 2
+  swordTrail: {fileID: 5778305584063291063}
+  ultimateDamageInterval: 0.2
+  dashDistance: 3
+  dashDuration: 0.15
+  dashCooldown: 0.8
+  dashRadius: 0.4
+  dashSkinWidth: 0.05
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 512
 --- !u!54 &3011113135033788997
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1531,6 +1545,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseStats: {fileID: 11400000, guid: 04ea3f272250c6942bb415e86910660d, type: 2}
+--- !u!114 &8870732267497301310
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3891999902918890222}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1324ac9c2bb38184f979e780e91c44cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  equippedSpell: {fileID: 7324293396819838806, guid: 4b4f43fa4a06868429f7f9d9240cd6aa,
+    type: 3}
 --- !u!1 &4093969729163616884
 GameObject:
   m_ObjectHideFlags: 0

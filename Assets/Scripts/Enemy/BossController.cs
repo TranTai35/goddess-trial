@@ -31,7 +31,7 @@ public class BossController : MonoBehaviour
     public float walkSpeed = 2f;
 
     [Header("Melee")]
-    public float meleeRange = 5f;
+    public float meleeRange = 15f;
     public float meleeDamage = 25f;
 
     [Header("Ranged")]
@@ -48,6 +48,11 @@ public class BossController : MonoBehaviour
     [Header("Cooldown")]
     public float cooldownTime = 1f;
     public float cooldownMoveDistance = 3f;
+
+    [Header("Teleport Retreat")]
+    public float retreatTriggerDistance = 5f;
+    public float retreatDistance = 20f;
+    public float burrowDuration = 1.5f;
 
     private BossState currentState;
 
@@ -77,6 +82,9 @@ public class BossController : MonoBehaviour
 
     private readonly int DieHash =
         Animator.StringToHash("Die");
+
+    private readonly int BurrowHash =
+    Animator.StringToHash("Burrow");
 
     private void Start()
     {
@@ -167,99 +175,120 @@ public class BossController : MonoBehaviour
             CooldownRoutine());
     }
 
+    private IEnumerator BurrowRetreatRoutine()
+    {
+        agent.isStopped = true;
+
+        animator.SetTrigger(BurrowHash);
+
+        // Chờ animation chui xuống đất
+        yield return new WaitForSeconds(
+            burrowDuration * 0.5f);
+
+        Vector2 randomCircle =
+    Random.insideUnitCircle.normalized;
+
+        Vector3 targetPos =
+            player.position +
+            new Vector3(
+                randomCircle.x,
+                0,
+                randomCircle.y)
+            * retreatDistance;
+
+        NavMeshHit hit;
+
+        if (NavMesh.SamplePosition(
+            targetPos,
+            out hit,
+            5f,
+            NavMesh.AllAreas))
+        {
+            agent.Warp(hit.position);
+        }
+
+        // Chờ animation trồi lên hoàn tất
+        yield return new WaitForSeconds(
+            burrowDuration * 0.5f);
+    }
+
     private IEnumerator MeleeAttackRoutine()
     {
         agent.speed = runSpeed;
         agent.isStopped = false;
 
-        animator.SetBool(
-            WalkHash,
-            false);
+        animator.SetBool(WalkHash, false);
+        animator.SetBool(RunHash, true);
 
-        animator.SetBool(
-            RunHash,
-            true);
-
-        float timer = 2f;
-
-        while (
-            Vector3.Distance(
-                transform.position,
-                player.position)
-            > meleeRange &&
-            timer > 0f)
+        // CHASE cho tới khi vào range
+        while (true)
         {
-            timer -= Time.deltaTime;
+            float distance = Vector3.Distance(transform.position, player.position);
+
+            if (distance <= meleeRange)
+                break;
 
             Vector3 dir =
-                (transform.position -
-                 player.position).normalized;
+                (transform.position - player.position).normalized;
 
             Vector3 targetPos =
-                player.position +
-                dir * 1.2f;
+                player.position + dir * 1.2f;
 
-            agent.SetDestination(
-                targetPos);
+            agent.SetDestination(targetPos);
 
             yield return null;
         }
 
+        // STOP và ATTACK
         agent.isStopped = true;
+        animator.SetBool(RunHash, false);
 
-        animator.SetBool(
-            RunHash,
-            false);
+        Vector3 lookPos = player.position;
+        lookPos.y = transform.position.y;
+        transform.LookAt(lookPos);
 
-        Vector3 lookPos =
-            player.position;
+        animator.SetTrigger(SlashHash);
 
-        lookPos.y =
-            transform.position.y;
-
-        transform.LookAt(
-            lookPos);
-
-        animator.SetTrigger(
-            SlashHash);
-
-        yield return new WaitForSeconds(
-            0.6f);
+        yield return new WaitForSeconds(0.6f);
 
         Collider[] hits =
-            Physics.OverlapSphere(
-                transform.position,
-                meleeRange);
+            Physics.OverlapSphere(transform.position, meleeRange);
 
         foreach (Collider hit in hits)
         {
             if (!hit.CompareTag("Player"))
                 continue;
 
-            PlayerStats stats =
-                hit.GetComponent<PlayerStats>();
+            PlayerStats stats = hit.GetComponent<PlayerStats>();
 
             if (stats != null)
-            {
-                stats.TakeDamage(
-                    meleeDamage);
-            }
+                stats.TakeDamage(meleeDamage);
 
             break;
         }
 
-        yield return new WaitForSeconds(
-            0.6f);
+        yield return new WaitForSeconds(0.6f);
     }
 
     private IEnumerator RangedAttackRoutine()
     {
+        float distance =
+        Vector3.Distance(
+            transform.position,
+            player.position);
+
+        if (distance < retreatTriggerDistance)
+        {
+            yield return StartCoroutine(
+                BurrowRetreatRoutine());
+        }
+
         agent.isStopped = true;
 
         animator.SetBool(RunHash, false);
         animator.SetTrigger(PrepareHash);
 
-        float prepareTime = 1.5f;
+        float prepareTime = 1f;
         float timer = 0f;
 
         while (timer < prepareTime)

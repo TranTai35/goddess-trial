@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a2867956f8ba8c49a989cd1961398c3, type: 3}
   m_Name: PlayerStats
   m_EditorClassIdentifier: 
-  maxHealth: 100
-  currentHealth: 100
+  maxHealth: 100000
+  currentHealth: 99945
   maxMana: 100
   currentMana: 100
-  gold: 1000
-  diamond: 150
+  gold: 300
+  diamond: 10
   damage: 10
   moveSpeed: 5
