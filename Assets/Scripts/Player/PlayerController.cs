@@ -152,6 +152,11 @@ public class PlayerController : MonoBehaviour
             isMoving);
     }
 
+    public void UpdateMoveSpeed()
+    {
+        moveSpeed = playerStats.baseStats.moveSpeed;
+    }
+
     #endregion
 
     #region Attack
@@ -438,6 +443,14 @@ public class PlayerController : MonoBehaviour
             isAimingAttackSpell = false;
         }
     }
+
+
+    private IEnumerator DistancleAim()
+    {
+        yield return new WaitForSeconds(1f);
+    }
+
+    
     private void HandleDash()
     {
 

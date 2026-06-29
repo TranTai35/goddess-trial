@@ -16,6 +16,26 @@ public class PlayerStats : MonoBehaviour
         baseStats.currentMana = baseStats.maxMana;
     }
 
+    private void Update()
+    {
+        RegenerateMana();
+    }
+
+    private void RegenerateMana()
+    {
+        if (baseStats.currentMana >=
+            baseStats.maxMana)
+            return;
+
+        baseStats.currentMana +=
+            baseStats.manaRegen *
+            Time.deltaTime;
+
+        baseStats.currentMana =
+            Mathf.Min(
+                baseStats.currentMana,
+                baseStats.maxMana);
+    }
 
 
     public void TakeDamage(float damage)
