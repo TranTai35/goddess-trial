@@ -252,29 +252,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    
     private void DealDamage()
     {
-        Vector3 attackCenter =
-            transform.position +
-            transform.forward ;
+        Vector3 attackCenter = transform.position + transform.forward;
+        Collider[] hits = Physics.OverlapSphere(attackCenter, attackRange, enemyLayer);
 
-        Collider[] hits =
-            Physics.OverlapSphere(
-                attackCenter,
-                attackRange,
-                enemyLayer);
-        Debug.Log(hits.Length);
+        if (hits.Length > 0)
+        {
+            // Gọi feedback: Dừng 0.1s, Rung 0.1s
+            FeedbackManager.Instance.PlayHitFeedback(0.1f, 0.05f, 0.1f, 0.1f);
+        }
 
         foreach (Collider hit in hits)
         {
-            EnemyController enemy =
-                hit.GetComponent<EnemyController>();
-
-            if (enemy == null)
-                continue;
-
-            enemy.TakeDamage(
-                playerStats.baseStats.damage);
+            EnemyController enemy = hit.GetComponent<EnemyController>();
+            if (enemy != null) enemy.TakeDamage(playerStats.baseStats.damage);
         }
     }
 

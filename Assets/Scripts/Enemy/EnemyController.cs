@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -31,6 +31,8 @@ public class EnemyController : MonoBehaviour
 
     [Header("Health")]
     public float maxHP = 100f;
+
+    public GameObject damageTextPrefab;
 
     protected float currentHP;
 
@@ -341,6 +343,24 @@ public class EnemyController : MonoBehaviour
         damageRoutine =
             StartCoroutine(
                 TakeDamageRoutine());
+
+        if (damageTextPrefab != null)
+        {
+            // Lấy object từ pool
+            GameObject obj = PoolManager.Instance.GetObject(damageTextPrefab);
+
+            // Đặt vị trí trên đầu quái
+            obj.transform.position = transform.position + Vector3.up * 2f;
+
+            // Đặt rotation nhìn về phía Camera (hoặc để mặc định)
+            obj.transform.rotation = Quaternion.identity;
+
+            // Gọi hàm setup
+            DamageText dt = obj.GetComponent<DamageText>();
+            dt.Setup((int)damage, damage > 50);
+        }
+
+
     }
 
     protected virtual IEnumerator TakeDamageRoutine()

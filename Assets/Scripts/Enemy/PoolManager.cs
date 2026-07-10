@@ -13,6 +13,9 @@ public class PoolManager : MonoBehaviour
     [Header("Projectile Pools")]
     public PoolData[] projectilePools;
 
+    [Header("UI Pools")]
+    public PoolData[] uiPools;
+
     [Header("References")]
     public Transform player;
 
