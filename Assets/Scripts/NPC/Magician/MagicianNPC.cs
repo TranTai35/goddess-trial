@@ -119,52 +119,29 @@ public class MagicianNPC : NPC
 
     private void EquipSpellToPlayer(SpellLearnData data, SpellType type)
     {
-        // 1. Tìm Object Player trong Game
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj == null)
-        {
-            Debug.LogError("Không tìm thấy GameObject có Tag là 'Player'!");
-            return;
-        }
+        if (playerObj == null) return;
 
-        // 2. Xử lý nếu là Phép Bổ Trợ (Utility)
+        // 1. Nếu là Phép Bổ Trợ (Utility)
         if (type == SpellType.Utility && data.utilitySpellPrefab != null)
         {
-            // Lấy script SpellCaster từ Player
             SpellCaster utilityCaster = playerObj.GetComponent<SpellCaster>();
-
             if (utilityCaster != null)
             {
-                // Nếu Player đang có phép cũ thì hủy đi để tránh bị đè hiệu ứng
-                if (utilityCaster.equippedSpell != null)
-                    Destroy(utilityCaster.equippedSpell.gameObject);
-
-                // Sinh ra phép mới từ Prefab và gắn làm con của Player
-                SpellBase newSpell = Instantiate(data.utilitySpellPrefab, utilityCaster.transform);
-
-                // Gắn vào ô chứa phép bổ trợ của Player
-                utilityCaster.equippedSpell = newSpell;
-                Debug.Log($"Đã trang bị phép bổ trợ: {data.spellName}");
+                // CHỈ GÁN KHUÔN (PREFAB), KHÔNG SINH RA OBJECT TRÊN MAP
+                utilityCaster.equippedSpell = data.utilitySpellPrefab;
+                Debug.Log($"Đã chuyển đổi Prefab phép bổ trợ sang: {data.spellName}");
             }
         }
-        // 3. Xử lý nếu là Phép Tấn Công (Attack)
+        // 2. Nếu là Phép Tấn Công (Attack)
         else if (type == SpellType.Attack && data.attackSpellPrefab != null)
         {
-            // Lấy script AttackSpellCaster từ Player
             AttackSpellCaster attackCaster = playerObj.GetComponent<AttackSpellCaster>();
-
             if (attackCaster != null)
             {
-                // Nếu Player đang có phép tấn công cũ thì hủy đi
-                if (attackCaster.equippedSpell != null)
-                    Destroy(attackCaster.equippedSpell.gameObject);
-
-                // Sinh ra phép tấn công mới từ Prefab
-                AttackSpellBase newAttackSpell = Instantiate(data.attackSpellPrefab, attackCaster.transform);
-
-                // Gắn vào ô chứa phép tấn công của Player
-                attackCaster.equippedSpell = newAttackSpell;
-                Debug.Log($"Đã trang bị phép tấn công: {data.spellName}");
+                // CHỈ GÁN KHUÔN (PREFAB)
+                attackCaster.equippedSpell = data.attackSpellPrefab;
+                Debug.Log($"Đã chuyển đổi Prefab phép tấn công sang: {data.spellName}");
             }
         }
     }
