@@ -22,9 +22,13 @@ public class PlayerController : MonoBehaviour
     float cooldownUlti = 10f;
 
     [Header("Dash")]
-    public float dashDistance = 3f;
-    public float dashDuration = 0.15f;
+    public float dashDistance = 5f;
+    public float dashDuration = 0.2f;
     public float dashCooldown = 0.8f;
+
+    [Header("Dash Trail")]
+    [SerializeField] private TrailRenderer dashTrail1;
+    [SerializeField] private TrailRenderer dashTrail2;
 
     public float dashRadius = 0.4f;
     public float dashSkinWidth = 0.05f;
@@ -53,6 +57,8 @@ public class PlayerController : MonoBehaviour
 
     private PlayerStats playerStats;
 
+    private bool canControl = true;
+
     private const string IsMoving = "Moving";
     private const string AttackPressed = "AttackPressed";
     private const string IsAttacking = "IsAttacking";
@@ -74,23 +80,36 @@ public class PlayerController : MonoBehaviour
         spellCaster = GetComponent<SpellCaster>();
         attackSpellCaster = GetComponent<AttackSpellCaster>();
         playerStats = GetComponent<PlayerStats>();
+
+        if (dashTrail1 != null)
+        {
+            dashTrail1.emitting = false;
+            dashTrail1.Clear();
+        }
+
+        if (dashTrail2 != null)
+        {
+            dashTrail2.emitting = false;
+            dashTrail2.Clear();
+        }
     }
 
     private void Update()
     {
+        if (!canControl)
+        {
+            return;
+        }
+
         if (!isDashing)
         {
             Move();
         }
 
         HandleAttack();
-
         HandleUltimate();
-
         HandleSpell();
-
         HandleAttackSpell();
-
         HandleDash();
     }
 
@@ -547,33 +566,29 @@ public class PlayerController : MonoBehaviour
     private IEnumerator DashRoutine()
     {
         isDashing = true;
-
         IsInvincible = true;
 
         attackPressed = false;
 
-        animator.SetBool(
-            AttackPressed,
-            false);
-
+        animator.SetBool(AttackPressed, false);
         animator.SetTrigger(Dash);
 
+        // Bật cả hai trail
+        EnableDashTrails();
 
-        Vector3 start =
-            transform.position;
+        Vector3 start = transform.position;
+        Vector3 end = CalculateDashDestination();
 
-        Vector3 end =
-            CalculateDashDestination();
-
-        float timer = 0;
+        float timer = 0f;
 
         while (timer < dashDuration)
         {
-            transform.position =
-                Vector3.Lerp(
-                    start,
-                    end,
-                    timer / dashDuration);
+            float progress = timer / dashDuration;
+
+            transform.position = Vector3.Lerp(
+                start,
+                end,
+                progress);
 
             timer += Time.deltaTime;
 
@@ -582,9 +597,65 @@ public class PlayerController : MonoBehaviour
 
         transform.position = end;
 
-        IsInvincible = false;
+        // Ngừng tạo thêm trail
+        DisableDashTrails();
 
+        IsInvincible = false;
         isDashing = false;
+    }
+
+    private void EnableDashTrails()
+    {
+        if (dashTrail1 != null)
+        {
+            dashTrail1.Clear();
+            dashTrail1.emitting = true;
+        }
+
+        if (dashTrail2 != null)
+        {
+            dashTrail2.Clear();
+            dashTrail2.emitting = true;
+        }
+    }
+
+    private void DisableDashTrails()
+    {
+        if (dashTrail1 != null)
+        {
+            dashTrail1.emitting = false;
+        }
+
+        if (dashTrail2 != null)
+        {
+            dashTrail2.emitting = false;
+        }
+    }
+
+
+    public void SetControlEnabled(bool enabled)
+    {
+        canControl = enabled;
+
+        if (!enabled)
+        {
+            attackPressed = false;
+            isAimingAttackSpell = false;
+
+            animator.SetBool(AttackPressed, false);
+            animator.SetBool(IsAttacking, false);
+            animator.SetBool(IsMoving, false);
+
+            if (attackSpellCaster != null)
+            {
+                attackSpellCaster.CancelAim();
+            }
+        }
+    }
+
+    public void SetCutsceneMoving(bool isMoving)
+    {
+        animator.SetBool(IsMoving, isMoving);
     }
     #endregion
 
