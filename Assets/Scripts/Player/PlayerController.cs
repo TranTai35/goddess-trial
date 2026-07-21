@@ -389,19 +389,25 @@ public class PlayerController : MonoBehaviour
 
     private void HandleSpell()
     {
-        if (isDashing)
-            return;
+        if (isDashing) return;
+
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            StartCoroutine(
-                CastSpellRoutine());
+            // KIỂM TRA: Phép bổ trợ phải tồn tại và ĐÃ HỒI CHIÊU XONG mới cho bấm
+            if (spellCaster.equippedSpell != null && spellCaster.equippedSpell.CanCast())
+            {
+                StartCoroutine(CastSpellRoutine());
+            }
+            else
+            {
+                Debug.Log("Phép bổ trợ (Q) chưa hồi chiêu xong!");
+            }
         }
     }
 
     private IEnumerator CastSpellRoutine()
     {
         isCastingSpell = true;
-
         IsInvincible = true;
 
         spellCaster.CastSpell();
@@ -409,7 +415,6 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(5f);
 
         IsInvincible = false;
-
         isCastingSpell = false;
     }
 
@@ -417,12 +422,19 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
-            attackSpellCaster.StartAim();
-            isAimingAttackSpell = true;
+            // SỬA TẠI ĐÂY: Kiểm tra phép tấn công tồn tại VÀ phải hồi chiêu xong mới cho ngắm bắn
+            if (attackSpellCaster.equippedSpell != null && attackSpellCaster.equippedSpell.CanCast())
+            {
+                attackSpellCaster.StartAim();
+                isAimingAttackSpell = true;
+            }
+            else
+            {
+                Debug.Log("Phép tấn công (E) đang hồi chiêu, không thể ngắm bắn!");
+            }
         }
 
-        if (!isAimingAttackSpell)
-            return;
+        if (!isAimingAttackSpell) return;
 
         if (Input.GetMouseButtonDown(0))
         {

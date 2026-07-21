@@ -71,6 +71,8 @@ public class Projectile : MonoBehaviour
 
             if (stats != null)
             {
+                FeedbackManager.Instance.PlayHitFeedback(0f, 1f, 0.15f, 0.03f);
+                FeedbackManager.Instance.PlayDamageFlash(0.1f);
                 stats.TakeDamage(damage);
             }
 
@@ -78,11 +80,11 @@ public class Projectile : MonoBehaviour
             return;        
         }else if (other.CompareTag("Enemy"))
         {
-            EnemyController enemy =
-                other.GetComponent<EnemyController>();
-
+            EnemyController enemy = other.GetComponent<EnemyController>();
+           
             if (enemy != null)
             {
+                FeedbackManager.Instance.PlayHitFeedback(0f, 1f, 0.15f, 0.03f);
                 enemy.TakeDamage(damage);
             }
 
@@ -91,11 +93,7 @@ public class Projectile : MonoBehaviour
 
             if (boss != null)
             {
-                boss.TakeDamage(damage);
-
-               
-
-               
+                boss.TakeDamage(damage);     
             }
 
             PoolManager.Instance.ReturnObject(gameObject);

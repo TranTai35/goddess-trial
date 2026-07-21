@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class AttackSpellCaster : MonoBehaviour
 {
@@ -28,13 +28,22 @@ public class AttackSpellCaster : MonoBehaviour
         if (equippedSpell == null)
             return;
 
-        if (stats.baseStats.currentMana < equippedSpell.manaCost)
+        // BỔ SUNG KIỂM TRA: Nếu đang hồi chiêu thì huỷ bỏ, không bắn, không trừ mana
+        if (!equippedSpell.CanCast())
+        {
+            Debug.Log($"{equippedSpell.spellName} đang hồi chiêu!");
             return;
+        }
+
+        if (stats.baseStats.currentMana < equippedSpell.manaCost)
+        {
+            Debug.Log("Không đủ mana!");
+            return;
+        }
 
         stats.baseStats.currentMana -= equippedSpell.manaCost;
 
         equippedSpell.Cast(player);
-
         equippedSpell.CancelAim();
     }
 }

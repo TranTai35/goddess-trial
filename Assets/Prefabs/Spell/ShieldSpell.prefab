@@ -24587,8 +24587,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spellName: Shield
-  icon: {fileID: 21300000, guid: cfc19130e814d2f4bbd20082a11624f1, type: 3}
+  icon: {fileID: 1277275244, guid: d0f95f76e856d064086de2380f1c5eb2, type: 3}
   manaCost: 10
+  cooldown: 5
+  lastCastTime: -100
   duration: 5
   shieldVFX: {fileID: 5536264175868522203}
 --- !u!1 &6166396801649768939

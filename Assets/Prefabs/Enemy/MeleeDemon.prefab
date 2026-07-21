@@ -440,7 +440,7 @@ MonoBehaviour:
   walkSpeed: 2
   detectRadius: 10
   runSpeed: 4.5
-  attackRange: 2
+  attackRange: 2.5
   cooldownTime: 2
   maxHP: 100
   damageTextPrefab: {fileID: 2894932530838055010, guid: b3eca2bacfe1a0b448cfea955fee8b51,

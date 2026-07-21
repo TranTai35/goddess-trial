@@ -45,55 +45,25 @@ public class EnergyBlastSpell : AttackSpellBase
 
     public override void Cast(PlayerController player)
     {
+        // BỔ SUNG: Bắt đầu tính thời gian hồi chiêu ngay khi bắn chiêu thành công
+        StartCooldown();
+
         Debug.Log("Click Cast");
 
-        Ray ray =
-            Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Plane plane = new Plane(Vector3.up, player.transform.position);
 
-        Plane plane =
-            new Plane(Vector3.up, player.transform.position);
+        if (!plane.Raycast(ray, out float enter)) return;
 
-        if (!plane.Raycast(ray, out float enter))
-            return;
-
-        Vector3 mousePoint =
-            ray.GetPoint(enter);
-
-        Debug.DrawLine(
-            player.transform.position,
-            mousePoint,
-            Color.red,
-            5f);
-
-        Vector3 direction =
-            mousePoint - player.transform.position;
-
+        Vector3 mousePoint = ray.GetPoint(enter);
+        Vector3 direction = mousePoint - player.transform.position;
         direction.y = 0;
         direction.Normalize();
 
-        // Spawn cao hơn mặt đất
-        Vector3 spawnPos =
-            player.transform.position +
-            Vector3.up * 1f +
-            direction * 1.5f;
+        Vector3 spawnPos = player.transform.position + Vector3.up * 1f + direction * 1.5f;
 
-        Debug.DrawRay(
-            spawnPos,
-            direction * 5f,
-            Color.green,
-            5f);
-
-        GameObject obj =
-            Instantiate(
-                projectilePrefab,
-                spawnPos,
-                Quaternion.LookRotation(direction));
-
-        Projectile projectile =
-            obj.GetComponent<Projectile>();
-
-        projectile.InitializeDirection(
-            direction,
-            player.GetComponent<PlayerStats>().baseStats.damage);
+        GameObject obj = Instantiate(projectilePrefab, spawnPos, Quaternion.LookRotation(direction));
+        Projectile projectile = obj.GetComponent<Projectile>();
+        projectile.InitializeDirection(direction, player.GetComponent<PlayerStats>().baseStats.damage);
     }
 }
