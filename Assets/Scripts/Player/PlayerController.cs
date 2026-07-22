@@ -33,6 +33,13 @@ public class PlayerController : MonoBehaviour
     public float dashRadius = 0.4f;
     public float dashSkinWidth = 0.05f;
 
+    [Header("Combo")]
+    [SerializeField] private float comboInputOpenTime = 0.45f;
+    [SerializeField] private float comboInputCloseTime = 0.9f;
+
+    private bool attackQueued;
+    private bool attackInputPulse;
+
     public LayerMask obstacleLayer;
 
     private bool isDashing;
@@ -44,9 +51,8 @@ public class PlayerController : MonoBehaviour
 
     private bool isCastingSpell;
 
-    private float lastClickTime;
+    
 
-    private bool attackPressed;
     private bool isUltimateActive;
     private string currentAttack = "";
 
@@ -205,26 +211,111 @@ public class PlayerController : MonoBehaviour
     private void HandleAttack()
     {
         if (isUltimateActive || isDashing)
-            return;
+        {
+            attackQueued = false;
 
+            animator.SetBool(
+                AttackPressed,
+                false
+            );
+
+            return;
+        }
+
+        /*
+         * AttackPressed chỉ bật đúng một frame.
+         * Nhờ vậy một lần click không thể làm Animator
+         * chạy xuyên qua nhiều đòn.
+         */
+        animator.SetBool(
+            AttackPressed,
+            false
+        );
+
+        attackInputPulse = false;
 
         if (Input.GetMouseButtonDown(0))
         {
-            //RotateTowardsMouse();
-
-            lastClickTime = Time.time;
+            attackQueued = true;
         }
 
-        attackPressed =
-            Time.time -
-            lastClickTime <
-            attackBufferTime;
+        AnimatorStateInfo stateInfo =
+            animator.GetCurrentAnimatorStateInfo(1);
+
+        bool isAttack01 =
+            stateInfo.IsName(Attack01);
+
+        bool isAttack02 =
+            stateInfo.IsName(Attack02);
+
+        bool isAttack03 =
+            stateInfo.IsName(Attack03);
+
+        bool isAttackAnim =
+            isAttack01 ||
+            isAttack02 ||
+            isAttack03;
+
+        /*
+         * Khi chưa đánh:
+         * một click sẽ bắt đầu Attack01.
+         */
+        if (!isAttackAnim && attackQueued)
+        {
+            SendAttackInput();
+
+            attackQueued = false;
+        }
+        /*
+         * Trong Attack01 và Attack02:
+         * chỉ tiêu thụ click tiếp theo khi combo window mở.
+         */
+        else if (
+            (isAttack01 || isAttack02) &&
+            attackQueued &&
+            stateInfo.normalizedTime >= comboInputOpenTime &&
+            stateInfo.normalizedTime <= comboInputCloseTime
+        )
+        {
+            SendAttackInput();
+
+            attackQueued = false;
+        }
+
+        /*
+         * Attack03 là đòn cuối.
+         * Không cho click cũ tiếp tục kích hoạt combo mới.
+         */
+        if (isAttack03 &&
+            stateInfo.normalizedTime >= comboInputCloseTime)
+        {
+            attackQueued = false;
+        }
+
+        UpdateAttackState();
+    }
+
+    private void ResetAttackInput()
+    {
+        attackQueued = false;
+        attackInputPulse = false;
+
+        currentAttack = "";
+        hasHitThisAttack = false;
 
         animator.SetBool(
             AttackPressed,
-            attackPressed);
+            false);
+    }
 
-        UpdateAttackState();
+    private void SendAttackInput()
+    {
+        attackInputPulse = true;
+
+        animator.SetBool(
+            AttackPressed,
+            true
+        );
     }
 
     private void UpdateAttackState()
@@ -239,7 +330,8 @@ public class PlayerController : MonoBehaviour
 
         animator.SetBool(
             IsAttacking,
-            isAttackAnim);
+            isAttackAnim
+        );
 
         if (!isAttackAnim)
         {
@@ -251,26 +343,36 @@ public class PlayerController : MonoBehaviour
         string attackName = "";
 
         if (stateInfo.IsName(Attack01))
+        {
             attackName = Attack01;
+        }
         else if (stateInfo.IsName(Attack02))
+        {
             attackName = Attack02;
+        }
         else if (stateInfo.IsName(Attack03))
+        {
             attackName = Attack03;
+        }
 
-        // Vừa chuyển sang đòn mới
+        // Vừa bước sang animation tấn công mới
         if (currentAttack != attackName)
         {
             currentAttack = attackName;
             hasHitThisAttack = false;
         }
 
+        float hitTime =
+            currentAttack == Attack03
+                ? 0.46f
+                : 0.5f;
+
         if (!hasHitThisAttack &&
-            stateInfo.normalizedTime >= 0.5f)
+            stateInfo.normalizedTime >= hitTime)
         {
             DealDamage();
 
             hasHitThisAttack = true;
-
         }
     }
 
@@ -280,44 +382,72 @@ public class PlayerController : MonoBehaviour
         bool isCritical =
             currentAttack == Attack03;
 
-
         float damage =
             playerStats.baseStats.damage;
-
 
         if (isCritical)
         {
             damage *= 2f;
         }
 
-
         Vector3 attackCenter =
             transform.position +
             transform.forward;
-
 
         Collider[] hits =
             Physics.OverlapSphere(
                 attackCenter,
                 attackRange,
-                enemyLayer);
+                enemyLayer
+            );
 
-
+        if (hits.Length > 0 &&
+            FeedbackManager.Instance != null)
+        {
+            if (isCritical)
+            {
+                /*
+                 * Attack03:
+                 * dừng hình lâu hơn,
+                 * slow motion mạnh hơn,
+                 * camera rung lâu và mạnh hơn.
+                 */
+                FeedbackManager.Instance.PlayHitFeedback(
+                    0.09f, // Thời gian hit-stop
+                    0.03f, // Time scale
+                    0.18f, // Thời gian rung
+                    0.18f  // Độ mạnh rung
+                );
+            }
+            else
+            {
+                FeedbackManager.Instance.PlayHitFeedback(
+                    0.035f,
+                    0.2f,
+                    0.07f,
+                    0.055f
+                );
+            }
+        }
 
         foreach (Collider hit in hits)
         {
             EnemyController enemy =
-                hit.GetComponent<EnemyController>();
+                hit.GetComponentInParent<EnemyController>();
 
-
-            if (enemy != null)
+            if (enemy == null)
             {
-                enemy.TakeDamage(
-                    damage,
-                    isCritical);
+                continue;
             }
+
+            enemy.TakeDamage(
+                damage,
+                isCritical
+            );
         }
     }
+
+    
 
     #endregion
 
@@ -400,11 +530,7 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator UltimateCoroutine()
     {
-        attackPressed = false;
-
-        animator.SetBool(
-            AttackPressed,
-            false);
+        ResetAttackInput();
 
         isUltimateActive = true;
 
@@ -740,12 +866,17 @@ public class PlayerController : MonoBehaviour
 
         if (!enabled)
         {
-            attackPressed = false;
+            ResetAttackInput();
+
             isAimingAttackSpell = false;
 
-            animator.SetBool(AttackPressed, false);
-            animator.SetBool(IsAttacking, false);
-            animator.SetBool(IsMoving, false);
+            animator.SetBool(
+                IsAttacking,
+                false);
+
+            animator.SetBool(
+                IsMoving,
+                false);
 
             if (attackSpellCaster != null)
             {
