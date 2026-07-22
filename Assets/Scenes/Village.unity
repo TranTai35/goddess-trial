@@ -1655,6 +1655,12 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f16ae0a202814764190c1742a4485ccd, type: 3}
+--- !u!1 &133792975 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5176647960776757423, guid: 58fb5f8a0f14c45dbb82c1b62a5c0e0d,
+    type: 3}
+  m_PrefabInstance: {fileID: 1645348508}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &134955694
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15957,6 +15963,27 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1645348508}
   m_PrefabAsset: {fileID: 0}
+--- !u!65 &1272436633
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 133792975}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 11.381216, y: 10, z: 9.323333}
+  m_Center: {x: -2.5292916, y: 5, z: -1.0234332}
 --- !u!4 &1277092829 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3063450851153204193, guid: 473e58a45cf2c5b46a6172709dec44b5,
@@ -21501,7 +21528,11 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5176647960776757423, guid: 58fb5f8a0f14c45dbb82c1b62a5c0e0d,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1272436633}
   m_SourcePrefab: {fileID: 100100000, guid: 58fb5f8a0f14c45dbb82c1b62a5c0e0d, type: 3}
 --- !u!4 &1645383993 stripped
 Transform:
@@ -72710,6 +72741,16 @@ PrefabInstance:
         type: 3}
       propertyPath: equippedSpell
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3011113135033788997, guid: 6e5bc35dcae04824cb92edf8731c607b,
+        type: 3}
+      propertyPath: m_IsKinematic
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3011113135033788997, guid: 6e5bc35dcae04824cb92edf8731c607b,
+        type: 3}
+      propertyPath: m_CollisionDetection
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 3891999902918890222, guid: 6e5bc35dcae04824cb92edf8731c607b,
         type: 3}

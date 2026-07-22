@@ -319,8 +319,7 @@ public class EnemyController : MonoBehaviour
 
     #region DAMAGE
 
-    public virtual void TakeDamage(
-        float damage)
+    public virtual void TakeDamage(float damage, bool isCritical = false)
     {
         if (isDead)
             return;
@@ -357,7 +356,7 @@ public class EnemyController : MonoBehaviour
 
             // Gọi hàm setup
             DamageText dt = obj.GetComponent<DamageText>();
-            dt.Setup((int)damage, damage > 50);
+            dt.Setup( (int)damage,isCritical);
         }
 
 
