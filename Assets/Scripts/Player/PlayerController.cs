@@ -40,6 +40,8 @@ public class PlayerController : MonoBehaviour
 
     private const string Dash = "Dash";
 
+    private Rigidbody rb;
+
     private bool isCastingSpell;
 
     private float lastClickTime;
@@ -80,6 +82,7 @@ public class PlayerController : MonoBehaviour
         spellCaster = GetComponent<SpellCaster>();
         attackSpellCaster = GetComponent<AttackSpellCaster>();
         playerStats = GetComponent<PlayerStats>();
+        rb = GetComponent<Rigidbody>();
 
         if (dashTrail1 != null)
         {
@@ -563,42 +566,114 @@ public class PlayerController : MonoBehaviour
             direction * distance;
     }
 
+    private bool IsBlocked(Vector3 direction)
+    {
+        Vector3 origin =
+            transform.position + Vector3.up * 0.5f;
+
+
+        return Physics.SphereCast(
+            origin,
+            dashRadius,
+            direction,
+            out RaycastHit hit,
+            dashRadius + dashSkinWidth,
+            obstacleLayer
+        );
+    }
+
     private IEnumerator DashRoutine()
     {
         isDashing = true;
         IsInvincible = true;
 
-        attackPressed = false;
-
-        animator.SetBool(AttackPressed, false);
         animator.SetTrigger(Dash);
 
-        // Bật cả hai trail
         EnableDashTrails();
 
-        Vector3 start = transform.position;
-        Vector3 end = CalculateDashDestination();
 
-        float timer = 0f;
+        Vector3 direction;
+
+        float x = Input.GetAxisRaw("Horizontal");
+        float y = Input.GetAxisRaw("Vertical");
+
+
+        Vector3 camForward = Camera.main.transform.forward;
+        Vector3 camRight = Camera.main.transform.right;
+
+
+        camForward.y = 0;
+        camRight.y = 0;
+
+
+        direction =
+            (camForward * y +
+            camRight * x).normalized;
+
+
+        if (direction == Vector3.zero)
+        {
+            direction = transform.forward;
+        }
+
+
+        float dashSpeed =
+            dashDistance / dashDuration;
+
+
+        float timer = 0;
+
 
         while (timer < dashDuration)
         {
-            float progress = timer / dashDuration;
+            float moveDistance =
+                dashSpeed * Time.deltaTime;
 
-            transform.position = Vector3.Lerp(
-                start,
-                end,
-                progress);
+
+            Vector3 origin =
+                rb.position + Vector3.up * 0.5f;
+
+
+            RaycastHit hit;
+
+
+            // kiểm tra trước khi di chuyển
+            if (Physics.SphereCast(
+                origin,
+                dashRadius,
+                direction,
+                out hit,
+                moveDistance + dashSkinWidth,
+                obstacleLayer))
+            {
+
+                // đứng cách wall một khoảng nhỏ
+                Vector3 stopPosition =
+                    hit.point -
+                    direction * dashRadius;
+
+
+                rb.MovePosition(stopPosition);
+
+                break;
+            }
+
+
+            rb.MovePosition(
+                rb.position +
+                direction * moveDistance
+            );
+
 
             timer += Time.deltaTime;
+
 
             yield return null;
         }
 
-        transform.position = end;
 
-        // Ngừng tạo thêm trail
         DisableDashTrails();
+
 
         IsInvincible = false;
         isDashing = false;
