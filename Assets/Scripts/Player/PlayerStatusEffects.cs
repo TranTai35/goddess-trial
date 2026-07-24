@@ -10,6 +10,12 @@ public class PlayerStatusEffects : MonoBehaviour
     private Coroutine slowCoroutine;
     private Coroutine burnCoroutine;
 
+    [SerializeField] private GameObject stunVFX;
+    [SerializeField] private GameObject slowVFX;
+    [SerializeField] private GameObject burnVFX;
+
+
+
     private float normalMoveSpeed;
 
     private void Awake()
@@ -67,11 +73,28 @@ public class PlayerStatusEffects : MonoBehaviour
             yield break;
         }
 
+        GameObject vfx = null;
+
+        if (stunVFX != null)
+        {
+            vfx = Instantiate(
+                stunVFX,
+                playerController.transform.position,
+                Quaternion.identity,
+                playerController.transform
+            );
+        }
+
         playerController.SetControlEnabled(false);
 
         yield return new WaitForSeconds(duration);
 
         playerController.SetControlEnabled(true);
+
+        if (vfx != null)
+        {
+            Destroy(vfx);
+        }
 
         stunCoroutine = null;
     }
@@ -100,6 +123,18 @@ public class PlayerStatusEffects : MonoBehaviour
             yield break;
         }
 
+        GameObject vfx = null;
+
+        if (slowVFX != null)
+        {
+            vfx = Instantiate(
+                slowVFX,
+                playerController.transform.position,
+                Quaternion.identity,
+                playerController.transform
+            );
+        }
+
         normalMoveSpeed =
             playerController.BaseMoveSpeed;
 
@@ -111,6 +146,11 @@ public class PlayerStatusEffects : MonoBehaviour
             (1f - slowPercent);
 
         yield return new WaitForSeconds(duration);
+
+        if (vfx != null)
+        {
+            Destroy(vfx);
+        }
 
         playerController.moveSpeed =
             playerController.BaseMoveSpeed;
@@ -146,6 +186,18 @@ public class PlayerStatusEffects : MonoBehaviour
             yield break;
         }
 
+        GameObject vfx = null;
+
+        if (burnVFX != null)
+        {
+            vfx = Instantiate(
+                burnVFX,
+                playerController.transform.position,
+                Quaternion.identity,
+                playerController.transform
+            );
+        }
+
         float elapsedTime = 0f;
         float damageInterval = 0.5f;
 
@@ -159,6 +211,11 @@ public class PlayerStatusEffects : MonoBehaviour
                 damageInterval);
 
             elapsedTime += damageInterval;
+        }
+
+        if (vfx != null)
+        {
+            Destroy(vfx);
         }
 
         burnCoroutine = null;
