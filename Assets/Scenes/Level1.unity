@@ -431,6 +431,12 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2421333642102880746, guid: 6e5bc35dcae04824cb92edf8731c607b,
+        type: 3}
+      propertyPath: equippedSpell
+      value: 
+      objectReference: {fileID: 7407317497207299663, guid: bb345eda711dd6f4eb0da80d38c491cd,
+        type: 3}
     - target: {fileID: 3891999902918890222, guid: 6e5bc35dcae04824cb92edf8731c607b,
         type: 3}
       propertyPath: m_Name
@@ -486,6 +492,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5839025935551390168, guid: 6e5bc35dcae04824cb92edf8731c607b,
+        type: 3}
+      propertyPath: burnVFX
+      value: 
+      objectReference: {fileID: 4490938630221411753, guid: f3d1c3c1d16cf374aa593c00329adefa,
+        type: 3}
+    - target: {fileID: 5839025935551390168, guid: 6e5bc35dcae04824cb92edf8731c607b,
+        type: 3}
+      propertyPath: burnVFXHeight
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8096836981094077361, guid: 6e5bc35dcae04824cb92edf8731c607b,
         type: 3}
       propertyPath: m_LocalScale.x
@@ -526,6 +543,12 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8870732267497301310, guid: 6e5bc35dcae04824cb92edf8731c607b,
+        type: 3}
+      propertyPath: equippedSpell
+      value: 
+      objectReference: {fileID: 7324293396819838806, guid: 4b4f43fa4a06868429f7f9d9240cd6aa,
+        type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -579,7 +602,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &409565602
 MonoBehaviour:
   m_ObjectHideFlags: 0

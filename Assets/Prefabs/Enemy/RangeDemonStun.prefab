@@ -1568,7 +1568,7 @@ MonoBehaviour:
   firePoint: {fileID: 2485812579599411242}
   projectileDamage: 10
   effectType: 1
-  effectDuration: 2
+  effectDuration: 1
   slowPercent: 0.5
   burnDamagePerSecond: 5
 --- !u!1 &8751643019503271955
