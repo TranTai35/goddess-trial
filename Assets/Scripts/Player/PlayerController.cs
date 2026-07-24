@@ -11,7 +11,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Attack")]
     public float attackBufferTime = 0.3f;
-    public float attackRange = 1f;
+    public float attackRange = 1.5f;
     public LayerMask enemyLayer;
 
     [Header("Ultimate")]
@@ -81,6 +81,20 @@ public class PlayerController : MonoBehaviour
     {
         get;
         private set;
+    }
+
+    public float BaseMoveSpeed
+    {
+        get
+        {
+            if (playerStats != null &&
+                playerStats.baseStats != null)
+            {
+                return playerStats.baseStats.moveSpeed;
+            }
+
+            return moveSpeed;
+        }
     }
 
     private void Start()

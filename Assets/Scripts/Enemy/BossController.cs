@@ -27,7 +27,7 @@ public class BossController : MonoBehaviour
     public float detectRange = 100f;
 
     [Header("Movement")]
-    public float runSpeed = 6f;
+    public float runSpeed = 8f;
     public float walkSpeed = 2f;
 
     [Header("Melee")]

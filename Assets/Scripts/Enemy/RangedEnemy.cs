@@ -10,58 +10,23 @@ public class RangedEnemy : EnemyController
 
     public float projectileDamage = 10f;
 
-    //protected override void ChasePlayer()
-    //{
-    //    if (player == null)
-    //        return;
+    [Header("Projectile Effect")]
+    public ProjectileEffectType effectType = ProjectileEffectType.None;
 
-    //    float distance =
-    //        Vector3.Distance(
-    //            transform.position,
-    //            player.position);
+    public float effectDuration = 2f;
 
-    //    if (distance > attackRange)
-    //    {
-    //        agent.speed = runSpeed;
+    [Range(0f, 1f)]
+    public float slowPercent = 0.5f;
 
-    //        animator.SetBool(WalkHash, false);
-    //        animator.SetBool(RunHash, true);
-
-    //        agent.isStopped = false;
-
-    //        agent.SetDestination(
-    //            player.position);
-    //    }
-    //    else
-    //    {
-    //        agent.isStopped = true;
-
-    //        animator.SetBool(WalkHash, false);
-    //        animator.SetBool(RunHash, false);
-
-    //        Vector3 lookPos =
-    //            player.position;
-
-    //        lookPos.y =
-    //            transform.position.y;
-
-    //        transform.LookAt(lookPos);
-
-    //        if (!isAttacking &&
-    //            !isCoolingDown)
-    //        {
-    //            StartCoroutine(
-    //                AttackRoutine());
-    //        }
-    //    }
-    //}
+    public float burnDamagePerSecond = 5f;
 
     protected override IEnumerator Attack()
     {
         yield return new WaitForSeconds(0.5f);
 
         if (projectilePrefab != null &&
-            firePoint != null)
+            firePoint != null &&
+            player != null)
         {
             GameObject obj =
                 PoolManager.Instance.GetObject(
@@ -76,9 +41,28 @@ public class RangedEnemy : EnemyController
             projectile.transform.rotation =
                 firePoint.rotation;
 
+            float effectValue = 0f;
+
+            if (effectType ==
+                ProjectileEffectType.Slow)
+            {
+                effectValue = slowPercent;
+            }
+            else if (effectType ==
+                     ProjectileEffectType.Burn)
+            {
+                effectValue =
+                    burnDamagePerSecond;
+            }
+
             projectile.Initialize(
                 player,
-                projectileDamage);
+                projectileDamage,
+                effectType,
+                effectDuration,
+                effectValue);
+
+            projectile.SetOwner(gameObject);
         }
 
         yield return new WaitForSeconds(0.5f);
