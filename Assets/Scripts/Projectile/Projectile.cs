@@ -21,12 +21,12 @@ public class Projectile : MonoBehaviour
     }
 
     public void Initialize(
-        Transform target,
-        float projectileDamage,
-        ProjectileEffectType newEffectType =
-            ProjectileEffectType.None,
-        float newEffectDuration = 0f,
-        float newEffectValue = 0f)
+    Transform target,
+    float projectileDamage,
+    ProjectileEffectType newEffectType =
+        ProjectileEffectType.None,
+    float newEffectDuration = 0f,
+    float newEffectValue = 0f)
     {
         damage = projectileDamage;
 
@@ -36,20 +36,17 @@ public class Projectile : MonoBehaviour
 
         timer = lifeTime;
 
-        Vector3 targetPosition =
-            target.position;
+        Vector3 targetPosition = target.position;
 
-        targetPosition.y =
-            transform.position.y;
+        targetPosition.y = transform.position.y;
 
         direction =
-            (targetPosition -
-             transform.position).normalized;
+            (targetPosition - transform.position).normalized;
 
         if (direction != Vector3.zero)
         {
-            transform.rotation =
-                Quaternion.LookRotation(direction);
+            // Trục X của projectile hướng về phía bay.
+            transform.right = direction;
         }
     }
 
@@ -61,28 +58,20 @@ public class Projectile : MonoBehaviour
         float newEffectDuration = 0f,
         float newEffectValue = 0f)
     {
-        direction =
-            newDirection.normalized;
+        direction = newDirection.normalized;
 
-        damage =
-            projectileDamage;
+        damage = projectileDamage;
 
-        effectType =
-            newEffectType;
+        effectType = newEffectType;
+        effectDuration = newEffectDuration;
+        effectValue = newEffectValue;
 
-        effectDuration =
-            newEffectDuration;
-
-        effectValue =
-            newEffectValue;
-
-        timer =
-            lifeTime;
+        timer = lifeTime;
 
         if (direction != Vector3.zero)
         {
-            transform.rotation =
-                Quaternion.LookRotation(direction);
+            // Trục X của projectile hướng về phía bay.
+            transform.right = direction;
         }
     }
 

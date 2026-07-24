@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: PlayerStats
   m_EditorClassIdentifier: 
   maxHealth: 350
-  currentHealth: 0
+  currentHealth: 140
   maxMana: 545
-  currentMana: 535
+  currentMana: 545
   manaRegen: 8
   damage: 10
-  moveSpeed: 10.2
+  moveSpeed: 5
   gold: 1290
   diamond: 19500

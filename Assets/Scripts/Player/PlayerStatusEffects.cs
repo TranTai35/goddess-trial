@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public class PlayerStatusEffects : MonoBehaviour
@@ -10,13 +10,21 @@ public class PlayerStatusEffects : MonoBehaviour
     private Coroutine slowCoroutine;
     private Coroutine burnCoroutine;
 
+    [Header("Status VFX")]
     [SerializeField] private GameObject stunVFX;
     [SerializeField] private GameObject slowVFX;
     [SerializeField] private GameObject burnVFX;
 
-
+    [Header("VFX Position")]
+    [SerializeField] private float stunVFXHeight = 2.2f;
+    [SerializeField] private float burnVFXHeight = 1f;
 
     private float normalMoveSpeed;
+
+    // True khi Player đang bị bất kỳ hiệu ứng nào.
+    private bool isEffectActive;
+
+    private GameObject activeVFX;
 
     private void Awake()
     {
@@ -37,6 +45,12 @@ public class PlayerStatusEffects : MonoBehaviour
         float duration,
         float effectValue)
     {
+        // Đang có một hiệu ứng thì không nhận thêm hiệu ứng khác.
+        if (isEffectActive)
+        {
+            return;
+        }
+
         switch (effectType)
         {
             case ProjectileEffectType.Stun:
@@ -57,10 +71,12 @@ public class PlayerStatusEffects : MonoBehaviour
 
     public void ApplyStun(float duration)
     {
-        if (stunCoroutine != null)
+        if (isEffectActive)
         {
-            StopCoroutine(stunCoroutine);
+            return;
         }
+
+        isEffectActive = true;
 
         stunCoroutine = StartCoroutine(
             StunRoutine(duration));
@@ -70,19 +86,22 @@ public class PlayerStatusEffects : MonoBehaviour
     {
         if (playerController == null)
         {
+            EndCurrentEffect();
             yield break;
         }
 
-        GameObject vfx = null;
-
         if (stunVFX != null)
         {
-            vfx = Instantiate(
+            // Đặt VFX cao trên đầu Player.
+            Vector3 spawnPosition =
+                playerController.transform.position +
+                Vector3.up * stunVFXHeight;
+
+            activeVFX = Instantiate(
                 stunVFX,
-                playerController.transform.position,
+                spawnPosition,
                 Quaternion.identity,
-                playerController.transform
-            );
+                playerController.transform);
         }
 
         playerController.SetControlEnabled(false);
@@ -91,12 +110,9 @@ public class PlayerStatusEffects : MonoBehaviour
 
         playerController.SetControlEnabled(true);
 
-        if (vfx != null)
-        {
-            Destroy(vfx);
-        }
-
         stunCoroutine = null;
+
+        EndCurrentEffect();
     }
 
     #endregion
@@ -107,32 +123,35 @@ public class PlayerStatusEffects : MonoBehaviour
         float duration,
         float slowPercent)
     {
-        if (slowCoroutine != null)
+        if (isEffectActive)
         {
-            StopCoroutine(slowCoroutine);
+            return;
         }
+
+        isEffectActive = true;
 
         slowCoroutine = StartCoroutine(
             SlowRoutine(duration, slowPercent));
     }
 
-    private IEnumerator SlowRoutine(float duration,float slowPercent)
+    private IEnumerator SlowRoutine(
+        float duration,
+        float slowPercent)
     {
         if (playerController == null)
         {
+            EndCurrentEffect();
             yield break;
         }
 
-        GameObject vfx = null;
-
+        // Giữ nguyên vị trí VFX Slow như code cũ.
         if (slowVFX != null)
         {
-            vfx = Instantiate(
+            activeVFX = Instantiate(
                 slowVFX,
                 playerController.transform.position,
                 Quaternion.identity,
-                playerController.transform
-            );
+                playerController.transform);
         }
 
         normalMoveSpeed =
@@ -147,15 +166,12 @@ public class PlayerStatusEffects : MonoBehaviour
 
         yield return new WaitForSeconds(duration);
 
-        if (vfx != null)
-        {
-            Destroy(vfx);
-        }
-
         playerController.moveSpeed =
             playerController.BaseMoveSpeed;
 
         slowCoroutine = null;
+
+        EndCurrentEffect();
     }
 
     #endregion
@@ -166,10 +182,12 @@ public class PlayerStatusEffects : MonoBehaviour
         float duration,
         float damagePerSecond)
     {
-        if (burnCoroutine != null)
+        if (isEffectActive)
         {
-            StopCoroutine(burnCoroutine);
+            return;
         }
+
+        isEffectActive = true;
 
         burnCoroutine = StartCoroutine(
             BurnRoutine(
@@ -181,21 +199,25 @@ public class PlayerStatusEffects : MonoBehaviour
         float duration,
         float damagePerSecond)
     {
-        if (playerStats == null)
+        if (playerStats == null ||
+            playerController == null)
         {
+            EndCurrentEffect();
             yield break;
         }
 
-        GameObject vfx = null;
-
         if (burnVFX != null)
         {
-            vfx = Instantiate(
+            // Đặt VFX ở phần thân Player.
+            Vector3 spawnPosition =
+                playerController.transform.position +
+                Vector3.up * burnVFXHeight;
+
+            activeVFX = Instantiate(
                 burnVFX,
-                playerController.transform.position,
+                spawnPosition,
                 Quaternion.identity,
-                playerController.transform
-            );
+                playerController.transform);
         }
 
         float elapsedTime = 0f;
@@ -213,27 +235,46 @@ public class PlayerStatusEffects : MonoBehaviour
             elapsedTime += damageInterval;
         }
 
-        if (vfx != null)
-        {
-            Destroy(vfx);
-        }
-
         burnCoroutine = null;
+
+        EndCurrentEffect();
     }
 
     #endregion
 
+    private void EndCurrentEffect()
+    {
+        if (activeVFX != null)
+        {
+            Destroy(activeVFX);
+            activeVFX = null;
+        }
+
+        isEffectActive = false;
+    }
+
     private void OnDisable()
     {
+        StopAllCoroutines();
+
+        stunCoroutine = null;
+        slowCoroutine = null;
+        burnCoroutine = null;
+
+        isEffectActive = false;
+
+        if (activeVFX != null)
+        {
+            Destroy(activeVFX);
+            activeVFX = null;
+        }
+
         if (playerController != null)
         {
             playerController.SetControlEnabled(true);
 
-            if (normalMoveSpeed > 0f)
-            {
-                playerController.moveSpeed =
-                    normalMoveSpeed;
-            }
+            playerController.moveSpeed =
+                playerController.BaseMoveSpeed;
         }
     }
 }
