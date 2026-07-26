@@ -52,6 +52,11 @@ public class EnemyController : MonoBehaviour
 
     private Coroutine damageRoutine;
 
+    private EnemySpawnArea spawnArea;
+    private int spawnTypeIndex = -1;
+
+    public int SpawnTypeIndex => spawnTypeIndex;
+
     protected readonly int WalkHash =
         Animator.StringToHash("Walk");
 
@@ -73,6 +78,20 @@ public class EnemyController : MonoBehaviour
     protected virtual void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+    }
+
+    public void SetSpawnArea(
+        EnemySpawnArea area,
+        int enemyTypeIndex)
+    {
+        spawnArea = area;
+        spawnTypeIndex = enemyTypeIndex;
+    }
+
+    public void ClearSpawnArea()
+    {
+        spawnArea = null;
+        spawnTypeIndex = -1;
     }
 
     public virtual void OnSpawn(Transform targetPlayer)
@@ -356,7 +375,7 @@ public class EnemyController : MonoBehaviour
 
             // Gọi hàm setup
             DamageText dt = obj.GetComponent<DamageText>();
-            dt.Setup( (int)damage,isCritical);
+            dt.Setup((int)damage, isCritical);
         }
 
 
@@ -421,9 +440,21 @@ public class EnemyController : MonoBehaviour
     {
         yield return new WaitForSeconds(3f);
 
-        PoolManager
-            .Instance
-            .EnemyKilled(this);
+        EnemySpawnArea ownerArea = spawnArea;
+        int ownerTypeIndex = spawnTypeIndex;
+
+        ClearSpawnArea();
+
+        if (ownerArea != null)
+        {
+            ownerArea.NotifyEnemyKilled(
+                this,
+                ownerTypeIndex);
+        }
+        else if (PoolManager.Instance != null)
+        {
+            PoolManager.Instance.ReturnObject(gameObject);
+        }
     }
 
     #endregion

@@ -608,13 +608,15 @@ public class PlayerController : MonoBehaviour
 
     private void HandleAttackSpell()
     {
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.E) && !isAimingAttackSpell)
         {
+            
             // SỬA TẠI ĐÂY: Kiểm tra phép tấn công tồn tại VÀ phải hồi chiêu xong mới cho ngắm bắn
             if (attackSpellCaster.equippedSpell != null && attackSpellCaster.equippedSpell.CanCast())
             {
                 attackSpellCaster.StartAim();
                 isAimingAttackSpell = true;
+                return;
             }
             else
             {
@@ -630,7 +632,7 @@ public class PlayerController : MonoBehaviour
             isAimingAttackSpell = false;
         }
 
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetKeyDown(KeyCode.E) && isAimingAttackSpell)
         {
             attackSpellCaster.CancelAim();
             isAimingAttackSpell = false;

@@ -1,11 +1,13 @@
-﻿
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class PoolManager : MonoBehaviour
 {
-    public static PoolManager Instance;
+    public static PoolManager Instance { get; private set; }
+
+    [Header("References")]
+    [Tooltip("Giữ lại để BossController và các script cũ có thể lấy Player.")]
+    public Transform player;
 
     [Header("Enemy Pools")]
     public PoolData[] enemyPools;
@@ -16,163 +18,106 @@ public class PoolManager : MonoBehaviour
     [Header("UI Pools")]
     public PoolData[] uiPools;
 
-    [Header("References")]
-    public Transform player;
-
-    [Header("Spawn Points")]
-    public Transform[] spawnPoints;
-
-    [Header("Wave Settings")]
-    public int firstWaveCount = 10;
-    public int secondWaveCount = 10;
-
-    [Header("Level Goal")]
-    public int totalKillRequired = 20;
-
-    [Header("Respawn")]
-    public float nextWaveDelay = 5f;
-
     private readonly Dictionary<GameObject, Queue<GameObject>> pools =
         new Dictionary<GameObject, Queue<GameObject>>();
 
     private readonly Dictionary<GameObject, GameObject> prefabLookup =
         new Dictionary<GameObject, GameObject>();
 
-    private int activeEnemies;
-    private int totalKilled;
-    private bool secondWaveSpawned;
-    private bool levelCompleted;
-
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
+
         InitializePools(enemyPools);
         InitializePools(projectilePools);
-    }
-
-    private void Start()
-    {
-        SpawnWave(firstWaveCount);
+        InitializePools(uiPools);
     }
 
     private void InitializePools(PoolData[] configs)
     {
-        foreach (PoolData cfg in configs)
-        {
-            Queue<GameObject> q = new Queue<GameObject>();
+        if (configs == null)
+            return;
 
-            for (int i = 0; i < cfg.prewarmCount; i++)
+        foreach (PoolData config in configs)
+        {
+            if (config == null || config.prefab == null)
+                continue;
+
+            if (!pools.TryGetValue(config.prefab, out Queue<GameObject> queue))
             {
-                GameObject obj = Instantiate(cfg.prefab);
-                obj.SetActive(false);
-                prefabLookup[obj] = cfg.prefab;
-                q.Enqueue(obj);
+                queue = new Queue<GameObject>();
+                pools.Add(config.prefab, queue);
             }
 
-            pools[cfg.prefab] = q;
+            int amount = Mathf.Max(0, config.prewarmCount);
+
+            for (int i = 0; i < amount; i++)
+            {
+                GameObject pooledObject = CreateObject(config.prefab);
+                pooledObject.SetActive(false);
+                queue.Enqueue(pooledObject);
+            }
         }
+    }
+
+    private GameObject CreateObject(GameObject prefab)
+    {
+        GameObject pooledObject = Instantiate(prefab);
+        prefabLookup[pooledObject] = prefab;
+        return pooledObject;
     }
 
     public GameObject GetObject(GameObject prefab)
     {
-        if (!pools.ContainsKey(prefab))
+        if (prefab == null)
         {
-            pools[prefab] = new Queue<GameObject>();
+            Debug.LogError("PoolManager.GetObject nhận prefab null.");
+            return null;
         }
 
-        Queue<GameObject> q = pools[prefab];
-        GameObject obj;
-
-        if (q.Count > 0)
+        if (!pools.TryGetValue(prefab, out Queue<GameObject> queue))
         {
-            obj = q.Dequeue();
-        }
-        else
-        {
-            obj = Instantiate(prefab);
-            prefabLookup[obj] = prefab;
+            queue = new Queue<GameObject>();
+            pools.Add(prefab, queue);
         }
 
-        obj.SetActive(true);
-        return obj;
+        GameObject pooledObject =
+            queue.Count > 0
+                ? queue.Dequeue()
+                : CreateObject(prefab);
+
+        pooledObject.SetActive(true);
+        return pooledObject;
     }
 
-    public void ReturnObject(GameObject obj)
+    public void ReturnObject(GameObject pooledObject)
     {
-        if (!prefabLookup.ContainsKey(obj))
+        if (pooledObject == null)
+            return;
+
+        if (!prefabLookup.TryGetValue(pooledObject, out GameObject prefab))
         {
-            Destroy(obj);
+            Debug.LogWarning(
+                $"{pooledObject.name} không được tạo bởi PoolManager nên sẽ bị Destroy.");
+
+            Destroy(pooledObject);
             return;
         }
 
-        obj.SetActive(false);
-        GameObject prefab = prefabLookup[obj];
-        pools[prefab].Enqueue(obj);
-    }
+        pooledObject.SetActive(false);
 
-    private void SpawnWave(int count)
-    {
-        activeEnemies = count;
-
-        for (int i = 0; i < count; i++)
+        if (!pools.TryGetValue(prefab, out Queue<GameObject> queue))
         {
-            Transform spawnPoint =
-                spawnPoints[Random.Range(0, spawnPoints.Length)];
-
-            PoolData pool =
-                enemyPools[Random.Range(0, enemyPools.Length)];
-
-            GameObject obj = GetObject(pool.prefab);
-
-            EnemyController enemy =
-                obj.GetComponent<EnemyController>();
-
-            enemy.transform.position = spawnPoint.position;
-            enemy.transform.rotation = spawnPoint.rotation;
-            enemy.OnSpawn(player);
+            queue = new Queue<GameObject>();
+            pools.Add(prefab, queue);
         }
 
-        Debug.Log($"Spawned Wave ({count})");
+        queue.Enqueue(pooledObject);
     }
-
-    public void EnemyKilled(EnemyController enemy)
-    {
-        if (levelCompleted)
-            return;
-
-        totalKilled++;
-        activeEnemies--;
-
-        ReturnObject(enemy.gameObject);
-
-        Debug.Log($"Killed: {totalKilled}/{totalKillRequired}");
-
-        if (totalKilled >= totalKillRequired)
-        {
-            LevelCompleted();
-            return;
-        }
-
-        if (activeEnemies <= 0 && !secondWaveSpawned)
-        {
-            secondWaveSpawned = true;
-            StartCoroutine(SpawnSecondWaveRoutine());
-        }
-    }
-
-    private IEnumerator SpawnSecondWaveRoutine()
-    {
-        yield return new WaitForSeconds(nextWaveDelay);
-        SpawnWave(secondWaveCount);
-    }
-
-    private void LevelCompleted()
-    {
-        levelCompleted = true;
-        Debug.Log("LEVEL COMPLETE!");
-    }
-
-    public int GetKillCount() => totalKilled;
-
-    public int GetRemainingKills() => totalKillRequired - totalKilled;
 }

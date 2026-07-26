@@ -93,8 +93,7 @@ public class BossController : MonoBehaviour
         if (player == null &&
             PoolManager.Instance != null)
         {
-            player =
-                PoolManager.Instance.player;
+            //player =   PoolManager.Instance.player;
         }
 
         currentState =

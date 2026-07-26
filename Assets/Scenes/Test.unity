@@ -262,7 +262,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &162207112
 Transform:
   m_ObjectHideFlags: 0
@@ -271,12 +271,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 162207111}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -70.7, y: 0.8169439, z: -17.6}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 8.2, y: 0, z: -2.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1977681714}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &196817771
 GameObject:
@@ -395,7 +395,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 5a08e7b49784c3b4ea6fee1c0bac234d,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 5a08e7b49784c3b4ea6fee1c0bac234d,
         type: 3}
@@ -900,7 +900,7 @@ GameObject:
   - component: {fileID: 486826566}
   - component: {fileID: 486826565}
   m_Layer: 0
-  m_Name: EnemyPool
+  m_Name: EnemyPools
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -918,7 +918,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2ba1cb5137a41e4da78f684efc5aca9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyPools: []
+  player: {fileID: 0}
+  enemyPools:
+  - prefab: {fileID: 2121581225294597257, guid: 74781c54ab2c9fd4e8f14d8d5f8d208d,
+      type: 3}
+    prewarmCount: 0
+  - prefab: {fileID: 3689633817795945365, guid: b099c7f7407413e4d99f81943826ff73,
+      type: 3}
+    prewarmCount: 0
   projectilePools:
   - prefab: {fileID: 2409220093860611351, guid: 1e6e224bb35f12e4ebbe764ec98b2b95,
       type: 3}
@@ -936,19 +943,6 @@ MonoBehaviour:
   - prefab: {fileID: 2894932530838055010, guid: b3eca2bacfe1a0b448cfea955fee8b51,
       type: 3}
     prewarmCount: 0
-  player: {fileID: 1399922980}
-  spawnPoints:
-  - {fileID: 1977681714}
-  - {fileID: 2005478509}
-  - {fileID: 162207112}
-  - {fileID: 1216843535}
-  - {fileID: 1211864546}
-  - {fileID: 1312429041}
-  - {fileID: 344073343}
-  firstWaveCount: 10
-  secondWaveCount: 10
-  totalKillRequired: 20
-  nextWaveDelay: 5
 --- !u!4 &486826566
 Transform:
   m_ObjectHideFlags: 0
@@ -1240,7 +1234,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1216843535
 Transform:
   m_ObjectHideFlags: 0
@@ -1249,12 +1243,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1216843534}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -59.08861, y: 0.8169439, z: 10.1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 26, y: 0, z: 13.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1977681714}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1312429040
 GameObject:
@@ -1724,13 +1718,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1977681714}
+  - component: {fileID: 1977681715}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: EnemySpawnArea_Forest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1977681714
 Transform:
   m_ObjectHideFlags: 0
@@ -1740,12 +1735,53 @@ Transform:
   m_GameObject: {fileID: 1977681713}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -41.47, y: 0.8169439, z: -17.46}
+  m_LocalPosition: {x: -44, y: 0.8169439, z: 19.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2005478509}
+  - {fileID: 162207112}
+  - {fileID: 1216843535}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1977681715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1977681713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65f8666d074f22a4eab862a02ffdfe93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 1399922980}
+  gameplayCamera: {fileID: 1164314768}
+  activationRadius: 35
+  despawnRadius: 50
+  offScreenDespawnDelay: 2
+  hiddenSpawnCheckInterval: 0.2
+  spawnPointVisiblePadding: 0.05
+  minimumSpawnDistanceFromPlayer: 4
+  spawnPointOccupiedRadius: 1.5
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  spawnPoints:
+  - {fileID: 2005478509}
+  - {fileID: 162207112}
+  - {fileID: 1216843535}
+  enemyTypes:
+  - prefab: {fileID: 2121581225294597257, guid: 74781c54ab2c9fd4e8f14d8d5f8d208d,
+      type: 3}
+    amount: 2
+  - prefab: {fileID: 3689633817795945365, guid: b099c7f7407413e4d99f81943826ff73,
+      type: 3}
+    amount: 1
+  maxWaves: 2
+  nextWaveDelay: 3
+  showDebugLogs: 1
 --- !u!1 &2005478508
 GameObject:
   m_ObjectHideFlags: 0
@@ -1761,7 +1797,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2005478509
 Transform:
   m_ObjectHideFlags: 0
@@ -1770,12 +1806,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2005478508}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -73.3, y: 0.8169439, z: -34.5}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -21.4, y: 0, z: -8.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1977681714}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1315102878588411455
 Transform:
@@ -1938,11 +1974,9 @@ SceneRoots:
   - {fileID: 417080378}
   - {fileID: 1727943167}
   - {fileID: 311383499}
+  - {fileID: 275079038}
   - {fileID: 486826566}
   - {fileID: 1977681714}
-  - {fileID: 2005478509}
-  - {fileID: 162207112}
-  - {fileID: 1216843535}
   - {fileID: 1211864546}
   - {fileID: 1312429041}
   - {fileID: 344073343}
@@ -1950,5 +1984,4 @@ SceneRoots:
   - {fileID: 1315102878588411455}
   - {fileID: 1728942487}
   - {fileID: 1574533930}
-  - {fileID: 275079038}
   - {fileID: 1163705971}
