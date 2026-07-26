@@ -122,10 +122,11 @@ public class Projectile : MonoBehaviour
         PlayerController player =
             other.GetComponent<PlayerController>();
 
+        Debug.LogWarning(player.IsInvincible);
         if (player != null &&
             player.IsInvincible)
         {
-            return;
+            ReturnToPool();
         }
 
         PlayerStats stats =
