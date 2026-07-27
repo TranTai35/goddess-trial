@@ -3806,9 +3806,38 @@ PrefabInstance:
       objectReference: {fileID: 664988233}
     - target: {fileID: 2150911967286574276, guid: 12efb265aa8ff4646a87eac1311c2346,
         type: 3}
+      propertyPath: enemyPools.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2150911967286574276, guid: 12efb265aa8ff4646a87eac1311c2346,
+        type: 3}
       propertyPath: projectilePools.Array.size
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2150911967286574276, guid: 12efb265aa8ff4646a87eac1311c2346,
+        type: 3}
+      propertyPath: enemyPools.Array.data[2].prefab
+      value: 
+      objectReference: {fileID: 9118301675598003264, guid: 730be676c4587b94da80151d60a3fbc7,
+        type: 3}
+    - target: {fileID: 2150911967286574276, guid: 12efb265aa8ff4646a87eac1311c2346,
+        type: 3}
+      propertyPath: enemyPools.Array.data[3].prefab
+      value: 
+      objectReference: {fileID: 3841454437741679185, guid: e6214c944a90be34aa3ef41bae8eb6e4,
+        type: 3}
+    - target: {fileID: 2150911967286574276, guid: 12efb265aa8ff4646a87eac1311c2346,
+        type: 3}
+      propertyPath: enemyPools.Array.data[4].prefab
+      value: 
+      objectReference: {fileID: 8665823833054960987, guid: 6139110cdfb9ad44880fd9aaa30e4879,
+        type: 3}
+    - target: {fileID: 2150911967286574276, guid: 12efb265aa8ff4646a87eac1311c2346,
+        type: 3}
+      propertyPath: enemyPools.Array.data[5].prefab
+      value: 
+      objectReference: {fileID: 3689633817795945365, guid: b099c7f7407413e4d99f81943826ff73,
+        type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -49222,7 +49251,13 @@ MonoBehaviour:
   - {fileID: 2045475969}
   - {fileID: 1588254681}
   enemyTypes:
-  - prefab: {fileID: 3689633817795945365, guid: b099c7f7407413e4d99f81943826ff73,
+  - prefab: {fileID: 9118301675598003264, guid: 730be676c4587b94da80151d60a3fbc7,
+      type: 3}
+    amount: 6
+  - prefab: {fileID: 3841454437741679185, guid: e6214c944a90be34aa3ef41bae8eb6e4,
+      type: 3}
+    amount: 6
+  - prefab: {fileID: 8665823833054960987, guid: 6139110cdfb9ad44880fd9aaa30e4879,
       type: 3}
     amount: 6
   maxWaves: 1
