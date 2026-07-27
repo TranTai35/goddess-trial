@@ -538,7 +538,7 @@ public class PlayerController : MonoBehaviour
                 continue;
 
             enemy.TakeDamage(
-                playerStats.baseStats.damage);
+                playerStats.baseStats.damage * 1.5f,true);
         }
     }
 

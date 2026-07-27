@@ -116,6 +116,8 @@ public class GameUIManager : MonoBehaviour
 
     public void Respawn()
     {
+        Time.timeScale = 1f;
+
         GameManager.Instance
             .RespawnPlayer(playerStats);
 

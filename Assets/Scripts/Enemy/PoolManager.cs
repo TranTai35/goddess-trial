@@ -95,7 +95,44 @@ public class PoolManager : MonoBehaviour
         pooledObject.SetActive(true);
         return pooledObject;
     }
+    public GameObject GetObject(
+    GameObject prefab,
+    Vector3 position,
+    Quaternion rotation)
+    {
+        if (prefab == null)
+        {
+            Debug.LogError(
+                "PoolManager.GetObject nhận prefab null.");
 
+            return null;
+        }
+
+        if (!pools.TryGetValue(
+            prefab,
+            out Queue<GameObject> queue))
+        {
+            queue = new Queue<GameObject>();
+            pools.Add(prefab, queue);
+        }
+
+        GameObject pooledObject =
+            queue.Count > 0
+                ? queue.Dequeue()
+                : CreateObject(prefab);
+
+        /*
+         * Quan trọng:
+         * đặt vị trí khi object vẫn đang inactive.
+         */
+        pooledObject.transform.SetPositionAndRotation(
+            position,
+            rotation);
+
+        pooledObject.SetActive(true);
+
+        return pooledObject;
+    }
     public void ReturnObject(GameObject pooledObject)
     {
         if (pooledObject == null)

@@ -108,8 +108,23 @@ public class EnemyController : MonoBehaviour
         isTakingDamage = false;
 
         agent.enabled = true;
-        agent.isStopped = false;
 
+        if (NavMesh.SamplePosition(
+            transform.position,
+            out NavMeshHit spawnHit,
+            2f,
+            NavMesh.AllAreas))
+        {
+            agent.Warp(spawnHit.position);
+        }
+        else
+        {
+            Debug.LogWarning(
+                $"{name}: SpawnPoint không nằm gần NavMesh tại " +
+                $"{transform.position}.");
+        }
+
+        agent.isStopped = false;
         agent.ResetPath();
 
         animator.Rebind();

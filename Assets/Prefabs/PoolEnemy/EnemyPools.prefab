@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &803239273162987799
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 891904495354938110}
+  - component: {fileID: 2150911967286574276}
+  m_Layer: 0
+  m_Name: EnemyPools
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &891904495354938110
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 803239273162987799}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -59.08861, y: 0.8169439, z: -25.056547}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2150911967286574276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 803239273162987799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2ba1cb5137a41e4da78f684efc5aca9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 0}
+  enemyPools:
+  - prefab: {fileID: 2121581225294597257, guid: 74781c54ab2c9fd4e8f14d8d5f8d208d,
+      type: 3}
+    prewarmCount: 0
+  - prefab: {fileID: 3689633817795945365, guid: b099c7f7407413e4d99f81943826ff73,
+      type: 3}
+    prewarmCount: 0
+  projectilePools:
+  - prefab: {fileID: 2409220093860611351, guid: 1e6e224bb35f12e4ebbe764ec98b2b95,
+      type: 3}
+    prewarmCount: 0
+  - prefab: {fileID: 4512748387301485111, guid: d951864c07bec7d4d93dd1276f7fd648,
+      type: 3}
+    prewarmCount: 0
+  - prefab: {fileID: 2760628939167619396, guid: 3ad7c275b8b3f3d49bd02f9f9f0fbbd4,
+      type: 3}
+    prewarmCount: 0
+  - prefab: {fileID: 1809040773954661782, guid: d9d476de5d61b454fae0f76aa61e04ca,
+      type: 3}
+    prewarmCount: 0
+  uiPools:
+  - prefab: {fileID: 2894932530838055010, guid: b3eca2bacfe1a0b448cfea955fee8b51,
+      type: 3}
+    prewarmCount: 0

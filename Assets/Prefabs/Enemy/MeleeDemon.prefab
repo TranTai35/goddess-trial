@@ -438,7 +438,7 @@ MonoBehaviour:
   player: {fileID: 0}
   patrolRadius: 4
   walkSpeed: 2
-  detectRadius: 10
+  detectRadius: 15
   runSpeed: 4.5
   attackRange: 2.5
   cooldownTime: 2

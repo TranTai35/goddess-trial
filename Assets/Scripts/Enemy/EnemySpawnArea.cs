@@ -264,33 +264,55 @@ public class EnemySpawnArea : MonoBehaviour
     }
 
     private bool SpawnEnemy(
-        GameObject prefab,
-        int typeIndex,
-        Transform spawnPoint)
+    GameObject prefab,
+    int typeIndex,
+    Transform spawnPoint)
     {
-        GameObject enemyObject = PoolManager.Instance.GetObject(prefab);
+        if (prefab == null ||
+            spawnPoint == null)
+        {
+            return false;
+        }
+
+        /*
+         * PoolManager đặt enemy vào đúng SpawnPoint
+         * trước khi bật GameObject.
+         */
+        GameObject enemyObject =
+            PoolManager.Instance.GetObject(
+                prefab,
+                spawnPoint.position,
+                spawnPoint.rotation);
 
         if (enemyObject == null)
             return false;
 
-        enemyObject.transform.SetPositionAndRotation(
-            spawnPoint.position,
-            spawnPoint.rotation);
-
-        EnemyController enemy = enemyObject.GetComponent<EnemyController>();
+        EnemyController enemy =
+            enemyObject.GetComponent<EnemyController>();
 
         if (enemy == null)
         {
-            Debug.LogError($"{prefab.name} không có EnemyController.");
-            PoolManager.Instance.ReturnObject(enemyObject);
+            Debug.LogError(
+                $"{prefab.name} không có EnemyController.");
+
+            PoolManager.Instance.ReturnObject(
+                enemyObject);
+
             return false;
         }
 
-        enemy.SetSpawnArea(this, typeIndex);
+        enemy.SetSpawnArea(
+            this,
+            typeIndex);
+
         enemy.OnSpawn(player);
+
         activeEnemies.Add(enemy);
 
-        Log($"Spawn {prefab.name} tại {spawnPoint.name}.");
+        Log(
+            $"Spawn {prefab.name} tại {spawnPoint.name}, " +
+            $"vị trí {spawnPoint.position}.");
+
         return true;
     }
 
