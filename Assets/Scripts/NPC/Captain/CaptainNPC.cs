@@ -70,6 +70,10 @@ public class CaptainNPC : NPC
 
         data.level++;
 
+        // Upgrade ở Captain là chỉ số vĩnh viễn.
+        PersistentPlayerState.EnsureExists()
+            .SavePermanentStatsFrom(player);
+
         return true;
     }
 }

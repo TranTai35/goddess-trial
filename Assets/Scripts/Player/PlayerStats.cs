@@ -1,23 +1,32 @@
 ﻿using UnityEngine;
-using System.Collections; // Nhớ thêm thư viện này
+using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class PlayerStats : MonoBehaviour
 {
     public PlayerStatsData baseStats;
     private Animator animator;
     private const string TakeDamageTrigger = "TakeDamage";
-
-    // Biến quản lý trạng thái nhận sát thương
-    private bool isTakingDamage = false;
+    private bool isTakingDamage;
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
-        baseStats.currentHealth = baseStats.maxHealth;
-        baseStats.currentMana = baseStats.maxMana;
+
+        // Mỗi Player/scene dùng một bản runtime riêng.
+        // Nhờ vậy nâng chỉ số trong Level không sửa vào ScriptableObject gốc.
+        if (baseStats != null)
+            baseStats = Instantiate(baseStats);
+
+        PersistentPlayerState state = PersistentPlayerState.EnsureExists();
+        state.ApplyPersistentState(this);
     }
 
-    // ... code RegenerateMana giữ nguyên ...
+    private void Start()
+    {
+        // Chờ tất cả caster Awake xong rồi mới gắn lại spell đã lưu.
+        PersistentPlayerState.Instance?.ApplyEquippedSpells(gameObject);
+    }
 
     public void TakeDamage(float damage)
     {
@@ -29,32 +38,31 @@ public class PlayerStats : MonoBehaviour
         baseStats.currentHealth -= damage;
         Debug.Log("Player HP: " + baseStats.currentHealth);
 
-        // Logic sửa lại: Nhận bất kỳ sát thương nào cũng kiểm tra trigger
         if (!isTakingDamage && animator != null)
-        {
             StartCoroutine(PlayDamageAnimationRoutine());
-        }
 
         if (baseStats.currentHealth <= 0)
-        {
             Die();
-        }
     }
 
     private IEnumerator PlayDamageAnimationRoutine()
     {
-        isTakingDamage = true; // Khóa không cho bật animation thêm
-
-        animator.SetTrigger(TakeDamageTrigger); // Bật animation
-
-        yield return new WaitForSeconds(1f); // Chờ 1 giây
-
-        isTakingDamage = false; // Mở khóa cho lần sau
+        isTakingDamage = true;
+        animator.SetTrigger(TakeDamageTrigger);
+        yield return new WaitForSeconds(1f);
+        isTakingDamage = false;
     }
 
     private void Die()
     {
         baseStats.currentHealth = 0;
         Debug.Log("PLAYER DEAD");
+    }
+
+    private void OnDestroy()
+    {
+        // Luôn giữ tiền hiện tại. Không lưu các stat tạm của level.
+        if (PersistentPlayerState.Instance != null)
+            PersistentPlayerState.Instance.SaveCurrencyFrom(this);
     }
 }

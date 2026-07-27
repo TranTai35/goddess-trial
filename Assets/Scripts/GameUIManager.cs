@@ -84,6 +84,10 @@ public class GameUIManager : MonoBehaviour
     {
         Time.timeScale = 1f;
 
+        // Khi thoát level, giữ tiền hiện tại nhưng bỏ mọi stat tăng tạm.
+        PersistentPlayerState.EnsureExists()
+            .SaveCurrencyFrom(playerStats);
+
         SceneManager.LoadScene("MainMenu");
     }
 

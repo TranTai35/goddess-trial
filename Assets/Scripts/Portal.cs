@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -189,6 +189,14 @@ public class Portal : MonoBehaviour
 
         // Chờ thêm trước khi load scene
         yield return new WaitForSeconds(loadSceneDelay);
+
+        PlayerStats stats = playerTransform.GetComponent<PlayerStats>();
+        PersistentPlayerState state = PersistentPlayerState.EnsureExists();
+
+        // Tiền luôn được giữ. Chỉ lưu stat vĩnh viễn khi rời Village.
+        state.SaveCurrencyFrom(stats);
+        if (SceneManager.GetActiveScene().name == PersistentPlayerState.VillageSceneName)
+            state.SavePermanentStatsFrom(stats);
 
         SceneManager.LoadScene(destinationScene);
     }

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -39,6 +39,10 @@ public class GameManager : MonoBehaviour
             Mathf.Max(
                 0,
                 playerStats.baseStats.diamond - diamondCost);
+
+        // Lưu tiền sau khi đã trừ phí. Không lưu stat tạm trong level.
+        PersistentPlayerState.EnsureExists()
+            .SaveCurrencyFrom(playerStats);
 
         // Hồi HP
         playerStats.baseStats.currentHealth =

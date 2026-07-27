@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MagicianNPC : NPC
@@ -30,6 +30,14 @@ public class MagicianNPC : NPC
 
     private void Start()
     {
+        PersistentPlayerState state = PersistentPlayerState.EnsureExists();
+
+        foreach (SpellLearnData data in utilitySpells)
+            data.isBought = state.IsSpellBought(data.spellName, SpellType.Utility);
+
+        foreach (SpellLearnData data in attackSpells)
+            data.isBought = state.IsSpellBought(data.spellName, SpellType.Attack);
+
         // 1. Khởi tạo dữ liệu cho trang Spell bổ trợ
         for (int i = 0; i < utilityUIItems.Count; i++)
         {
@@ -100,6 +108,8 @@ public class MagicianNPC : NPC
             {
                 playerStats.baseStats.diamond -= data.diamondCost;
                 data.isBought = true;
+                PersistentPlayerState.Instance.MarkSpellBought(data.spellName, type);
+                PersistentPlayerState.Instance.SaveCurrencyFrom(playerStats);
                 EquipSpellToPlayer(data, type);
             }
             else
@@ -129,7 +139,9 @@ public class MagicianNPC : NPC
             if (utilityCaster != null)
             {
                 // CHỈ GÁN KHUÔN (PREFAB), KHÔNG SINH RA OBJECT TRÊN MAP
-                utilityCaster.equippedSpell = data.utilitySpellPrefab;
+                utilityCaster.EquipSpell(data.utilitySpellPrefab);
+                PersistentPlayerState.EnsureExists()
+                    .SetEquippedUtilitySpell(data.utilitySpellPrefab);
                 Debug.Log($"Đã chuyển đổi Prefab phép bổ trợ sang: {data.spellName}");
             }
         }
@@ -140,7 +152,9 @@ public class MagicianNPC : NPC
             if (attackCaster != null)
             {
                 // CHỈ GÁN KHUÔN (PREFAB)
-                attackCaster.equippedSpell = data.attackSpellPrefab;
+                attackCaster.EquipSpell(data.attackSpellPrefab);
+                PersistentPlayerState.EnsureExists()
+                    .SetEquippedAttackSpell(data.attackSpellPrefab);
                 Debug.Log($"Đã chuyển đổi Prefab phép tấn công sang: {data.spellName}");
             }
         }
