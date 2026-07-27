@@ -1,0 +1,28 @@
+SCENE 1 - FOREST RUINS MAP
+===========================
+
+Unity version: 2022.3.62f3
+
+HOW TO CREATE THE SCENE
+1. Open this project in Unity.
+2. Wait until scripts/assets finish importing.
+3. On the top menu select:
+   Tools > Goddess Trial > Generate Scene 1 - Forest Ruins
+4. Unity creates:
+   Assets/Scenes/Scene1_ForestRuins.unity
+
+WHAT THE GENERATED SCENE CONTAINS
+- Start zone with broken portal and PlayerSpawn marker.
+- Beginner combat arena with 3 enemy spawn markers.
+- Forest fork with optional reward branch.
+- Second arena with rocks/pillars for cover and 5 enemy spawn markers.
+- Boss arena made from ruins, gate, portal, walls and pillars.
+- Mountains, trees and rocks framing the map.
+- Preview camera and directional light.
+
+IMPORTANT
+- The original Level1 scene is not overwritten.
+- Colored cylinders are gameplay markers only. Replace them with your current player,
+  enemy spawner, boss and trigger systems.
+- After adding your gameplay colliders/components, bake NavMesh again.
+- If you run the generator again, Scene1_ForestRuins.unity is recreated.

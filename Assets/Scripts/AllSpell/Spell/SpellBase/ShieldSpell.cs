@@ -1,20 +1,38 @@
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using UnityEngine;
 
 public class ShieldSpell : SpellBase
 {
+    [Header("Shield Settings")]
+    [Min(0f)]
     public float duration = 5f;
 
     public GameObject shieldVFX;
 
+    private Coroutine activeRoutine;
+    private GameObject activeVFX;
+
     public override void Cast(PlayerController player)
     {
-        
+        if (player == null)
+            return;
+
         StartCooldown();
 
-        player.StartCoroutine(
-            ShieldRoutine(player));
+        /*
+         * Nếu còn shield cũ thì dừng và xóa trước,
+         * tránh nhiều VFX chồng lên nhau.
+         */
+        if (activeRoutine != null)
+        {
+            player.StopCoroutine(activeRoutine);
+            activeRoutine = null;
+        }
+
+        RemoveShieldVFX();
+
+        activeRoutine =
+            player.StartCoroutine(ShieldRoutine(player));
     }
 
     private IEnumerator ShieldRoutine(
@@ -22,25 +40,29 @@ public class ShieldSpell : SpellBase
     {
         Debug.Log("Shield ON");
 
-        GameObject vfx = null;
-
         if (shieldVFX != null)
         {
-            vfx = Instantiate(
+            activeVFX = Instantiate(
                 shieldVFX,
                 player.transform.position,
                 Quaternion.identity,
-                player.transform
-            );
+                player.transform);
         }
 
         yield return new WaitForSeconds(duration);
 
         Debug.Log("Shield OFF");
 
-        if (vfx != null)
-        {
-            Destroy(vfx);
-        }
+        RemoveShieldVFX();
+        activeRoutine = null;
+    }
+
+    private void RemoveShieldVFX()
+    {
+        if (activeVFX == null)
+            return;
+
+        Destroy(activeVFX);
+        activeVFX = null;
     }
 }

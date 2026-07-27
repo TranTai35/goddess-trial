@@ -1,0 +1,22 @@
+SCENE 1 LARGE FOREST RUINS V2
+==============================
+
+1. Copy Scene1LargeForestRuinsGenerator.cs into:
+   Assets/Editor/
+
+2. Return to Unity and wait until compilation finishes.
+
+3. Run:
+   Tools > Goddess Trial > Generate Scene 1 - Large Forest Ruins V2
+
+4. The generated scene is saved at:
+   Assets/Scenes/Scene1_ForestRuins_Large.unity
+
+IMPORTANT
+---------
+- This script does not overwrite the old Level1 or the first generated scene.
+- Land masses are deliberately separated; bridges are automatically scaled to cover each real gap.
+- The ocean is placed below the cliffs so the edges of every land mass are clearly visible.
+- Gameplay markers are empty GameObjects, so they do not appear as colored shapes in the map.
+- Add your Player, enemies, managers and UI, then bake NavMesh again.
+- If both generator scripts are present, that is fine because they use different class names and menu commands.

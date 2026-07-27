@@ -1,0 +1,29 @@
+LEVEL 1 - 16 LM100 BRANCH ARENAS
+
+1. Copy Level1SixteenLM100Generator.cs into:
+   Assets/Editor/
+
+2. Return to Unity and wait until compilation finishes.
+
+3. Run:
+   Tools > Goddess Trial > Generate Level1 - 16 LM100 Branch Arenas
+
+4. The generated scene is saved at:
+   Assets/Scenes/Level1_16LM100_BranchArenas.unity
+
+The generator creates exactly 16 LM100 objects at:
+- Z = 400: X = 0, 100, 200, 300
+- Z = 200: X = 0, 100, 200, 300
+- Z = 100: X = 0, 100, 200, 300
+- Z = 0:   X = 0, 100, 200, 300
+
+Gameplay markers:
+- PlayerSpawn
+- Small_Encounter_4_Enemies
+- Left_Arena_15_Enemies
+- Right_Arena_15_Enemies
+- LevelExit_UpperTemple
+
+The row at Z=400 is separated from Z=200 by a water gap. Two long bridges at X=100 and X=200 connect the areas.
+
+After adding Player, Enemy and gameplay scripts, bake NavMesh again.
