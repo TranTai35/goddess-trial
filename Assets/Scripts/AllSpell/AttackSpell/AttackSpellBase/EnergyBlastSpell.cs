@@ -62,8 +62,39 @@ public class EnergyBlastSpell : AttackSpellBase
 
         Vector3 spawnPos = player.transform.position + Vector3.up * 1f + direction * 1.5f;
 
-        GameObject obj = Instantiate(projectilePrefab, spawnPos, Quaternion.LookRotation(direction));
-        Projectile projectile = obj.GetComponent<Projectile>();
-        projectile.InitializeDirection(direction, player.GetComponent<PlayerStats>().baseStats.damage);
+        GameObject obj;
+
+        if (PoolManager.Instance != null)
+        {
+            obj = PoolManager.Instance.GetObject(
+                projectilePrefab,
+                spawnPos,
+                Quaternion.LookRotation(direction)
+            );
+        }
+        else
+        {
+            obj = Instantiate(
+                projectilePrefab,
+                spawnPos,
+                Quaternion.LookRotation(direction)
+            );
+        }
+
+        Projectile projectile =
+            obj.GetComponent<Projectile>();
+
+        if (projectile != null)
+        {
+            projectile.SetOwner(
+                player.gameObject
+            );
+
+            projectile.InitializeDirection(
+                direction,
+                player.GetComponent<PlayerStats>()
+                    .baseStats.damage
+            );
+        }
     }
 }

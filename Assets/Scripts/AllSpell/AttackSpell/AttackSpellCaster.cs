@@ -3,9 +3,6 @@
 public class AttackSpellCaster : MonoBehaviour
 {
     [Header("Attack Spell Prefab")]
-    [Tooltip(
-        "Kéo prefab có component AttackSpellBase vào đây. " +
-        "Khi game bắt đầu, hệ thống tạo một bản runtime riêng.")]
     public AttackSpellBase equippedSpell;
 
     private PlayerController player;
@@ -13,108 +10,216 @@ public class AttackSpellCaster : MonoBehaviour
 
     private AttackSpellBase spellPrefabReference;
 
+
     private void Awake()
     {
-        player = GetComponent<PlayerController>();
-        stats = GetComponent<PlayerStats>();
+        player =
+            GetComponent<PlayerController>();
 
-        CreateRuntimeSpell();
+        stats =
+            GetComponent<PlayerStats>();
     }
 
-    private void CreateRuntimeSpell()
+
+    private void Start()
     {
-        if (equippedSpell == null)
+        LoadSavedSpell();
+    }
+
+
+    // =========================================================
+    // LOAD SPELL KHI SANG SCENE MỚI
+    // =========================================================
+
+    private void LoadSavedSpell()
+    {
+        if (SpellLoadoutManager.Instance != null &&
+            SpellLoadoutManager.Instance.equippedAttackSpell != null)
+        {
+            EquipSpell(
+                SpellLoadoutManager.Instance
+                    .equippedAttackSpell
+            );
+        }
+        else if (equippedSpell != null)
+        {
+            AttackSpellBase defaultSpell =
+                equippedSpell;
+
+            equippedSpell = null;
+
+            EquipSpell(defaultSpell);
+        }
+    }
+
+
+    // =========================================================
+    // EQUIP ATTACK SPELL
+    // =========================================================
+
+    public void EquipSpell(
+        AttackSpellBase spellPrefab)
+    {
+        if (spellPrefab == null)
             return;
 
-        // Lưu prefab gốc.
-        spellPrefabReference = equippedSpell;
 
-        /*
-         * Tạo bản runtime riêng.
-         * Cooldown sẽ không còn ghi vào prefab.
-         */
-        equippedSpell = Instantiate(
-            spellPrefabReference,
-            transform);
+        // -----------------------------------------------------
+        // HỦY SPELL RUNTIME CŨ
+        // -----------------------------------------------------
+
+        if (equippedSpell != null &&
+            equippedSpell != spellPrefabReference)
+        {
+            equippedSpell.CancelAim();
+
+            Destroy(
+                equippedSpell.gameObject
+            );
+        }
+
+
+        // -----------------------------------------------------
+        // LƯU PREFAB GỐC
+        // -----------------------------------------------------
+
+        spellPrefabReference =
+            spellPrefab;
+
+
+        // -----------------------------------------------------
+        // TẠO RUNTIME SPELL MỚI
+        // -----------------------------------------------------
+
+        equippedSpell =
+            Instantiate(
+                spellPrefabReference,
+                transform
+            );
+
 
         equippedSpell.name =
-            spellPrefabReference.name + "_Runtime";
+            spellPrefabReference.name +
+            "_Runtime";
+
 
         equippedSpell.ResetCooldown();
 
+
         equippedSpell.gameObject.hideFlags =
             HideFlags.DontSave;
+
+
+        Debug.Log(
+            "Player equipped Attack Spell: "
+            +
+            equippedSpell.spellName
+        );
     }
+
+
+    // =========================================================
+    // START AIM
+    // =========================================================
 
     public void StartAim()
     {
         if (equippedSpell == null)
             return;
 
-        /*
-         * Không hiện chế độ aim nếu chiêu đang hồi.
-         */
+
         if (!equippedSpell.CanCast())
             return;
 
+
         equippedSpell.StartAim(player);
     }
+
+
+    // =========================================================
+    // CANCEL AIM
+    // =========================================================
 
     public void CancelAim()
     {
         equippedSpell?.CancelAim();
     }
 
+
+    // =========================================================
+    // CAST
+    // =========================================================
+
     public void CastSpell()
     {
         if (equippedSpell == null)
             return;
 
+
         if (!equippedSpell.CanCast())
         {
             Debug.Log(
                 $"{equippedSpell.spellName} đang hồi chiêu. " +
-                $"Còn {equippedSpell.GetRemainingCooldown():F1} giây.");
+                $"Còn {equippedSpell.GetRemainingCooldown():F1} giây."
+            );
+
 
             equippedSpell.CancelAim();
+
             return;
         }
+
 
         if (stats == null ||
             stats.baseStats == null)
         {
             Debug.LogError(
-                "AttackSpellCaster: Không tìm thấy PlayerStats.");
+                "AttackSpellCaster: Không tìm thấy PlayerStats."
+            );
+
 
             equippedSpell.CancelAim();
+
             return;
         }
+
 
         if (stats.baseStats.currentMana <
             equippedSpell.manaCost)
         {
-            Debug.Log("Không đủ mana!");
+            Debug.Log(
+                "Không đủ mana!"
+            );
+
 
             equippedSpell.CancelAim();
+
             return;
         }
+
 
         stats.baseStats.currentMana -=
             equippedSpell.manaCost;
 
+
         equippedSpell.Cast(player);
+
         equippedSpell.CancelAim();
     }
 
+
+    // =========================================================
+    // DESTROY
+    // =========================================================
+
     private void OnDestroy()
     {
-        /*
-         * Chỉ hủy bản runtime.
-         */
         if (equippedSpell != null &&
             equippedSpell != spellPrefabReference)
         {
-            Destroy(equippedSpell.gameObject);
+            Destroy(
+                equippedSpell.gameObject
+            );
         }
     }
 }

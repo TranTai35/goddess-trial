@@ -14974,7 +14974,6 @@ GameObject:
   - component: {fileID: 6694440636398754805}
   - component: {fileID: 4933034434802601023}
   - component: {fileID: 8673779701641947939}
-  - component: {fileID: 3532326644578006645}
   - component: {fileID: 4882395440550080032}
   - component: {fileID: 7324293396819838806}
   m_Layer: 0
@@ -15071,20 +15070,6 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &3532326644578006645
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5012569523237015436}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 76b67dddd3179d14992084a05b1b5b97, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 15
-  lifeTime: 10
 --- !u!54 &4882395440550080032
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -15129,7 +15114,6 @@ MonoBehaviour:
   manaCost: 10
   attackRange: 8
   cooldown: 5
-  lastCastTime: -100
   projectilePrefab: {fileID: 1248541493677574273, guid: e94aa7667d018ca42b38098c89b6332b,
     type: 3}
   rangeIndicatorPrefab: {fileID: 8777957837593806992, guid: 39b43b03b8fc0fd439e63608b04383c6,

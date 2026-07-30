@@ -8,52 +8,112 @@ public class SpellCaster : MonoBehaviour
     private PlayerController player;
     private PlayerStats stats;
 
+
     private void Awake()
     {
-        player = GetComponent<PlayerController>();
-        stats = GetComponent<PlayerStats>();
+        player =
+            GetComponent<PlayerController>();
 
-        /*
-         * Reset cooldown mỗi lần bắt đầu game.
-         * Không tạo bản prefab runtime.
-         */
-        if (equippedSpell != null)
+        stats =
+            GetComponent<PlayerStats>();
+    }
+
+
+    private void Start()
+    {
+        LoadSavedSpell();
+    }
+
+
+    // =========================================================
+    // LOAD SPELL KHI PLAYER ĐƯỢC TẠO
+    // =========================================================
+
+    private void LoadSavedSpell()
+    {
+        if (SpellLoadoutManager.Instance != null &&
+            SpellLoadoutManager.Instance.equippedUtilitySpell != null)
+        {
+            EquipSpell(
+                SpellLoadoutManager.Instance
+                    .equippedUtilitySpell
+            );
+        }
+        else if (equippedSpell != null)
         {
             equippedSpell.ResetCooldown();
         }
     }
+
+
+    // =========================================================
+    // EQUIP SPELL
+    // =========================================================
+
+    public void EquipSpell(
+        SpellBase spellPrefab)
+    {
+        equippedSpell = spellPrefab;
+
+        if (equippedSpell != null)
+        {
+            equippedSpell.ResetCooldown();
+
+            Debug.Log(
+                "Player equipped Utility Spell: "
+                +
+                equippedSpell.spellName
+            );
+        }
+    }
+
+
+    // =========================================================
+    // CAST
+    // =========================================================
 
     public void CastSpell()
     {
         if (equippedSpell == null)
             return;
 
+
         if (!equippedSpell.CanCast())
         {
             Debug.Log(
                 $"{equippedSpell.spellName} đang hồi chiêu. " +
-                $"Còn {equippedSpell.GetRemainingCooldown():F1} giây.");
+                $"Còn {equippedSpell.GetRemainingCooldown():F1} giây."
+            );
 
             return;
         }
+
 
         if (stats == null ||
             stats.baseStats == null)
         {
             Debug.LogError(
-                "SpellCaster không tìm thấy PlayerStats.");
+                "SpellCaster không tìm thấy PlayerStats."
+            );
+
             return;
         }
+
 
         if (stats.baseStats.currentMana <
             equippedSpell.manaCost)
         {
-            Debug.Log("Không đủ mana.");
+            Debug.Log(
+                "Không đủ mana."
+            );
+
             return;
         }
 
+
         stats.baseStats.currentMana -=
             equippedSpell.manaCost;
+
 
         equippedSpell.Cast(player);
     }

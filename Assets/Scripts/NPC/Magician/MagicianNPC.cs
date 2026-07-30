@@ -117,31 +117,88 @@ public class MagicianNPC : NPC
         RefreshAllUI();
     }
 
-    private void EquipSpellToPlayer(SpellLearnData data, SpellType type)
+    private void EquipSpellToPlayer(
+     SpellLearnData data,
+     SpellType type)
     {
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj == null) return;
+        GameObject playerObj =
+            GameObject.FindGameObjectWithTag(
+                "Player"
+            );
 
-        // 1. Nếu là Phép Bổ Trợ (Utility)
-        if (type == SpellType.Utility && data.utilitySpellPrefab != null)
+
+        if (playerObj == null)
+            return;
+
+
+        // =========================================================
+        // UTILITY SPELL
+        // =========================================================
+
+        if (type == SpellType.Utility &&
+            data.utilitySpellPrefab != null)
         {
-            SpellCaster utilityCaster = playerObj.GetComponent<SpellCaster>();
+            SpellCaster utilityCaster =
+                playerObj.GetComponent<SpellCaster>();
+
+
             if (utilityCaster != null)
             {
-                // CHỈ GÁN KHUÔN (PREFAB), KHÔNG SINH RA OBJECT TRÊN MAP
-                utilityCaster.equippedSpell = data.utilitySpellPrefab;
-                Debug.Log($"Đã chuyển đổi Prefab phép bổ trợ sang: {data.spellName}");
+                // Trang bị cho Player hiện tại
+                utilityCaster.EquipSpell(
+                    data.utilitySpellPrefab
+                );
+
+
+                // Lưu để sang scene khác vẫn còn
+                if (SpellLoadoutManager.Instance != null)
+                {
+                    SpellLoadoutManager.Instance
+                        .SetUtilitySpell(
+                            data.utilitySpellPrefab
+                        );
+                }
+
+
+                Debug.Log(
+                    $"Đã trang bị Utility Spell: {data.spellName}"
+                );
             }
         }
-        // 2. Nếu là Phép Tấn Công (Attack)
-        else if (type == SpellType.Attack && data.attackSpellPrefab != null)
+
+
+        // =========================================================
+        // ATTACK SPELL
+        // =========================================================
+
+        else if (type == SpellType.Attack &&
+                 data.attackSpellPrefab != null)
         {
-            AttackSpellCaster attackCaster = playerObj.GetComponent<AttackSpellCaster>();
+            AttackSpellCaster attackCaster =
+                playerObj.GetComponent<AttackSpellCaster>();
+
+
             if (attackCaster != null)
             {
-                // CHỈ GÁN KHUÔN (PREFAB)
-                attackCaster.equippedSpell = data.attackSpellPrefab;
-                Debug.Log($"Đã chuyển đổi Prefab phép tấn công sang: {data.spellName}");
+                // Trang bị cho Player hiện tại
+                attackCaster.EquipSpell(
+                    data.attackSpellPrefab
+                );
+
+
+                // Lưu để sang scene khác vẫn còn
+                if (SpellLoadoutManager.Instance != null)
+                {
+                    SpellLoadoutManager.Instance
+                        .SetAttackSpell(
+                            data.attackSpellPrefab
+                        );
+                }
+
+
+                Debug.Log(
+                    $"Đã trang bị Attack Spell: {data.spellName}"
+                );
             }
         }
     }
