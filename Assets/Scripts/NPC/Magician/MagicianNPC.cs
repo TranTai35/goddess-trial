@@ -30,25 +30,88 @@ public class MagicianNPC : NPC
 
     private void Start()
     {
-        // 1. Khởi tạo dữ liệu cho trang Spell bổ trợ
-        for (int i = 0; i < utilityUIItems.Count; i++)
+        // ==========================================
+        // KHÔI PHỤC SPELL ĐÃ MUA
+        // ==========================================
+
+        RestorePurchasedSpells();
+
+
+        // ==========================================
+        // SETUP UTILITY UI
+        // ==========================================
+
+        for (int i = 0;
+             i < utilityUIItems.Count;
+             i++)
         {
             if (i < utilitySpells.Count)
             {
-                utilityUIItems[i].Setup(i, SpellType.Utility, utilitySpells[i], this);
+                utilityUIItems[i].Setup(
+                    i,
+                    SpellType.Utility,
+                    utilitySpells[i],
+                    this
+                );
             }
         }
 
-        // 2. Khởi tạo dữ liệu cho trang Attack Spell
-        for (int i = 0; i < attackUIItems.Count; i++)
+
+        // ==========================================
+        // SETUP ATTACK UI
+        // ==========================================
+
+        for (int i = 0;
+             i < attackUIItems.Count;
+             i++)
         {
             if (i < attackSpells.Count)
             {
-                attackUIItems[i].Setup(i, SpellType.Attack, attackSpells[i], this);
+                attackUIItems[i].Setup(
+                    i,
+                    SpellType.Attack,
+                    attackSpells[i],
+                    this
+                );
             }
         }
 
+
         RefreshAllUI();
+    }
+
+    private void RestorePurchasedSpells()
+    {
+        if (SpellLoadoutManager.Instance == null)
+            return;
+
+
+        // Utility
+        for (int i = 0;
+             i < utilitySpells.Count;
+             i++)
+        {
+            utilitySpells[i].isBought =
+                SpellLoadoutManager.Instance
+                    .IsSpellBought(
+                        utilitySpells[i],
+                        SpellType.Utility
+                    );
+        }
+
+
+        // Attack
+        for (int i = 0;
+             i < attackSpells.Count;
+             i++)
+        {
+            attackSpells[i].isBought =
+                SpellLoadoutManager.Instance
+                    .IsSpellBought(
+                        attackSpells[i],
+                        SpellType.Attack
+                    );
+        }
     }
 
     // Làm mới toàn bộ UI của cả 2 trang
@@ -71,16 +134,28 @@ public class MagicianNPC : NPC
         }
     }
 
-    private bool CheckIfEquipped(SpellLearnData data, SpellType type)
+    private bool CheckIfEquipped(
+    SpellLearnData data,
+    SpellType type)
     {
-        if (type == SpellType.Utility && spellCaster.equippedSpell != null && data.utilitySpellPrefab != null)
+        if (SpellLoadoutManager.Instance == null)
+            return false;
+
+
+        if (type == SpellType.Utility)
         {
-            return spellCaster.equippedSpell.spellName == data.utilitySpellPrefab.spellName;
+            return SpellLoadoutManager.Instance
+                .IsUtilityEquipped(data);
         }
-        else if (type == SpellType.Attack && attackSpellCaster.equippedSpell != null && data.attackSpellPrefab != null)
+
+
+        if (type == SpellType.Attack)
         {
-            return attackSpellCaster.equippedSpell.spellName == data.attackSpellPrefab.spellName;
+            return SpellLoadoutManager.Instance
+                .IsAttackEquipped(data);
         }
+
+
         return false;
     }
 
@@ -100,7 +175,23 @@ public class MagicianNPC : NPC
             {
                 playerStats.baseStats.diamond -= data.diamondCost;
                 data.isBought = true;
-                EquipSpellToPlayer(data, type);
+
+
+                // LƯU SPELL ĐÃ MUA
+                if (SpellLoadoutManager.Instance != null)
+                {
+                    SpellLoadoutManager.Instance
+                        .MarkSpellBought(
+                            data,
+                            type
+                        );
+                }
+
+
+                EquipSpellToPlayer(
+                    data,
+                    type
+                );
             }
             else
             {
@@ -118,8 +209,8 @@ public class MagicianNPC : NPC
     }
 
     private void EquipSpellToPlayer(
-     SpellLearnData data,
-     SpellType type)
+    SpellLearnData data,
+    SpellType type)
     {
         GameObject playerObj =
             GameObject.FindGameObjectWithTag(
@@ -131,9 +222,9 @@ public class MagicianNPC : NPC
             return;
 
 
-        // =========================================================
-        // UTILITY SPELL
-        // =========================================================
+        // ==========================================
+        // UTILITY
+        // ==========================================
 
         if (type == SpellType.Utility &&
             data.utilitySpellPrefab != null)
@@ -144,61 +235,49 @@ public class MagicianNPC : NPC
 
             if (utilityCaster != null)
             {
-                // Trang bị cho Player hiện tại
                 utilityCaster.EquipSpell(
                     data.utilitySpellPrefab
                 );
+            }
 
 
-                // Lưu để sang scene khác vẫn còn
-                if (SpellLoadoutManager.Instance != null)
-                {
-                    SpellLoadoutManager.Instance
-                        .SetUtilitySpell(
-                            data.utilitySpellPrefab
-                        );
-                }
-
-
-                Debug.Log(
-                    $"Đã trang bị Utility Spell: {data.spellName}"
-                );
+            if (SpellLoadoutManager.Instance != null)
+            {
+                SpellLoadoutManager.Instance
+                    .SetUtilitySpell(
+                        data.utilitySpellPrefab
+                    );
             }
         }
 
 
-        // =========================================================
-        // ATTACK SPELL
-        // =========================================================
+        // ==========================================
+        // ATTACK
+        // ==========================================
 
         else if (type == SpellType.Attack &&
                  data.attackSpellPrefab != null)
         {
             AttackSpellCaster attackCaster =
-                playerObj.GetComponent<AttackSpellCaster>();
+                playerObj.GetComponent<
+                    AttackSpellCaster
+                >();
 
 
             if (attackCaster != null)
             {
-                // Trang bị cho Player hiện tại
                 attackCaster.EquipSpell(
                     data.attackSpellPrefab
                 );
+            }
 
 
-                // Lưu để sang scene khác vẫn còn
-                if (SpellLoadoutManager.Instance != null)
-                {
-                    SpellLoadoutManager.Instance
-                        .SetAttackSpell(
-                            data.attackSpellPrefab
-                        );
-                }
-
-
-                Debug.Log(
-                    $"Đã trang bị Attack Spell: {data.spellName}"
-                );
+            if (SpellLoadoutManager.Instance != null)
+            {
+                SpellLoadoutManager.Instance
+                    .SetAttackSpell(
+                        data.attackSpellPrefab
+                    );
             }
         }
     }
