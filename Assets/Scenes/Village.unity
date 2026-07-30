@@ -71802,6 +71802,11 @@ PrefabInstance:
       propertyPath: equippedSpell
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 2594675036017278897, guid: 6e5bc35dcae04824cb92edf8731c607b,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3891999902918890222, guid: 6e5bc35dcae04824cb92edf8731c607b,
         type: 3}
       propertyPath: m_Name
