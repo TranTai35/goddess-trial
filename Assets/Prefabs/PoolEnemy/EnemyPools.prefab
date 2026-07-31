@@ -48,8 +48,17 @@ MonoBehaviour:
   enemyPools:
   - prefab: {fileID: 2121581225294597257, guid: 74781c54ab2c9fd4e8f14d8d5f8d208d,
       type: 3}
-    prewarmCount: 0
+    prewarmCount: 2
   - prefab: {fileID: 3689633817795945365, guid: b099c7f7407413e4d99f81943826ff73,
+      type: 3}
+    prewarmCount: 2
+  - prefab: {fileID: 9118301675598003264, guid: 730be676c4587b94da80151d60a3fbc7,
+      type: 3}
+    prewarmCount: 0
+  - prefab: {fileID: 3841454437741679185, guid: e6214c944a90be34aa3ef41bae8eb6e4,
+      type: 3}
+    prewarmCount: 0
+  - prefab: {fileID: 8665823833054960987, guid: 6139110cdfb9ad44880fd9aaa30e4879,
       type: 3}
     prewarmCount: 0
   projectilePools:
@@ -65,7 +74,10 @@ MonoBehaviour:
   - prefab: {fileID: 1809040773954661782, guid: d9d476de5d61b454fae0f76aa61e04ca,
       type: 3}
     prewarmCount: 0
+  - prefab: {fileID: 1248541493677574273, guid: e94aa7667d018ca42b38098c89b6332b,
+      type: 3}
+    prewarmCount: 0
   uiPools:
   - prefab: {fileID: 2894932530838055010, guid: b3eca2bacfe1a0b448cfea955fee8b51,
       type: 3}
-    prewarmCount: 0
+    prewarmCount: 5
