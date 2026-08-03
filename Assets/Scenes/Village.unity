@@ -12796,7 +12796,8 @@ Transform:
   m_LocalPosition: {x: 19.67028, y: -8.635147, z: 21.531673}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2107903268}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &943028217 stripped
@@ -22747,6 +22748,12 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8021499f7c00f52429c42dd55f25db0e, type: 3}
+--- !u!20 &1584113532 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 390563365705756024, guid: dd221a13458fbfd4293fd0273585c1fc,
+    type: 3}
+  m_PrefabInstance: {fileID: 6339915021652356201}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1584912082 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4651870295556474333, guid: a0e8c99b85dbbeb4bbdaf9a1c148ed80,
@@ -30907,6 +30914,67 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2110764797}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2107903266
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2107903268}
+  - component: {fileID: 2107903267}
+  m_Layer: 0
+  m_Name: EnemySpawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2107903267
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2107903266}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65f8666d074f22a4eab862a02ffdfe93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 3771268509721012942}
+  gameplayCamera: {fileID: 1584113532}
+  activationRadius: 45
+  despawnRadius: 55
+  offScreenDespawnDelay: 2
+  hiddenSpawnCheckInterval: 0.2
+  spawnPointVisiblePadding: 0
+  minimumSpawnDistanceFromPlayer: 0
+  spawnPointOccupiedRadius: 1.5
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  spawnPoints: []
+  enemyTypes: []
+  maxWaves: 1
+  nextWaveDelay: 3
+  showDebugLogs: 1
+--- !u!4 &2107903268
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2107903266}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 942579400}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2110764797
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -71270,6 +71338,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3011113135033788997, guid: 6e5bc35dcae04824cb92edf8731c607b,
+        type: 3}
+      propertyPath: m_Constraints
+      value: 80
+      objectReference: {fileID: 0}
     - target: {fileID: 3891999902918890222, guid: 6e5bc35dcae04824cb92edf8731c607b,
         type: 3}
       propertyPath: m_Name
@@ -78606,6 +78679,21 @@ PrefabInstance:
       propertyPath: destinationScene
       value: Level1_1
       objectReference: {fileID: 0}
+    - target: {fileID: 7074448700259181306, guid: b16ce5c33b420e543b06fb527c306482,
+        type: 3}
+      propertyPath: requireAllAreasCompleted
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7074448700259181306, guid: b16ce5c33b420e543b06fb527c306482,
+        type: 3}
+      propertyPath: requiredAreas.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7074448700259181306, guid: b16ce5c33b420e543b06fb527c306482,
+        type: 3}
+      propertyPath: requiredAreas.Array.data[0]
+      value: 
+      objectReference: {fileID: 2107903267}
     - target: {fileID: 8616590276420354902, guid: b16ce5c33b420e543b06fb527c306482,
         type: 3}
       propertyPath: m_Name
