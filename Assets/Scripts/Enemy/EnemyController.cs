@@ -107,21 +107,25 @@ public class EnemyController : MonoBehaviour
         isCoolingDown = false;
         isTakingDamage = false;
 
-        agent.enabled = true;
+        agent.enabled = false;
 
         if (NavMesh.SamplePosition(
             transform.position,
             out NavMeshHit spawnHit,
-            2f,
+            3f,
             NavMesh.AllAreas))
         {
-            agent.Warp(spawnHit.position);
+            transform.position = spawnHit.position;
+
+            agent.enabled = true;
         }
         else
         {
             Debug.LogWarning(
                 $"{name}: SpawnPoint không nằm gần NavMesh tại " +
                 $"{transform.position}.");
+
+            return;
         }
 
         agent.isStopped = false;

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class PoolManager : MonoBehaviour
 {
@@ -69,7 +70,36 @@ public class PoolManager : MonoBehaviour
     private GameObject CreateObject(GameObject prefab)
     {
         GameObject pooledObject = Instantiate(prefab);
+
+        NavMeshAgent agent =
+            pooledObject.GetComponent<NavMeshAgent>();
+
+        if (agent != null)
+            agent.enabled = false;
+
+        pooledObject.SetActive(false);
+
         prefabLookup[pooledObject] = prefab;
+
+        return pooledObject;
+    }
+
+    private GameObject CreateObject(
+        GameObject prefab,
+        Vector3 position,
+        Quaternion rotation)
+    {
+        GameObject pooledObject =
+            Instantiate(prefab, position, rotation);
+
+        NavMeshAgent agent =
+            pooledObject.GetComponent<NavMeshAgent>();
+
+        if (agent != null)
+            agent.enabled = false;
+
+        prefabLookup[pooledObject] = prefab;
+
         return pooledObject;
     }
 
@@ -116,18 +146,23 @@ public class PoolManager : MonoBehaviour
             pools.Add(prefab, queue);
         }
 
-        GameObject pooledObject =
-            queue.Count > 0
-                ? queue.Dequeue()
-                : CreateObject(prefab);
+        GameObject pooledObject;
 
-        /*
-         * Quan trọng:
-         * đặt vị trí khi object vẫn đang inactive.
-         */
-        pooledObject.transform.SetPositionAndRotation(
-            position,
-            rotation);
+        if (queue.Count > 0)
+        {
+            pooledObject = queue.Dequeue();
+
+            pooledObject.transform.SetPositionAndRotation(
+                position,
+                rotation);
+        }
+        else
+        {
+            pooledObject = CreateObject(
+                prefab,
+                position,
+                rotation);
+        }
 
         pooledObject.SetActive(true);
 
