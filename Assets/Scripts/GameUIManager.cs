@@ -87,6 +87,12 @@ public class GameUIManager : MonoBehaviour
         SceneManager.LoadScene("MainMenu");
     }
 
+    public void ExitToVillage()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("Village");
+    }
+
     private void CheckPlayerDeath()
     {
         if (isDead)

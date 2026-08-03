@@ -451,6 +451,64 @@ public class EnemySpawnArea : MonoBehaviour
         return hits.Length > 0;
     }
 
+
+    /// <summary>
+    /// Chỉ dùng để test nhanh trong Editor hoặc bản Build.
+    /// Thu hồi toàn bộ enemy đang hoạt động và đánh dấu toàn bộ area/wave đã hoàn thành
+    /// để Portal có thể sử dụng ngay.
+    /// </summary>
+    public void ForceCompleteForTesting()
+    {
+        if (areaCompleted)
+            return;
+
+        // Thu hồi các enemy đang được area này quản lý ngay lập tức.
+        for (int i = activeEnemies.Count - 1; i >= 0; i--)
+        {
+            EnemyController enemy = activeEnemies[i];
+
+            if (enemy == null)
+                continue;
+
+            enemy.ClearSpawnArea();
+
+            if (PoolManager.Instance != null)
+            {
+                PoolManager.Instance.ReturnObject(enemy.gameObject);
+            }
+            else
+            {
+                enemy.gameObject.SetActive(false);
+            }
+        }
+
+        activeEnemies.Clear();
+
+        // Xóa cả enemy chưa spawn và các wave còn lại.
+        if (aliveByType != null)
+        {
+            for (int i = 0; i < aliveByType.Length; i++)
+                aliveByType[i] = 0;
+        }
+
+        if (loadedByType != null)
+        {
+            for (int i = 0; i < loadedByType.Length; i++)
+                loadedByType[i] = 0;
+        }
+
+        currentWaveIndex = maxWaves;
+        areaActivated = false;
+        waitingForNextWave = false;
+        areaCompleted = true;
+
+        nextWaveTimer = 0f;
+        hiddenSpawnCheckTimer = 0f;
+        offScreenTimer = 0f;
+
+        Log("[BUILD TEST] Shift + R: khu vực đã được hoàn thành cưỡng bức.");
+    }
+
     public void NotifyEnemyKilled(
         EnemyController enemy,
         int enemyTypeIndex)
