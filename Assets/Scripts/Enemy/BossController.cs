@@ -22,6 +22,13 @@ public class BossController : MonoBehaviour
     [Header("Boss HP")]
     public float maxHP = 300f;
 
+    [Header("Boss Damage Feedback")]
+    [Tooltip("Dùng cùng prefab DamageText đang gắn cho Enemy.")]
+    public GameObject damageTextPrefab;
+
+    [Tooltip("Độ cao DamageText so với tâm Boss.")]
+    public Vector3 damageTextOffset = new Vector3(0f, 3f, 0f);
+
     private float currentHP;
 
     [Header("Detection")]
@@ -524,27 +531,57 @@ public class BossController : MonoBehaviour
             BossState.Combat;
     }
 
-    public void TakeDamage(
-        float damage)
+    public void TakeDamage(float damage, bool isCritical = false)
     {
         if (isDead)
             return;
 
         currentHP -= damage;
 
-        Debug.Log(
-            "Boss HP: " +
-            currentHP);
+        Debug.Log("Boss HP: " + currentHP);
+
+        ShowDamageText(damage, isCritical);
+
+        if (currentHP <= 0f)
+        {
+            Die();
+            return;
+        }
 
         if (damage >= 30f)
         {
-            animator.SetTrigger(
-                DamageHash);
+            animator.SetTrigger(DamageHash);
+        }
+    }
+
+    private void ShowDamageText(float damage, bool isCritical)
+    {
+        if (damageTextPrefab == null)
+            return;
+
+        GameObject obj;
+
+        if (PoolManager.Instance != null)
+        {
+            obj = PoolManager.Instance.GetObject(damageTextPrefab);
+        }
+        else
+        {
+            obj = Instantiate(damageTextPrefab);
         }
 
-        if (currentHP <= 0)
+        obj.transform.position = transform.position + damageTextOffset;
+        obj.transform.rotation = Quaternion.identity;
+
+        DamageText damageText = obj.GetComponent<DamageText>();
+
+        if (damageText != null)
         {
-            Die();
+            damageText.Setup(Mathf.RoundToInt(damage), isCritical);
+        }
+        else
+        {
+            Debug.LogWarning("Damage Text Prefab của Boss không có component DamageText.");
         }
     }
 

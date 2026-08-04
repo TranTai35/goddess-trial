@@ -51,7 +51,7 @@ public class PlayerController : MonoBehaviour
 
     private bool isCastingSpell;
 
-    
+
 
     private bool isUltimateActive;
     private string currentAttack = "";
@@ -444,24 +444,35 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        // Một nhân vật có thể có nhiều collider, nên chỉ gây damage một lần mỗi đòn.
+        System.Collections.Generic.HashSet<EnemyController> damagedEnemies =
+            new System.Collections.Generic.HashSet<EnemyController>();
+
+        System.Collections.Generic.HashSet<BossController> damagedBosses =
+            new System.Collections.Generic.HashSet<BossController>();
+
         foreach (Collider hit in hits)
         {
             EnemyController enemy =
                 hit.GetComponentInParent<EnemyController>();
 
-            if (enemy == null)
+            if (enemy != null && damagedEnemies.Add(enemy))
             {
+                enemy.TakeDamage(damage, isCritical);
                 continue;
             }
 
-            enemy.TakeDamage(
-                damage,
-                isCritical
-            );
+            BossController boss =
+                hit.GetComponentInParent<BossController>();
+
+            if (boss != null && damagedBosses.Add(boss))
+            {
+                boss.TakeDamage(damage, isCritical);
+            }
         }
     }
 
-    
+
 
     #endregion
 
@@ -494,7 +505,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        
+
 
         if (Input.GetMouseButtonDown(1) && !isUltimateActive)
         {
@@ -529,16 +540,33 @@ public class PlayerController : MonoBehaviour
                 attackRange * 2f,
                 enemyLayer);
 
+        float ultimateDamage =
+            playerStats.baseStats.damage * 1.5f;
+
+        System.Collections.Generic.HashSet<EnemyController> damagedEnemies =
+            new System.Collections.Generic.HashSet<EnemyController>();
+
+        System.Collections.Generic.HashSet<BossController> damagedBosses =
+            new System.Collections.Generic.HashSet<BossController>();
+
         foreach (Collider hit in hits)
         {
             EnemyController enemy =
-                hit.GetComponent<EnemyController>();
+                hit.GetComponentInParent<EnemyController>();
 
-            if (enemy == null)
+            if (enemy != null && damagedEnemies.Add(enemy))
+            {
+                enemy.TakeDamage(ultimateDamage, true);
                 continue;
+            }
 
-            enemy.TakeDamage(
-                playerStats.baseStats.damage * 1.5f,true);
+            BossController boss =
+                hit.GetComponentInParent<BossController>();
+
+            if (boss != null && damagedBosses.Add(boss))
+            {
+                boss.TakeDamage(ultimateDamage, true);
+            }
         }
     }
 
@@ -610,7 +638,7 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E) && !isAimingAttackSpell)
         {
-            
+
             // SỬA TẠI ĐÂY: Kiểm tra phép tấn công tồn tại VÀ phải hồi chiêu xong mới cho ngắm bắn
             if (attackSpellCaster.equippedSpell != null && attackSpellCaster.equippedSpell.CanCast())
             {
@@ -645,11 +673,11 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(1f);
     }
 
-    
+
     private void HandleDash()
     {
 
-        if (  isUltimateActive)
+        if (isUltimateActive)
             return;
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -679,7 +707,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 CalculateDashDestination()
     {
 
-        Vector3 origin =  transform.position + Vector3.up * 0.5f;
+        Vector3 origin = transform.position + Vector3.up * 0.5f;
 
         // Nếu đang đứng đè hoặc quá sát obstacle thì không cho dash
         if (Physics.CheckSphere(origin, dashRadius, obstacleLayer))
@@ -913,7 +941,7 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 attackCenter =
             transform.position +
-            transform.forward ;
+            transform.forward;
 
         Gizmos.color = Color.red;
 

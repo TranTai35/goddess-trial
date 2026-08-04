@@ -7,12 +7,6 @@ public class Projectile : MonoBehaviour
     public float lifeTime = 5f;
 
     private Vector3 direction;
-    private Transform homingTarget;
-    private bool isHoming;
-    private float homingTurnSpeed;
-    private float homingDelay;
-    private float homingTimer;
-    private float targetYOffset;
     private float damage;
     private float timer;
     private GameObject owner;
@@ -21,19 +15,29 @@ public class Projectile : MonoBehaviour
     private float effectDuration;
     private float effectValue;
 
+    // Homing
+    private bool isHoming;
+    private Transform homingTarget;
+    private float homingTurnSpeed;
+    private float homingDelay;
+    private float homingTimer;
+    private float homingTargetHeight;
+
     public void SetOwner(GameObject newOwner)
     {
         owner = newOwner;
     }
 
     public void Initialize(
-    Transform target,
-    float projectileDamage,
-    ProjectileEffectType newEffectType =
-        ProjectileEffectType.None,
-    float newEffectDuration = 0f,
-    float newEffectValue = 0f)
+        Transform target,
+        float projectileDamage,
+        ProjectileEffectType newEffectType =
+            ProjectileEffectType.None,
+        float newEffectDuration = 0f,
+        float newEffectValue = 0f)
     {
+        ResetHoming();
+
         damage = projectileDamage;
 
         effectType = newEffectType;
@@ -42,58 +46,21 @@ public class Projectile : MonoBehaviour
 
         timer = lifeTime;
 
+        if (target == null)
+        {
+            direction = transform.forward;
+            return;
+        }
+
         Vector3 targetPosition = target.position;
 
+        // Projectile thường bay ngang.
         targetPosition.y = transform.position.y;
 
         direction =
             (targetPosition - transform.position).normalized;
 
-        if (direction != Vector3.zero)
-        {
-            // Trục X của projectile hướng về phía bay.
-            transform.right = direction;
-        }
-    }
-
-
-    public void InitializeHoming(
-        Transform target,
-        float projectileDamage,
-        float turnSpeed,
-        float delayBeforeFullHoming,
-        float aimHeightOffset = 1f)
-    {
-        damage = projectileDamage;
-        effectType = ProjectileEffectType.None;
-        effectDuration = 0f;
-        effectValue = 0f;
-        timer = lifeTime;
-
-        homingTarget = target;
-        isHoming = target != null;
-        homingTurnSpeed = Mathf.Max(0f, turnSpeed);
-        homingDelay = Mathf.Max(0f, delayBeforeFullHoming);
-        homingTimer = 0f;
-        targetYOffset = aimHeightOffset;
-
-        if (target != null)
-        {
-            Vector3 targetPosition =
-                target.position + Vector3.up * targetYOffset;
-
-            direction =
-                (targetPosition - transform.position).normalized;
-        }
-        else
-        {
-            direction = transform.forward;
-        }
-
-        if (direction != Vector3.zero)
-        {
-            transform.right = direction;
-        }
+        RotateProjectile(direction);
     }
 
     public void InitializeDirection(
@@ -104,8 +71,9 @@ public class Projectile : MonoBehaviour
         float newEffectDuration = 0f,
         float newEffectValue = 0f)
     {
-        direction = newDirection.normalized;
+        ResetHoming();
 
+        direction = newDirection.normalized;
         damage = projectileDamage;
 
         effectType = newEffectType;
@@ -114,47 +82,60 @@ public class Projectile : MonoBehaviour
 
         timer = lifeTime;
 
-        if (direction != Vector3.zero)
+        RotateProjectile(direction);
+    }
+
+    public void InitializeHoming(
+        Transform target,
+        float projectileDamage,
+        float turnSpeed,
+        float delay,
+        float targetHeight,
+        ProjectileEffectType newEffectType =
+            ProjectileEffectType.None,
+        float newEffectDuration = 0f,
+        float newEffectValue = 0f)
+    {
+        damage = projectileDamage;
+
+        effectType = newEffectType;
+        effectDuration = newEffectDuration;
+        effectValue = newEffectValue;
+
+        timer = lifeTime;
+
+        isHoming = true;
+        homingTarget = target;
+        homingTurnSpeed = Mathf.Max(0f, turnSpeed);
+        homingDelay = Mathf.Max(0f, delay);
+        homingTimer = 0f;
+        homingTargetHeight = targetHeight;
+
+        if (target != null)
         {
-            // Trục X của projectile hướng về phía bay.
-            transform.right = direction;
+            Vector3 targetPosition =
+                target.position +
+                Vector3.up * homingTargetHeight;
+
+            direction =
+                (targetPosition - transform.position).normalized;
         }
+        else
+        {
+            direction = transform.forward.normalized;
+        }
+
+        RotateProjectile(direction);
     }
 
     private void Update()
     {
-        if (isHoming && homingTarget != null)
-        {
-            homingTimer += Time.deltaTime;
-
-            Vector3 targetPosition =
-                homingTarget.position +
-                Vector3.up * targetYOffset;
-
-            Vector3 desiredDirection =
-                (targetPosition - transform.position).normalized;
-
-            if (desiredDirection != Vector3.zero)
-            {
-                // Lúc mới bắn chỉ đổi hướng nhẹ để viên đạn rời tay Boss tự nhiên.
-                // Sau homingDelay, viên đạn quay nhanh hơn và bám theo Player.
-                float currentTurnSpeed =
-                    homingTimer < homingDelay
-                        ? homingTurnSpeed * 0.25f
-                        : homingTurnSpeed;
-
-                direction = Vector3.RotateTowards(
-                    direction,
-                    desiredDirection,
-                    currentTurnSpeed * Mathf.Deg2Rad * Time.deltaTime,
-                    0f).normalized;
-
-                transform.right = direction;
-            }
-        }
+        UpdateHomingDirection();
 
         transform.position +=
-            direction * speed * Time.deltaTime;
+            direction *
+            speed *
+            Time.deltaTime;
 
         timer -= Time.deltaTime;
 
@@ -164,11 +145,63 @@ public class Projectile : MonoBehaviour
         }
     }
 
+    private void UpdateHomingDirection()
+    {
+        if (!isHoming || homingTarget == null)
+            return;
+
+        homingTimer += Time.deltaTime;
+
+        Vector3 targetPosition =
+            homingTarget.position +
+            Vector3.up * homingTargetHeight;
+
+        Vector3 desiredDirection =
+            (targetPosition - transform.position).normalized;
+
+        if (desiredDirection == Vector3.zero)
+            return;
+
+        // Trong thời gian homingDelay, projectile vẫn tiếp tục bay
+        // theo hướng khởi đầu.
+        if (homingTimer < homingDelay)
+            return;
+
+        float maxRadians =
+            homingTurnSpeed *
+            Mathf.Deg2Rad *
+            Time.deltaTime;
+
+        direction =
+            Vector3.RotateTowards(
+                direction,
+                desiredDirection,
+                maxRadians,
+                0f
+            ).normalized;
+
+        RotateProjectile(direction);
+    }
+
+    private void RotateProjectile(Vector3 newDirection)
+    {
+        if (newDirection == Vector3.zero)
+            return;
+
+        // Projectile hiện tại dùng trục X làm hướng bay.
+        transform.right = newDirection;
+    }
+
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject == owner)
+        if (owner != null)
         {
-            return;
+            // Bỏ qua toàn bộ collider thuộc object chủ projectile.
+            if (other.gameObject == owner ||
+                other.transform.IsChildOf(owner.transform))
+            {
+                return;
+            }
         }
 
         if (other.CompareTag("Player"))
@@ -194,38 +227,39 @@ public class Projectile : MonoBehaviour
     private void HitPlayer(Collider other)
     {
         PlayerController player =
-            other.GetComponent<PlayerController>();
+            other.GetComponentInParent<PlayerController>();
 
-        //Debug.LogWarning(player.IsInvincible);
         if (player != null &&
             player.IsInvincible)
         {
             ReturnToPool();
+            return;
         }
 
         PlayerStats stats =
-            other.GetComponent<PlayerStats>();
+            other.GetComponentInParent<PlayerStats>();
 
         if (stats != null)
         {
             if (FeedbackManager.Instance != null)
             {
-                FeedbackManager.Instance
-                    .PlayHitFeedback(
-                        0f,
-                        1f,
-                        0.15f,
-                        0.03f);
+                FeedbackManager.Instance.PlayHitFeedback(
+                    0f,
+                    1f,
+                    0.15f,
+                    0.03f
+                );
 
-                FeedbackManager.Instance
-                    .PlayDamageFlash(0.1f);
+                FeedbackManager.Instance.PlayDamageFlash(
+                    0.1f
+                );
             }
 
             stats.TakeDamage(damage);
         }
 
         PlayerStatusEffects statusEffects =
-            other.GetComponent<PlayerStatusEffects>();
+            other.GetComponentInParent<PlayerStatusEffects>();
 
         if (statusEffects != null &&
             effectType != ProjectileEffectType.None)
@@ -233,7 +267,8 @@ public class Projectile : MonoBehaviour
             statusEffects.ApplyEffect(
                 effectType,
                 effectDuration,
-                effectValue);
+                effectValue
+            );
         }
 
         ReturnToPool();
@@ -242,15 +277,17 @@ public class Projectile : MonoBehaviour
     private void HitEnemy(Collider other)
     {
         EnemyController enemy =
-            other.GetComponent<EnemyController>();
+            other.GetComponentInParent<EnemyController>();
 
         if (enemy != null)
         {
             enemy.TakeDamage(damage);
+            ReturnToPool();
+            return;
         }
 
         BossController boss =
-            other.GetComponent<BossController>();
+            other.GetComponentInParent<BossController>();
 
         if (boss != null)
         {
@@ -262,10 +299,14 @@ public class Projectile : MonoBehaviour
 
     private void ReturnToPool()
     {
+        if (!gameObject.activeInHierarchy)
+            return;
+
         if (PoolManager.Instance != null)
         {
             PoolManager.Instance.ReturnObject(
-                gameObject);
+                gameObject
+            );
         }
         else
         {
@@ -273,15 +314,19 @@ public class Projectile : MonoBehaviour
         }
     }
 
-    private void OnDisable()
+    private void ResetHoming()
     {
-        direction = Vector3.zero;
-        homingTarget = null;
         isHoming = false;
+        homingTarget = null;
         homingTurnSpeed = 0f;
         homingDelay = 0f;
         homingTimer = 0f;
-        targetYOffset = 0f;
+        homingTargetHeight = 0f;
+    }
+
+    private void OnDisable()
+    {
+        direction = Vector3.zero;
         damage = 0f;
         timer = 0f;
         owner = null;
@@ -291,5 +336,7 @@ public class Projectile : MonoBehaviour
 
         effectDuration = 0f;
         effectValue = 0f;
+
+        ResetHoming();
     }
 }
