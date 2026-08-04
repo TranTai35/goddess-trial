@@ -7,6 +7,12 @@ public class Projectile : MonoBehaviour
     public float lifeTime = 5f;
 
     private Vector3 direction;
+    private Transform homingTarget;
+    private bool isHoming;
+    private float homingTurnSpeed;
+    private float homingDelay;
+    private float homingTimer;
+    private float targetYOffset;
     private float damage;
     private float timer;
     private GameObject owner;
@@ -50,6 +56,46 @@ public class Projectile : MonoBehaviour
         }
     }
 
+
+    public void InitializeHoming(
+        Transform target,
+        float projectileDamage,
+        float turnSpeed,
+        float delayBeforeFullHoming,
+        float aimHeightOffset = 1f)
+    {
+        damage = projectileDamage;
+        effectType = ProjectileEffectType.None;
+        effectDuration = 0f;
+        effectValue = 0f;
+        timer = lifeTime;
+
+        homingTarget = target;
+        isHoming = target != null;
+        homingTurnSpeed = Mathf.Max(0f, turnSpeed);
+        homingDelay = Mathf.Max(0f, delayBeforeFullHoming);
+        homingTimer = 0f;
+        targetYOffset = aimHeightOffset;
+
+        if (target != null)
+        {
+            Vector3 targetPosition =
+                target.position + Vector3.up * targetYOffset;
+
+            direction =
+                (targetPosition - transform.position).normalized;
+        }
+        else
+        {
+            direction = transform.forward;
+        }
+
+        if (direction != Vector3.zero)
+        {
+            transform.right = direction;
+        }
+    }
+
     public void InitializeDirection(
         Vector3 newDirection,
         float projectileDamage,
@@ -77,10 +123,38 @@ public class Projectile : MonoBehaviour
 
     private void Update()
     {
+        if (isHoming && homingTarget != null)
+        {
+            homingTimer += Time.deltaTime;
+
+            Vector3 targetPosition =
+                homingTarget.position +
+                Vector3.up * targetYOffset;
+
+            Vector3 desiredDirection =
+                (targetPosition - transform.position).normalized;
+
+            if (desiredDirection != Vector3.zero)
+            {
+                // Lúc mới bắn chỉ đổi hướng nhẹ để viên đạn rời tay Boss tự nhiên.
+                // Sau homingDelay, viên đạn quay nhanh hơn và bám theo Player.
+                float currentTurnSpeed =
+                    homingTimer < homingDelay
+                        ? homingTurnSpeed * 0.25f
+                        : homingTurnSpeed;
+
+                direction = Vector3.RotateTowards(
+                    direction,
+                    desiredDirection,
+                    currentTurnSpeed * Mathf.Deg2Rad * Time.deltaTime,
+                    0f).normalized;
+
+                transform.right = direction;
+            }
+        }
+
         transform.position +=
-            direction *
-            speed *
-            Time.deltaTime;
+            direction * speed * Time.deltaTime;
 
         timer -= Time.deltaTime;
 
@@ -202,6 +276,12 @@ public class Projectile : MonoBehaviour
     private void OnDisable()
     {
         direction = Vector3.zero;
+        homingTarget = null;
+        isHoming = false;
+        homingTurnSpeed = 0f;
+        homingDelay = 0f;
+        homingTimer = 0f;
+        targetYOffset = 0f;
         damage = 0f;
         timer = 0f;
         owner = null;

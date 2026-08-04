@@ -4,6 +4,7 @@ using UnityEngine.AI;
 
 public class BossController : MonoBehaviour
 {
+    // MELEE_TIMING_FIX_V2: VFX và damage chỉ xuất hiện sau meleeImpactDelay.
     private enum BossState
     {
         Idle,
@@ -34,11 +35,35 @@ public class BossController : MonoBehaviour
     public float meleeRange = 15f;
     public float meleeDamage = 25f;
 
+    [Tooltip("Thời gian Player bị khóa điều khiển khi trúng đòn đánh gần của Boss.")]
+    [Min(0f)] public float meleeStunDuration = 1.2f;
+
     [Header("Ranged")]
     public float projectileDamage = 20f;
     public Projectile projectilePrefab;
     public Transform firePoint;
 
+    [Header("Ranged Burst & Homing")]
+    [Min(1)] public int projectileBurstCount = 3;
+    public float projectileBurstInterval = 0.18f;
+    public float projectileHomingTurnSpeed = 160f;
+    public float projectileHomingDelay = 0.2f;
+    public float projectileTargetHeight = 1f;
+
+    [Header("Melee VFX")]
+    public GameObject meleeSlashVFX;
+    public Transform meleeVFXSpawnPoint;
+    public Vector3 meleeVFXLocalPositionOffset;
+    public Vector3 meleeVFXLocalRotationOffset;
+    public float meleeVFXSpreadAngle = 18f;
+    public float meleeVFXInterval = 0.06f;
+    public float meleeVFXLifeTime = 2f;
+
+    [Header("Melee Timing")]
+    [Tooltip("Thời gian từ lúc bắt đầu animation Slash Attack tới lúc tay/vũ khí chạm Player.")]
+    public float meleeImpactDelay = 0.55f;
+    [Tooltip("Thời gian chờ sau thời điểm va chạm để animation đánh gần hoàn tất.")]
+    public float meleeRecoveryTime = 0.65f;
 
     [Header("Summon")]
     public EnemyController summonPrefab;
@@ -99,7 +124,7 @@ public class BossController : MonoBehaviour
         currentState =
             BossState.Idle;
 
-        animator.SetBool( WalkHash,false);
+        animator.SetBool(WalkHash, false);
     }
 
     private void Update()
@@ -146,7 +171,7 @@ public class BossController : MonoBehaviour
 
         bool useMelee =
             Random.value > 0.5f;
-        if(attackCounter >= attacksBeforeSummon)
+        if (attackCounter >= attacksBeforeSummon)
         {
             attackCounter = 0;
 
@@ -248,7 +273,11 @@ public class BossController : MonoBehaviour
 
         animator.SetTrigger(SlashHash);
 
-        yield return new WaitForSeconds(0.6f);
+        // Chờ đến đúng frame tay/vũ khí chém xuống Player.
+        // VFX và sát thương đều bắt đầu tại cùng thời điểm va chạm.
+        yield return new WaitForSeconds(meleeImpactDelay);
+
+        StartCoroutine(SpawnMeleeSlashVFXRoutine());
 
         Collider[] hits =
             Physics.OverlapSphere(transform.position, meleeRange);
@@ -258,15 +287,26 @@ public class BossController : MonoBehaviour
             if (!hit.CompareTag("Player"))
                 continue;
 
-            PlayerStats stats = hit.GetComponent<PlayerStats>();
+            // Collider của Player có thể nằm ở object con, nên tìm component ở cả cha.
+            PlayerStats stats = hit.GetComponentInParent<PlayerStats>();
+            PlayerStatusEffects statusEffects =
+                hit.GetComponentInParent<PlayerStatusEffects>();
 
             if (stats != null)
+            {
                 stats.TakeDamage(meleeDamage);
+            }
+
+            // Chỉ stun khi cú đánh gần thực sự trúng Player.
+            if (statusEffects != null && meleeStunDuration > 0f)
+            {
+                statusEffects.ApplyStun(meleeStunDuration);
+            }
 
             break;
         }
 
-        yield return new WaitForSeconds(0.6f);
+        yield return new WaitForSeconds(meleeRecoveryTime);
     }
 
     private IEnumerator RangedAttackRoutine()
@@ -314,9 +354,69 @@ public class BossController : MonoBehaviour
             yield return null;
         }
 
-        SpawnProjectile();
+        // Bắn 3 viên nối tiếp nhau. Mỗi viên tự cập nhật vị trí Player.
+        yield return StartCoroutine(SpawnProjectileBurstRoutine());
 
         yield return new WaitForSeconds(0.8f);
+    }
+
+    private IEnumerator SpawnProjectileBurstRoutine()
+    {
+        int count = Mathf.Max(1, projectileBurstCount);
+
+        for (int i = 0; i < count; i++)
+        {
+            SpawnProjectile();
+
+            if (i < count - 1)
+            {
+                yield return new WaitForSeconds(projectileBurstInterval);
+            }
+        }
+    }
+
+    private IEnumerator SpawnMeleeSlashVFXRoutine()
+    {
+        if (meleeSlashVFX == null)
+            yield break;
+
+        Transform spawnPoint =
+            meleeVFXSpawnPoint != null
+                ? meleeVFXSpawnPoint
+                : transform;
+
+        float[] angleOffsets =
+        {
+            -meleeVFXSpreadAngle,
+            0f,
+            meleeVFXSpreadAngle
+        };
+
+        foreach (float angleOffset in angleOffsets)
+        {
+            Vector3 worldPosition =
+                spawnPoint.TransformPoint(meleeVFXLocalPositionOffset);
+
+            Quaternion worldRotation =
+                spawnPoint.rotation *
+                Quaternion.Euler(meleeVFXLocalRotationOffset) *
+                Quaternion.Euler(0f, 0f, angleOffset);
+
+            GameObject vfx = Instantiate(
+                meleeSlashVFX,
+                worldPosition,
+                worldRotation);
+
+            if (meleeVFXLifeTime > 0f)
+            {
+                Destroy(vfx, meleeVFXLifeTime);
+            }
+
+            if (meleeVFXInterval > 0f)
+            {
+                yield return new WaitForSeconds(meleeVFXInterval);
+            }
+        }
     }
 
     private void SpawnProjectile()
@@ -325,9 +425,17 @@ public class BossController : MonoBehaviour
             firePoint == null)
             return;
 
-        GameObject obj =
-            PoolManager.Instance.GetObject(
+        GameObject obj;
+
+        if (PoolManager.Instance != null)
+        {
+            obj = PoolManager.Instance.GetObject(
                 projectilePrefab.gameObject);
+        }
+        else
+        {
+            obj = Instantiate(projectilePrefab.gameObject);
+        }
 
         Projectile projectile =
             obj.GetComponent<Projectile>();
@@ -338,9 +446,12 @@ public class BossController : MonoBehaviour
         projectile.transform.rotation =
             firePoint.rotation;
 
-        projectile.Initialize(
+        projectile.InitializeHoming(
             player,
-            projectileDamage);
+            projectileDamage,
+            projectileHomingTurnSpeed,
+            projectileHomingDelay,
+            projectileTargetHeight);
 
         projectile.SetOwner(
             gameObject);
