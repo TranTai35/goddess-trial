@@ -595,6 +595,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8819615058533217015, guid: 6e5bc35dcae04824cb92edf8731c607b,
+        type: 3}
+      propertyPath: rolloffMode
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8819615058533217015, guid: 6e5bc35dcae04824cb92edf8731c607b,
+        type: 3}
+      propertyPath: rolloffCustomCurve.m_Curve.Array.data[1].time
+      value: 0.98779297
+      objectReference: {fileID: 0}
+    - target: {fileID: 8819615058533217015, guid: 6e5bc35dcae04824cb92edf8731c607b,
+        type: 3}
+      propertyPath: rolloffCustomCurve.m_Curve.Array.data[1].value
+      value: 0.03237915
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1912,9 +1927,15 @@ MonoBehaviour:
   attack3SFX: {fileID: 8300000, guid: cd0f748abfa638d44a786c65ae20aa62, type: 3}
   footstepSFX: {fileID: 8300000, guid: 4bd331377c36ee647a65982370385285, type: 3}
   dashSFX: {fileID: 8300000, guid: dd8b33f2c08ef074283a720eba94d549, type: 3}
+  takeDameSFX: {fileID: 8300000, guid: 84917f579b7e2094789c19d9d6e2c17a, type: 3}
+  hitEnemySounds:
+  - {fileID: 8300000, guid: 278f3241116474845bd57eb130560ee4, type: 3}
+  - {fileID: 8300000, guid: 639e9a8af6354d54a9aa9078d023cc8b, type: 3}
   attackVolume: 1
   footstepVolume: 0.6
   dashVolume: 0.6
+  takeDameVolume: 0.6
+  hitEnemyVolume: 0.9
   minimumFootstepPitch: 0.95
   maximumFootstepPitch: 1.05
 --- !u!1 &1688532442

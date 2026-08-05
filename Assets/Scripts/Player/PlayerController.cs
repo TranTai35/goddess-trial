@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -18,8 +17,9 @@ public class PlayerController : MonoBehaviour
     public float ultimateDuration = 2f;
     public GameObject swordTrail;
     public float ultimateDamageInterval = 0.2f;
-    float lastUltiTime = -999f;
-    float cooldownUlti = 10f;
+
+    private float lastUltiTime = -999f;
+    private float cooldownUlti = 10f;
 
     [Header("Dash")]
     public float dashDistance = 5f;
@@ -37,35 +37,32 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float comboInputOpenTime = 0.45f;
     [SerializeField] private float comboInputCloseTime = 0.9f;
 
+    public LayerMask obstacleLayer;
+
     private bool attackQueued;
     private bool attackInputPulse;
-
-    public LayerMask obstacleLayer;
 
     private bool isDashing;
     private float nextDashTime;
 
-    private const string Dash = "Dash";
+    private bool isCastingSpell;
+    private bool isUltimateActive;
+    private bool isAimingAttackSpell;
+    private bool canControl = true;
+
+    private string currentAttack = "";
+    private bool hasHitThisAttack;
 
     private Rigidbody rb;
 
-    private bool isCastingSpell;
-
-
-
-    private bool isUltimateActive;
-    private string currentAttack = "";
-
-    private bool hasHitThisAttack;
-
     private SpellCaster spellCaster;
-
     private AttackSpellCaster attackSpellCaster;
-    private bool isAimingAttackSpell;
-
     private PlayerStats playerStats;
 
-    private bool canControl = true;
+    // Audio của Player.
+    private PlayerAudio playerAudio;
+
+    private const string Dash = "Dash";
 
     private const string IsMoving = "Moving";
     private const string AttackPressed = "AttackPressed";
@@ -103,6 +100,19 @@ public class PlayerController : MonoBehaviour
         attackSpellCaster = GetComponent<AttackSpellCaster>();
         playerStats = GetComponent<PlayerStats>();
         rb = GetComponent<Rigidbody>();
+
+        /*
+         * Dùng GetComponentInChildren để tìm được PlayerAudio
+         * nếu script nằm trên object con chứa Animator/model.
+         */
+        playerAudio = GetComponentInChildren<PlayerAudio>();
+
+        if (playerAudio == null)
+        {
+            Debug.LogWarning(
+                "PlayerController: Không tìm thấy PlayerAudio trên Player hoặc object con."
+            );
+        }
 
         if (dashTrail1 != null)
         {
@@ -149,8 +159,8 @@ public class PlayerController : MonoBehaviour
         Vector3 camRight =
             Camera.main.transform.right;
 
-        camForward.y = 0;
-        camRight.y = 0;
+        camForward.y = 0f;
+        camRight.y = 0f;
 
         camForward.Normalize();
         camRight.Normalize();
@@ -167,21 +177,22 @@ public class PlayerController : MonoBehaviour
             float targetAngle =
                 Mathf.Atan2(
                     moveDir.x,
-                    moveDir.z) *
-                Mathf.Rad2Deg;
+                    moveDir.z
+                ) * Mathf.Rad2Deg;
 
             Quaternion targetRotation =
                 Quaternion.Euler(
                     0f,
                     targetAngle,
-                    0f);
+                    0f
+                );
 
             transform.rotation =
                 Quaternion.Slerp(
                     transform.rotation,
                     targetRotation,
-                    rotationSpeed *
-                    Time.deltaTime);
+                    rotationSpeed * Time.deltaTime
+                );
 
             transform.position +=
                 moveDir.normalized *
@@ -191,12 +202,20 @@ public class PlayerController : MonoBehaviour
 
         animator.SetBool(
             IsMoving,
-            isMoving);
+            isMoving
+        );
     }
 
     public void UpdateMoveSpeed()
     {
-        moveSpeed = playerStats.baseStats.moveSpeed;
+        if (playerStats == null ||
+            playerStats.baseStats == null)
+        {
+            return;
+        }
+
+        moveSpeed =
+            playerStats.baseStats.moveSpeed;
     }
 
     #endregion
@@ -205,23 +224,38 @@ public class PlayerController : MonoBehaviour
 
     private void RotateTowardsMouse()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray ray =
+            Camera.main.ScreenPointToRay(
+                Input.mousePosition
+            );
 
-        Plane plane = new Plane(Vector3.up, transform.position);
+        Plane plane =
+            new Plane(
+                Vector3.up,
+                transform.position
+            );
 
         if (plane.Raycast(ray, out float enter))
         {
-            Vector3 hitPoint = ray.GetPoint(enter);
+            Vector3 hitPoint =
+                ray.GetPoint(enter);
 
-            Vector3 direction = hitPoint - transform.position;
-            direction.y = 0;
+            Vector3 direction =
+                hitPoint -
+                transform.position;
+
+            direction.y = 0f;
 
             if (direction.sqrMagnitude > 0.001f)
             {
-                transform.rotation = Quaternion.LookRotation(direction);
+                transform.rotation =
+                    Quaternion.LookRotation(
+                        direction
+                    );
             }
         }
     }
+
     private void HandleAttack()
     {
         if (isUltimateActive || isDashing)
@@ -319,7 +353,8 @@ public class PlayerController : MonoBehaviour
 
         animator.SetBool(
             AttackPressed,
-            false);
+            false
+        );
     }
 
     private void SendAttackInput()
@@ -369,7 +404,7 @@ public class PlayerController : MonoBehaviour
             attackName = Attack03;
         }
 
-        // Vừa bước sang animation tấn công mới
+        // Vừa bước sang animation tấn công mới.
         if (currentAttack != attackName)
         {
             currentAttack = attackName;
@@ -390,11 +425,16 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
     private void DealDamage()
     {
         bool isCritical =
             currentAttack == Attack03;
+
+        if (playerStats == null ||
+            playerStats.baseStats == null)
+        {
+            return;
+        }
 
         float damage =
             playerStats.baseStats.damage;
@@ -415,7 +455,68 @@ public class PlayerController : MonoBehaviour
                 enemyLayer
             );
 
-        if (hits.Length > 0 &&
+        /*
+         * Một Enemy hoặc Boss có thể có nhiều Collider,
+         * nên chỉ gây damage một lần trong mỗi đòn.
+         */
+        System.Collections.Generic.HashSet<EnemyController>
+            damagedEnemies =
+                new System.Collections.Generic.HashSet<EnemyController>();
+
+        System.Collections.Generic.HashSet<BossController>
+            damagedBosses =
+                new System.Collections.Generic.HashSet<BossController>();
+
+        bool hitAtLeastOneTarget = false;
+
+        foreach (Collider hit in hits)
+        {
+            EnemyController enemy =
+                hit.GetComponentInParent<EnemyController>();
+
+            if (enemy != null &&
+                damagedEnemies.Add(enemy))
+            {
+                enemy.TakeDamage(
+                    damage,
+                    isCritical
+                );
+
+                hitAtLeastOneTarget = true;
+                continue;
+            }
+
+            BossController boss =
+                hit.GetComponentInParent<BossController>();
+
+            if (boss != null &&
+                damagedBosses.Add(boss))
+            {
+                boss.TakeDamage(
+                    damage,
+                    isCritical
+                );
+
+                hitAtLeastOneTarget = true;
+            }
+        }
+
+        /*
+         * Chỉ phát tiếng va chạm khi thật sự gây damage.
+         * Chém trúng nhiều Enemy cùng lúc vẫn chỉ phát
+         * một tiếng hit cho một nhát chém.
+         */
+        if (hitAtLeastOneTarget &&
+            playerAudio != null)
+        {
+            playerAudio.PlayHitEnemySound();
+        }
+
+        /*
+         * Chỉ chạy hit-stop và camera shake
+         * khi thật sự đánh trúng Enemy hoặc Boss.
+         */
+        if (hitAtLeastOneTarget &&
             FeedbackManager.Instance != null)
         {
             if (isCritical)
@@ -427,10 +528,10 @@ public class PlayerController : MonoBehaviour
                  * camera rung lâu và mạnh hơn.
                  */
                 FeedbackManager.Instance.PlayHitFeedback(
-                    0.09f, // Thời gian hit-stop
-                    0.03f, // Time scale
-                    0.18f, // Thời gian rung
-                    0.18f  // Độ mạnh rung
+                    0.09f,
+                    0.03f,
+                    0.18f,
+                    0.18f
                 );
             }
             else
@@ -443,36 +544,7 @@ public class PlayerController : MonoBehaviour
                 );
             }
         }
-
-        // Một nhân vật có thể có nhiều collider, nên chỉ gây damage một lần mỗi đòn.
-        System.Collections.Generic.HashSet<EnemyController> damagedEnemies =
-            new System.Collections.Generic.HashSet<EnemyController>();
-
-        System.Collections.Generic.HashSet<BossController> damagedBosses =
-            new System.Collections.Generic.HashSet<BossController>();
-
-        foreach (Collider hit in hits)
-        {
-            EnemyController enemy =
-                hit.GetComponentInParent<EnemyController>();
-
-            if (enemy != null && damagedEnemies.Add(enemy))
-            {
-                enemy.TakeDamage(damage, isCritical);
-                continue;
-            }
-
-            BossController boss =
-                hit.GetComponentInParent<BossController>();
-
-            if (boss != null && damagedBosses.Add(boss))
-            {
-                boss.TakeDamage(damage, isCritical);
-            }
-        }
     }
-
-
 
     #endregion
 
@@ -480,36 +552,44 @@ public class PlayerController : MonoBehaviour
 
     public bool CanUltimate()
     {
-        return Time.time >= lastUltiTime + cooldownUlti;
+        return
+            Time.time >=
+            lastUltiTime +
+            cooldownUlti;
     }
 
     public float GetUltiCooldown()
     {
         return Mathf.Max(
-            0,
-            lastUltiTime + cooldownUlti - Time.time);
+            0f,
+            lastUltiTime +
+            cooldownUlti -
+            Time.time
+        );
     }
 
     protected void StartUltiCooldown()
     {
         lastUltiTime = Time.time;
     }
+
     private void HandleUltimate()
     {
         if (isDashing)
-            return;
-        if (!CanUltimate())
         {
-            Debug.Log(
-                $"Cooldown: {GetUltiCooldown():F1}s");
             return;
         }
 
+        if (!CanUltimate())
+        {
+            return;
+        }
 
-
-        if (Input.GetMouseButtonDown(1) && !isUltimateActive)
+        if (Input.GetMouseButtonDown(1) &&
+            !isUltimateActive)
         {
             StartUltiCooldown();
+
             if (swordTrail != null)
             {
                 swordTrail.SetActive(true);
@@ -517,10 +597,12 @@ public class PlayerController : MonoBehaviour
 
             Invoke(
                 nameof(DisableTrail),
-                ultimateDuration);
+                ultimateDuration
+            );
 
             StartCoroutine(
-                UltimateCoroutine());
+                UltimateCoroutine()
+            );
         }
     }
 
@@ -538,35 +620,72 @@ public class PlayerController : MonoBehaviour
             Physics.OverlapSphere(
                 transform.position,
                 attackRange * 2f,
-                enemyLayer);
+                enemyLayer
+            );
+
+        if (playerStats == null ||
+            playerStats.baseStats == null)
+        {
+            return;
+        }
 
         float ultimateDamage =
-            playerStats.baseStats.damage * 1.5f;
+            playerStats.baseStats.damage *
+            1.5f;
 
-        System.Collections.Generic.HashSet<EnemyController> damagedEnemies =
-            new System.Collections.Generic.HashSet<EnemyController>();
+        System.Collections.Generic.HashSet<EnemyController>
+            damagedEnemies =
+                new System.Collections.Generic.HashSet<EnemyController>();
 
-        System.Collections.Generic.HashSet<BossController> damagedBosses =
-            new System.Collections.Generic.HashSet<BossController>();
+        System.Collections.Generic.HashSet<BossController>
+            damagedBosses =
+                new System.Collections.Generic.HashSet<BossController>();
+
+        bool hitAtLeastOneTarget = false;
 
         foreach (Collider hit in hits)
         {
             EnemyController enemy =
                 hit.GetComponentInParent<EnemyController>();
 
-            if (enemy != null && damagedEnemies.Add(enemy))
+            if (enemy != null &&
+                damagedEnemies.Add(enemy))
             {
-                enemy.TakeDamage(ultimateDamage, true);
+                enemy.TakeDamage(
+                    ultimateDamage,
+                    true
+                );
+
+                hitAtLeastOneTarget = true;
                 continue;
             }
 
             BossController boss =
                 hit.GetComponentInParent<BossController>();
 
-            if (boss != null && damagedBosses.Add(boss))
+            if (boss != null &&
+                damagedBosses.Add(boss))
             {
-                boss.TakeDamage(ultimateDamage, true);
+                boss.TakeDamage(
+                    ultimateDamage,
+                    true
+                );
+
+                hitAtLeastOneTarget = true;
             }
+        }
+
+        /*
+         * Ultimate gây damage nhiều lần theo thời gian.
+         * Mỗi lần tick trúng mục tiêu sẽ phát một tiếng hit.
+         *
+         * Nếu nghe quá dày, có thể xóa phần này hoặc
+         * tạo cooldown riêng cho tiếng Ultimate.
+         */
+        if (hitAtLeastOneTarget &&
+            playerAudio != null)
+        {
+            playerAudio.PlayHitEnemySound();
         }
     }
 
@@ -579,7 +698,8 @@ public class PlayerController : MonoBehaviour
 
         animator.SetBool(
             Ultimate,
-            true);
+            true
+        );
 
         float timer = 0f;
 
@@ -588,14 +708,16 @@ public class PlayerController : MonoBehaviour
             DealUltimateDamage();
 
             yield return new WaitForSeconds(
-                ultimateDamageInterval);
+                ultimateDamageInterval
+            );
 
             timer += ultimateDamageInterval;
         }
 
         animator.SetBool(
             Ultimate,
-            false);
+            false
+        );
 
         isUltimateActive = false;
         IsInvincible = false;
@@ -607,18 +729,26 @@ public class PlayerController : MonoBehaviour
 
     private void HandleSpell()
     {
-        if (isDashing) return;
+        if (isDashing)
+        {
+            return;
+        }
 
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            // KIỂM TRA: Phép bổ trợ phải tồn tại và ĐÃ HỒI CHIÊU XONG mới cho bấm
-            if (spellCaster.equippedSpell != null && spellCaster.equippedSpell.CanCast())
+            if (spellCaster != null &&
+                spellCaster.equippedSpell != null &&
+                spellCaster.equippedSpell.CanCast())
             {
-                StartCoroutine(CastSpellRoutine());
+                StartCoroutine(
+                    CastSpellRoutine()
+                );
             }
             else
             {
-                Debug.Log("Phép bổ trợ (Q) chưa hồi chiêu xong!");
+                Debug.Log(
+                    "Phép bổ trợ (Q) chưa hồi chiêu xong!"
+                );
             }
         }
     }
@@ -638,49 +768,65 @@ public class PlayerController : MonoBehaviour
 
     private void HandleAttackSpell()
     {
-        if (Input.GetKeyDown(KeyCode.E) && !isAimingAttackSpell)
+        if (attackSpellCaster == null)
         {
+            return;
+        }
 
-            // SỬA TẠI ĐÂY: Kiểm tra phép tấn công tồn tại VÀ phải hồi chiêu xong mới cho ngắm bắn
-            if (attackSpellCaster.equippedSpell != null && attackSpellCaster.equippedSpell.CanCast())
+        if (Input.GetKeyDown(KeyCode.E) &&
+            !isAimingAttackSpell)
+        {
+            if (attackSpellCaster.equippedSpell != null &&
+                attackSpellCaster.equippedSpell.CanCast())
             {
                 attackSpellCaster.StartAim();
+
                 isAimingAttackSpell = true;
                 return;
             }
-            else
-            {
-                Debug.Log("Phép tấn công (E) đang hồi chiêu, không thể ngắm bắn!");
-            }
+
+            Debug.Log(
+                "Phép tấn công (E) đang hồi chiêu, không thể ngắm bắn!"
+            );
         }
 
-        if (!isAimingAttackSpell) return;
+        if (!isAimingAttackSpell)
+        {
+            return;
+        }
 
         if (Input.GetMouseButtonDown(0))
         {
             attackSpellCaster.CastSpell();
+
             isAimingAttackSpell = false;
         }
 
-        if (Input.GetKeyDown(KeyCode.E) && isAimingAttackSpell)
+        if (Input.GetKeyDown(KeyCode.E) &&
+            isAimingAttackSpell)
         {
             attackSpellCaster.CancelAim();
+
             isAimingAttackSpell = false;
         }
     }
-
 
     private IEnumerator DistancleAim()
     {
         yield return new WaitForSeconds(1f);
     }
 
+    #endregion
+
+    #region Dash
 
     private void HandleDash()
     {
-
         if (isUltimateActive)
+        {
             return;
+        }
+
         if (Input.GetKeyDown(KeyCode.Space))
         {
             TryDash();
@@ -698,43 +844,60 @@ public class PlayerController : MonoBehaviour
     private void TryDash()
     {
         if (!CanDash())
+        {
             return;
+        }
 
         nextDashTime =
-            Time.time + dashCooldown;
+            Time.time +
+            dashCooldown;
 
-        StartCoroutine(DashRoutine());
+        StartCoroutine(
+            DashRoutine()
+        );
     }
 
     private Vector3 CalculateDashDestination()
     {
+        Vector3 origin =
+            transform.position +
+            Vector3.up * 0.5f;
 
-        Vector3 origin = transform.position + Vector3.up * 0.5f;
-
-        // Nếu đang đứng đè hoặc quá sát obstacle thì không cho dash
-        if (Physics.CheckSphere(origin, dashRadius, obstacleLayer))
+        // Nếu đang đứng đè hoặc quá sát obstacle thì không cho dash.
+        if (Physics.CheckSphere(
+            origin,
+            dashRadius,
+            obstacleLayer
+        ))
         {
             return transform.position;
         }
+
         Vector3 direction;
 
-        float x = Input.GetAxisRaw("Horizontal");
-        float y = Input.GetAxisRaw("Vertical");
+        float x =
+            Input.GetAxisRaw("Horizontal");
 
-        Vector3 camForward = Camera.main.transform.forward;
-        Vector3 camRight = Camera.main.transform.right;
+        float y =
+            Input.GetAxisRaw("Vertical");
 
-        camForward.y = 0;
-        camRight.y = 0;
+        Vector3 camForward =
+            Camera.main.transform.forward;
+
+        Vector3 camRight =
+            Camera.main.transform.right;
+
+        camForward.y = 0f;
+        camRight.y = 0f;
 
         direction =
-            (camForward * y + camRight * x).normalized;
+            (camForward * y +
+            camRight * x).normalized;
 
         if (direction == Vector3.zero)
         {
             direction = transform.forward;
         }
-        //Vector3 direction = transform.forward;
 
         origin =
             transform.position +
@@ -743,39 +906,42 @@ public class PlayerController : MonoBehaviour
         float distance =
             dashDistance;
 
-        RaycastHit hit;
-
         if (Physics.SphereCast(
             origin,
             dashRadius,
             direction,
-            out hit,
+            out RaycastHit hit,
             dashDistance,
-            obstacleLayer))
+            obstacleLayer
+        ))
         {
             distance =
                 Mathf.Max(
-                    0,
-                    hit.distance - dashSkinWidth);
+                    0f,
+                    hit.distance -
+                    dashSkinWidth
+                );
         }
 
         return
             transform.position +
-            direction * distance;
+            direction *
+            distance;
     }
 
     private bool IsBlocked(Vector3 direction)
     {
         Vector3 origin =
-            transform.position + Vector3.up * 0.5f;
-
+            transform.position +
+            Vector3.up * 0.5f;
 
         return Physics.SphereCast(
             origin,
             dashRadius,
             direction,
             out RaycastHit hit,
-            dashRadius + dashSkinWidth,
+            dashRadius +
+            dashSkinWidth,
             obstacleLayer
         );
     }
@@ -789,89 +955,86 @@ public class PlayerController : MonoBehaviour
 
         EnableDashTrails();
 
-
         Vector3 direction;
 
-        float x = Input.GetAxisRaw("Horizontal");
-        float y = Input.GetAxisRaw("Vertical");
+        float x =
+            Input.GetAxisRaw("Horizontal");
 
+        float y =
+            Input.GetAxisRaw("Vertical");
 
-        Vector3 camForward = Camera.main.transform.forward;
-        Vector3 camRight = Camera.main.transform.right;
+        Vector3 camForward =
+            Camera.main.transform.forward;
 
+        Vector3 camRight =
+            Camera.main.transform.right;
 
-        camForward.y = 0;
-        camRight.y = 0;
-
+        camForward.y = 0f;
+        camRight.y = 0f;
 
         direction =
             (camForward * y +
             camRight * x).normalized;
 
-
         if (direction == Vector3.zero)
         {
-            direction = transform.forward;
+            direction =
+                transform.forward;
         }
 
-
         float dashSpeed =
-            dashDistance / dashDuration;
+            dashDistance /
+            dashDuration;
 
-
-        float timer = 0;
-
+        float timer = 0f;
 
         while (timer < dashDuration)
         {
             float moveDistance =
-                dashSpeed * Time.deltaTime;
-
+                dashSpeed *
+                Time.deltaTime;
 
             Vector3 origin =
-                rb.position + Vector3.up * 0.5f;
+                rb.position +
+                Vector3.up * 0.5f;
 
-
-            RaycastHit hit;
-
-
-            // kiểm tra trước khi di chuyển
+            /*
+             * Kiểm tra vật cản trước khi di chuyển.
+             */
             if (Physics.SphereCast(
                 origin,
                 dashRadius,
                 direction,
-                out hit,
-                moveDistance + dashSkinWidth,
-                obstacleLayer))
+                out RaycastHit hit,
+                moveDistance +
+                dashSkinWidth,
+                obstacleLayer
+            ))
             {
-
-                // đứng cách wall một khoảng nhỏ
                 Vector3 stopPosition =
                     hit.point -
-                    direction * dashRadius;
+                    direction *
+                    dashRadius;
 
-
-                rb.MovePosition(stopPosition);
+                rb.MovePosition(
+                    stopPosition
+                );
 
                 break;
             }
 
-
             rb.MovePosition(
                 rb.position +
-                direction * moveDistance
+                direction *
+                moveDistance
             );
 
-
             timer += Time.deltaTime;
-
 
             yield return null;
         }
 
-
         DisableDashTrails();
-
 
         IsInvincible = false;
         isDashing = false;
@@ -905,6 +1068,9 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Control
 
     public void SetControlEnabled(bool enabled)
     {
@@ -918,11 +1084,13 @@ public class PlayerController : MonoBehaviour
 
             animator.SetBool(
                 IsAttacking,
-                false);
+                false
+            );
 
             animator.SetBool(
                 IsMoving,
-                false);
+                false
+            );
 
             if (attackSpellCaster != null)
             {
@@ -933,8 +1101,12 @@ public class PlayerController : MonoBehaviour
 
     public void SetCutsceneMoving(bool isMoving)
     {
-        animator.SetBool(IsMoving, isMoving);
+        animator.SetBool(
+            IsMoving,
+            isMoving
+        );
     }
+
     #endregion
 
     #region Gizmos
@@ -949,7 +1121,8 @@ public class PlayerController : MonoBehaviour
 
         Gizmos.DrawWireSphere(
             attackCenter,
-            attackRange);
+            attackRange
+        );
     }
 
     #endregion

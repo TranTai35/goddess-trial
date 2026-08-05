@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.LowLevel;
 
 public class PlayerAudio : MonoBehaviour
 {
@@ -13,6 +14,12 @@ public class PlayerAudio : MonoBehaviour
     [Header("Dash SFX")]
     [SerializeField] private AudioClip dashSFX;
 
+    [Header("Take Dame SFX")]
+    [SerializeField] private AudioClip takeDameSFX;
+
+    [Header("Hit Enemy Sounds")]
+    [SerializeField] private AudioClip[] hitEnemySounds;
+
     [Header("Volume")]
     [Range(0f, 1f)]
     [SerializeField] private float attackVolume = 1f;
@@ -22,6 +29,15 @@ public class PlayerAudio : MonoBehaviour
 
     [Range(0f, 1f)]
     [SerializeField] private float dashVolume = 0.6f;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float takeDameVolume = 0.6f;
+
+
+    [Range(0f, 1f)]
+    [SerializeField] private float hitEnemyVolume = 0.9f;
+
+
 
     [Header("Footstep Pitch")]
     [SerializeField] private float minimumFootstepPitch = 0.95f;
@@ -74,6 +90,27 @@ public class PlayerAudio : MonoBehaviour
     {
         
         PlayLocalSFX(dashSFX, dashVolume);
+    }
+
+    public void AnimationEvent_TakeDameSFX()
+    {
+
+        PlayLocalSFX(takeDameSFX, takeDameVolume);
+    }
+
+    public void PlayHitEnemySound()
+    {
+        if (hitEnemySounds == null || hitEnemySounds.Length == 0)
+        {
+            return;
+        }
+
+        AudioClip clip =
+            hitEnemySounds[Random.Range(0, hitEnemySounds.Length)];
+        
+        PlayLocalSFX(clip, hitEnemyVolume);
+
+
     }
 
     private void PlayLocalSFX(AudioClip clip, float volume)

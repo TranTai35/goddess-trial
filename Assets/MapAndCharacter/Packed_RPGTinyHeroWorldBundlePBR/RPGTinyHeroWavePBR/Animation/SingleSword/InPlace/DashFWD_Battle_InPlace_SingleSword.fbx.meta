@@ -60,7 +60,7 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.19504131
+      - time: 0.17941631
         functionName: AnimationEvent_DashSFX
         data: 
         objectReferenceParameter: {instanceID: 0}
