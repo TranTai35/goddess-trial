@@ -14721,8 +14721,8 @@ MonoBehaviour:
   spellName: Dame Aura
   icon: {fileID: 21300000, guid: 8f83571993734074e9720ad8c1a3c98d, type: 3}
   manaCost: 10
-  cooldown: 5
-  duration: 7
+  cooldown: 10
+  duration: 5
   auraVFX: {fileID: 6558543888313772627}
   damagePerSecond: 5
   damageRadius: 4

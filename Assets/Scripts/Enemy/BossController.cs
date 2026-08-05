@@ -1031,19 +1031,43 @@ public class BossController : MonoBehaviour
     }
 
     private void ShowDamageText(
-        float damage,
-        bool isCritical)
+    float damage,
+    bool isCritical)
     {
         if (damageTextPrefab == null)
             return;
 
-        GameObject obj =
-            Instantiate(
-                damageTextPrefab,
-                transform.position +
-                damageTextOffset,
-                Quaternion.identity
+        GameObject obj;
+
+        if (PoolManager.Instance != null)
+        {
+            obj = PoolManager.Instance.GetObject(
+                damageTextPrefab
             );
+        }
+        else
+        {
+            obj = Instantiate(
+                damageTextPrefab
+            );
+        }
+
+        if (obj == null)
+        {
+            Debug.LogWarning(
+                "Không thể lấy DamageText từ PoolManager.",
+                this
+            );
+
+            return;
+        }
+
+        obj.transform.position =
+            transform.position +
+            damageTextOffset;
+
+        obj.transform.rotation =
+            Quaternion.identity;
 
         DamageText damageText =
             obj.GetComponentInChildren<DamageText>(
@@ -1063,6 +1087,15 @@ public class BossController : MonoBehaviour
                 "Damage Text Prefab của Boss không có component DamageText.",
                 damageTextPrefab
             );
+
+            if (PoolManager.Instance != null)
+            {
+                PoolManager.Instance.ReturnObject(obj);
+            }
+            else
+            {
+                Destroy(obj);
+            }
         }
     }
 
