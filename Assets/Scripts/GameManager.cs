@@ -40,13 +40,9 @@ public class GameManager : MonoBehaviour
                 0,
                 playerStats.baseStats.diamond - diamondCost);
 
-        // Hồi HP
-        playerStats.baseStats.currentHealth =
-            playerStats.baseStats.maxHealth;
-
-        // Hồi Mana
-        playerStats.baseStats.currentMana =
-            playerStats.baseStats.maxMana;
+        // Kết thúc lượt chơi và hồi đầy HP/Mana.
+        PlayerRunState.ResetToFull(
+            playerStats.baseStats);
 
         // Chuyển scene
         SceneManager.LoadScene(respawnScene);

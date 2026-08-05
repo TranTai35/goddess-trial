@@ -184,23 +184,12 @@ public class AttackSpellCaster : MonoBehaviour
         }
 
 
-        if (stats.baseStats.currentMana <
-            equippedSpell.manaCost)
+        if (!stats.TrySpendMana(equippedSpell.manaCost))
         {
-            Debug.Log(
-                "Không đủ mana!"
-            );
-
-
+            Debug.Log("Không đủ mana!");
             equippedSpell.CancelAim();
-
             return;
         }
-
-
-        stats.baseStats.currentMana -=
-            equippedSpell.manaCost;
-
 
         equippedSpell.Cast(player);
 

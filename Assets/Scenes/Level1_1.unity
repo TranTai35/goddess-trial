@@ -1029,7 +1029,7 @@ MonoBehaviour:
   despawnRadius: 65
   offScreenDespawnDelay: 2
   hiddenSpawnCheckInterval: 0.2
-  spawnPointVisiblePadding: 0
+  spawnPointVisiblePadding: 0.05
   minimumSpawnDistanceFromPlayer: 0
   spawnPointOccupiedRadius: 1.5
   enemyLayer:

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class PlayerStats : MonoBehaviour
 {
@@ -38,13 +39,57 @@ public class PlayerStats : MonoBehaviour
     {
         animator = GetComponent<Animator>();
 
-        baseStats.currentHealth =
-            baseStats.maxHealth;
-
-        baseStats.currentMana =
-            baseStats.maxMana;
+        InitializeRunStats();
 
         CachePlayerMaterials();
+    }
+
+
+    // =========================================================
+    // RUN HP / MANA PERSISTENCE
+    // =========================================================
+
+    private void InitializeRunStats()
+    {
+        if (baseStats == null)
+        {
+            Debug.LogError("PlayerStats chưa được gắn PlayerStatsData.");
+            return;
+        }
+
+        string currentScene =
+            SceneManager.GetActiveScene().name;
+
+        if (currentScene == "Village")
+        {
+            PlayerRunState.ResetToFull(baseStats);
+        }
+        else
+        {
+            PlayerRunState.RestoreOrStart(baseStats);
+        }
+    }
+
+    public bool TrySpendMana(float amount)
+    {
+        if (baseStats == null || amount < 0f)
+        {
+            return false;
+        }
+
+        if (baseStats.currentMana < amount)
+        {
+            return false;
+        }
+
+        baseStats.currentMana -= amount;
+        PlayerRunState.Save(baseStats);
+        return true;
+    }
+
+    public void SaveRunStats()
+    {
+        PlayerRunState.Save(baseStats);
     }
 
 
@@ -165,7 +210,11 @@ public class PlayerStats : MonoBehaviour
         }
 
 
-        baseStats.currentHealth -= damage;
+        baseStats.currentHealth = Mathf.Max(
+            0f,
+            baseStats.currentHealth - damage);
+
+        PlayerRunState.Save(baseStats);
 
 
         Debug.Log(
@@ -318,6 +367,7 @@ public class PlayerStats : MonoBehaviour
     private void Die()
     {
         baseStats.currentHealth = 0;
+        PlayerRunState.Save(baseStats);
 
         // Phòng trường hợp player chết
         // đúng lúc đang đỏ

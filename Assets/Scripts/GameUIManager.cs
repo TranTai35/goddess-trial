@@ -12,7 +12,7 @@ public class GameUIManager : MonoBehaviour
 
     [Header("Stats")]
     public PlayerStats playerStats;
-   
+
 
     private bool isPaused;
     private bool isDead;
@@ -28,7 +28,7 @@ public class GameUIManager : MonoBehaviour
     {
         HandlePause();
         CheckPlayerDeath();
-      
+
     }
 
     private void HandlePause()
@@ -90,6 +90,12 @@ public class GameUIManager : MonoBehaviour
     public void ExitToVillage()
     {
         Time.timeScale = 1f;
+
+        if (playerStats != null)
+        {
+            PlayerRunState.ResetToFull(playerStats.baseStats);
+        }
+
         SceneManager.LoadScene("Village");
     }
 

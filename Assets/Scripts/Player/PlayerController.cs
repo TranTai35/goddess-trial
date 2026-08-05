@@ -575,6 +575,7 @@ public class PlayerController : MonoBehaviour
         ResetAttackInput();
 
         isUltimateActive = true;
+        IsInvincible = true;
 
         animator.SetBool(
             Ultimate,
@@ -597,6 +598,7 @@ public class PlayerController : MonoBehaviour
             false);
 
         isUltimateActive = false;
+        IsInvincible = false;
     }
 
     #endregion
