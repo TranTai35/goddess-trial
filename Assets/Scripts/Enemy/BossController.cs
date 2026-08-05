@@ -48,6 +48,13 @@ public class BossController : MonoBehaviour
     public float meleeRange = 15f;
     public float meleeDamage = 25f;
 
+    [Range(1f, 180f)]
+    [Tooltip("Góc vùng đánh phía trước Boss. Player ở sau lưng sẽ không bị trúng.")]
+    public float meleeHitAngle = 100f;
+
+    [Tooltip("Nếu bật, Player đang bất tử trong lúc dash sẽ không nhận đòn melee.")]
+    public bool respectPlayerDashInvincibility = true;
+
     [Tooltip("Thời gian Player bị khóa điều khiển khi trúng đòn đánh gần của Boss.")]
     [Min(0f)]
     public float meleeStunDuration = 1.2f;
@@ -83,8 +90,54 @@ public class BossController : MonoBehaviour
     public float meleeRecoveryTime = 0.65f;
 
     [Header("Summon")]
+    [Tooltip("Danh sách các loại Enemy Boss có thể triệu hồi từ PoolManager.")]
+    public EnemyController[] summonPrefabs;
+
+    [Tooltip("Prefab dự phòng nếu Summon Prefabs chưa được gắn.")]
     public EnemyController summonPrefab;
+
+    [Tooltip("Các vị trí Enemy có thể xuất hiện.")]
     public Transform[] summonPoints;
+
+    [Min(1)]
+    [Tooltip("Tổng số Enemy được triệu hồi trong mỗi lần Boss dùng chiêu summon.")]
+    public int summonCount = 6;
+
+    [Min(0f)]
+    [Tooltip("Khoảng cách thời gian giữa từng Enemy được lấy ra từ pool.")]
+    public float summonInterval = 0.15f;
+
+    [Tooltip("Chọn ngẫu nhiên điểm sinh. Nếu tắt, Boss sẽ lần lượt dùng các điểm.")]
+    public bool randomizeSummonPoints = true;
+
+    [Tooltip("Chọn ngẫu nhiên loại Enemy trong Summon Prefabs.")]
+    public bool randomizeSummonPrefabs = true;
+
+    [Header("Summon VFX")]
+    [Tooltip("Prefab VFX xuất hiện tại điểm triệu hồi trước khi Enemy sinh ra.")]
+    public GameObject summonVFXPrefab;
+
+    [Tooltip("Độ lệch vị trí VFX so với Summon Point.")]
+    public Vector3 summonVFXPositionOffset = Vector3.zero;
+
+    [Tooltip("Độ lệch góc xoay VFX so với Summon Point.")]
+    public Vector3 summonVFXRotationOffset = Vector3.zero;
+
+    [Min(0f)]
+    [Tooltip("Thời gian VFX xuất hiện trước khi Enemy được sinh ra.")]
+    public float summonVFXLeadTime = 0.8f;
+
+    [Min(0f)]
+    [Tooltip("Thời gian giữ VFX thêm sau khi Enemy đã sinh ra.")]
+    public float summonVFXPostSpawnTime = 0.1f;
+
+    [Min(0f)]
+    [Tooltip("Thời gian Boss chỉ đứng thực hiện animation triệu hồi trước khi trở lại combat.")]
+    public float summonAnimationDuration = 2f;
+
+    [Tooltip("Không cho bắt đầu thêm một đợt sinh Enemy mới khi đợt trước vẫn đang chạy.")]
+    public bool preventOverlappingSummons = true;
+
     public int attacksBeforeSummon = 3;
 
     [Header("Cooldown")]
@@ -101,6 +154,7 @@ public class BossController : MonoBehaviour
     private bool isDead;
     private bool isAttacking;
     private bool isCoolingDown;
+    private bool isSummonSequenceRunning;
 
     private int attackCounter;
 
@@ -345,39 +399,75 @@ public class BossController : MonoBehaviour
             SpawnMeleeSlashVFXRoutine()
         );
 
-        Collider[] hits =
-            Physics.OverlapSphere(
-                transform.position,
-                meleeRange
-            );
-
-        foreach (Collider hit in hits)
-        {
-            PlayerStats stats =
-                hit.GetComponentInParent<PlayerStats>();
-
-            if (stats == null)
-                continue;
-
-            PlayerStatusEffects statusEffects =
-                hit.GetComponentInParent<PlayerStatusEffects>();
-
-            stats.TakeDamage(meleeDamage);
-
-            if (statusEffects != null &&
-                meleeStunDuration > 0f)
-            {
-                statusEffects.ApplyStun(
-                    meleeStunDuration
-                );
-            }
-
-            break;
-        }
+        TryDealMeleeDamage();
 
         yield return new WaitForSeconds(
             meleeRecoveryTime
         );
+    }
+
+    private void TryDealMeleeDamage()
+    {
+        if (player == null)
+            return;
+
+        Vector3 toPlayer =
+            player.position -
+            transform.position;
+
+        // Chỉ xét hướng trên mặt đất.
+        toPlayer.y = 0f;
+
+        float distance =
+            toPlayer.magnitude;
+
+        if (distance > meleeRange ||
+            toPlayer.sqrMagnitude <= 0.0001f)
+        {
+            return;
+        }
+
+        float angleToPlayer =
+            Vector3.Angle(
+                transform.forward,
+                toPlayer.normalized
+            );
+
+        // Chỉ trúng trong hình nón phía trước Boss.
+        if (angleToPlayer >
+            meleeHitAngle * 0.5f)
+        {
+            return;
+        }
+
+        PlayerController playerController =
+            player.GetComponentInParent<PlayerController>();
+
+        if (respectPlayerDashInvincibility &&
+            playerController != null &&
+            playerController.IsInvincible)
+        {
+            return;
+        }
+
+        PlayerStats stats =
+            player.GetComponentInParent<PlayerStats>();
+
+        if (stats == null)
+            return;
+
+        PlayerStatusEffects statusEffects =
+            player.GetComponentInParent<PlayerStatusEffects>();
+
+        stats.TakeDamage(meleeDamage);
+
+        if (statusEffects != null &&
+            meleeStunDuration > 0f)
+        {
+            statusEffects.ApplyStun(
+                meleeStunDuration
+            );
+        }
     }
 
     private IEnumerator RangedAttackRoutine()
@@ -591,35 +681,259 @@ public class BossController : MonoBehaviour
         if (agent != null)
         {
             agent.isStopped = true;
+            agent.ResetPath();
         }
 
         if (animator != null)
         {
+            animator.SetBool(WalkHash, false);
+            animator.SetBool(RunHash, false);
             animator.SetTrigger(SpawnHash);
         }
 
-        yield return new WaitForSeconds(2f);
-
-        if (summonPrefab != null &&
-            summonPoints != null)
+        // Boss chỉ đứng chờ animation triệu hồi hoàn tất.
+        if (summonAnimationDuration > 0f)
         {
-            foreach (Transform point in summonPoints)
+            yield return new WaitForSeconds(
+                summonAnimationDuration
+            );
+        }
+
+        // Sau khi animation xong, bắt đầu sinh Enemy ở coroutine riêng.
+        // AttackRoutine không chờ coroutine này nên Boss có thể quay lại combat.
+        if (!preventOverlappingSummons ||
+            !isSummonSequenceRunning)
+        {
+            StartCoroutine(
+                SummonEnemySequenceRoutine()
+            );
+        }
+    }
+
+    private IEnumerator SummonEnemySequenceRoutine()
+    {
+        isSummonSequenceRunning = true;
+
+        if (PoolManager.Instance == null)
+        {
+            Debug.LogError(
+                "Boss không thể triệu hồi Enemy vì scene chưa có PoolManager.",
+                this
+            );
+
+            isSummonSequenceRunning = false;
+            yield break;
+        }
+
+        if (summonPoints == null ||
+            summonPoints.Length == 0)
+        {
+            Debug.LogWarning(
+                "Boss chưa được gắn Summon Points.",
+                this
+            );
+
+            isSummonSequenceRunning = false;
+            yield break;
+        }
+
+        int amount =
+            Mathf.Max(
+                1,
+                summonCount
+            );
+
+        for (int i = 0; i < amount; i++)
+        {
+            if (isDead)
+                break;
+
+            EnemyController prefab =
+                GetSummonPrefab(i);
+
+            Transform point =
+                GetSummonPoint(i);
+
+            if (prefab != null &&
+                point != null)
             {
-                if (point == null)
-                    continue;
+                yield return StartCoroutine(
+                    SpawnEnemyWithSummonVFXRoutine(
+                        prefab,
+                        point
+                    )
+                );
+            }
 
-                EnemyController enemy =
-                    Instantiate(
-                        summonPrefab,
-                        point.position,
-                        point.rotation
-                    );
-
-                enemy.OnSpawn(player);
+            if (i < amount - 1 &&
+                summonInterval > 0f)
+            {
+                yield return new WaitForSeconds(
+                    summonInterval
+                );
             }
         }
 
-        yield return new WaitForSeconds(1f);
+        isSummonSequenceRunning = false;
+    }
+
+    private IEnumerator SpawnEnemyWithSummonVFXRoutine(
+        EnemyController prefab,
+        Transform spawnPoint)
+    {
+        GameObject summonVFX = null;
+
+        if (summonVFXPrefab != null)
+        {
+            Vector3 vfxPosition =
+                spawnPoint.TransformPoint(
+                    summonVFXPositionOffset
+                );
+
+            Quaternion vfxRotation =
+                spawnPoint.rotation *
+                Quaternion.Euler(
+                    summonVFXRotationOffset
+                );
+
+            summonVFX =
+                Instantiate(
+                    summonVFXPrefab,
+                    vfxPosition,
+                    vfxRotation
+                );
+        }
+
+        if (summonVFXLeadTime > 0f)
+        {
+            yield return new WaitForSeconds(
+                summonVFXLeadTime
+            );
+        }
+
+        SpawnEnemyFromPool(
+            prefab,
+            spawnPoint
+        );
+
+        if (summonVFXPostSpawnTime > 0f)
+        {
+            yield return new WaitForSeconds(
+                summonVFXPostSpawnTime
+            );
+        }
+
+        if (summonVFX != null)
+        {
+            Destroy(summonVFX);
+        }
+    }
+
+    private EnemyController GetSummonPrefab(int spawnIndex)
+    {
+        if (summonPrefabs != null &&
+            summonPrefabs.Length > 0)
+        {
+            if (randomizeSummonPrefabs)
+            {
+                int randomIndex =
+                    Random.Range(
+                        0,
+                        summonPrefabs.Length
+                    );
+
+                return summonPrefabs[randomIndex];
+            }
+
+            int index =
+                spawnIndex %
+                summonPrefabs.Length;
+
+            return summonPrefabs[index];
+        }
+
+        return summonPrefab;
+    }
+
+    private Transform GetSummonPoint(int spawnIndex)
+    {
+        if (summonPoints == null ||
+            summonPoints.Length == 0)
+        {
+            return null;
+        }
+
+        if (randomizeSummonPoints)
+        {
+            int randomIndex =
+                Random.Range(
+                    0,
+                    summonPoints.Length
+                );
+
+            return summonPoints[randomIndex];
+        }
+
+        int index =
+            spawnIndex %
+            summonPoints.Length;
+
+        return summonPoints[index];
+    }
+
+    private bool SpawnEnemyFromPool(
+        EnemyController prefab,
+        Transform spawnPoint)
+    {
+        if (prefab == null ||
+            spawnPoint == null ||
+            PoolManager.Instance == null)
+        {
+            return false;
+        }
+
+        GameObject enemyObject =
+            PoolManager.Instance.GetObject(
+                prefab.gameObject
+            );
+
+        if (enemyObject == null)
+        {
+            Debug.LogWarning(
+                $"PoolManager không trả về được enemy {prefab.name}. " +
+                "Hãy kiểm tra prefab đã được đăng ký trong pool.",
+                this
+            );
+
+            return false;
+        }
+
+        enemyObject.transform.SetPositionAndRotation(
+            spawnPoint.position,
+            spawnPoint.rotation
+        );
+
+        EnemyController enemy =
+            enemyObject.GetComponent<EnemyController>();
+
+        if (enemy == null)
+        {
+            Debug.LogError(
+                $"{prefab.name} không có EnemyController.",
+                enemyObject
+            );
+
+            PoolManager.Instance.ReturnObject(
+                enemyObject
+            );
+
+            return false;
+        }
+
+        enemy.ClearSpawnArea();
+        enemy.OnSpawn(player);
+
+        return true;
     }
 
     private IEnumerator CooldownRoutine()
@@ -760,6 +1074,7 @@ public class BossController : MonoBehaviour
         StopAllCoroutines();
 
         isDead = true;
+        isSummonSequenceRunning = false;
         currentState = BossState.Dead;
 
         // Ẩn thanh máu ngay khi Boss hết HP.

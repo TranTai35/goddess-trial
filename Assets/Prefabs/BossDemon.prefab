@@ -743,6 +743,8 @@ MonoBehaviour:
   walkSpeed: 2
   meleeRange: 5
   meleeDamage: 25
+  meleeHitAngle: 100
+  respectPlayerDashInvincibility: 1
   meleeStunDuration: 1.2
   projectileDamage: 15
   projectilePrefab: {fileID: 2925256547974390993, guid: c277a540e03a499429f04a82e52155cc,
@@ -763,12 +765,27 @@ MonoBehaviour:
   meleeVFXLifeTime: 2
   meleeImpactDelay: 0.35
   meleeRecoveryTime: 0.5
+  summonPrefabs:
+  - {fileID: 9137849158551380927, guid: 74781c54ab2c9fd4e8f14d8d5f8d208d, type: 3}
+  - {fileID: 2588137348392970958, guid: b099c7f7407413e4d99f81943826ff73, type: 3}
   summonPrefab: {fileID: 9137849158551380927, guid: 74781c54ab2c9fd4e8f14d8d5f8d208d,
     type: 3}
   summonPoints:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  summonCount: 6
+  summonInterval: 0.15
+  randomizeSummonPoints: 1
+  randomizeSummonPrefabs: 1
+  summonVFXPrefab: {fileID: 1989413823170049497, guid: 84ecb174a59943b4b8112597c5409eba,
+    type: 3}
+  summonVFXPositionOffset: {x: 0, y: 0, z: 0}
+  summonVFXRotationOffset: {x: 0, y: 0, z: 0}
+  summonVFXLeadTime: 0.8
+  summonVFXPostSpawnTime: 0.1
+  summonAnimationDuration: 2
+  preventOverlappingSummons: 1
   attacksBeforeSummon: 4
   cooldownTime: 2
   cooldownMoveDistance: 3
