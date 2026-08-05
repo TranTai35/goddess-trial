@@ -4742,7 +4742,7 @@ MonoBehaviour:
   requiredAreas:
   - {fileID: 4584036189151444191}
   requireAllAreasCompleted: 1
-  destinationScene: Level1_3
+  destinationScene: Level1_4
   walkTarget: {fileID: 714879297246818698}
   cutsceneMoveSpeed: 5
   cutsceneRotationSpeed: 10
@@ -24516,13 +24516,10 @@ MonoBehaviour:
   enemyTypes:
   - prefab: {fileID: 2121581225294597257, guid: 74781c54ab2c9fd4e8f14d8d5f8d208d,
       type: 3}
-    amount: 15
-  - prefab: {fileID: 3689633817795945365, guid: b099c7f7407413e4d99f81943826ff73,
-      type: 3}
-    amount: 7
+    amount: 10
   - prefab: {fileID: 3841454437741679185, guid: e6214c944a90be34aa3ef41bae8eb6e4,
       type: 3}
-    amount: 3
+    amount: 5
   maxWaves: 2
   nextWaveDelay: 3
   showDebugLogs: 1
