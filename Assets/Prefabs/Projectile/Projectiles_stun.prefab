@@ -14807,6 +14807,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 10
   lifeTime: 5
+  impactVFX: {fileID: 1574516568193800055, guid: e563edd5302ec2340a5bc06e57d1e901,
+    type: 3}
+  impactVFXLifeTime: 2
+  impactVFXPositionOffset: {x: 0, y: 0, z: 0}
+  impactVFXRotationOffset: {x: 0, y: 0, z: 0}
+  rotateImpactVFX: 1
+  impactSFX: {fileID: 8300000, guid: 146d43150bca4e346abf0787c2a71483, type: 3}
+  impactSFXVolume: 1
 --- !u!1 &2189688148761932120
 GameObject:
   m_ObjectHideFlags: 0

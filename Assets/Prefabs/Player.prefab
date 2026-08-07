@@ -1751,7 +1751,14 @@ MonoBehaviour:
   stunVFX: {fileID: 1703367692747339382, guid: 3c7f2d7e4b488bc459945dc2dfdab296, type: 3}
   slowVFX: {fileID: 8476858034194145137, guid: 84c915043f939b8469605560770bb2d1, type: 3}
   burnVFX: {fileID: 4490938630221411753, guid: f3d1c3c1d16cf374aa593c00329adefa, type: 3}
+  stunSFX: {fileID: 8300000, guid: 9096440fb0f8deb4fa80b508cbae48a9, type: 3}
+  slowSFX: {fileID: 8300000, guid: 6ef79930bf3e9304384ed3f57b183875, type: 3}
+  burnSFX: {fileID: 8300000, guid: 17f4f41d459342c449c7001f81d3c046, type: 3}
+  stunSFXVolume: 1
+  slowSFXVolume: 1
+  burnSFXVolume: 1
   stunVFXHeight: 2.2
+  slowVFXHeight: 0
   burnVFXHeight: 0
 --- !u!114 &8533866453798662505
 MonoBehaviour:

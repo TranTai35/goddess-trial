@@ -1251,6 +1251,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5839025935551390168, guid: 6e5bc35dcae04824cb92edf8731c607b,
+        type: 3}
+      propertyPath: burnSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 17f4f41d459342c449c7001f81d3c046, type: 3}
+    - target: {fileID: 5839025935551390168, guid: 6e5bc35dcae04824cb92edf8731c607b,
+        type: 3}
+      propertyPath: burnSFXVolume
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 5839025935551390168, guid: 6e5bc35dcae04824cb92edf8731c607b,
+        type: 3}
+      propertyPath: slowSFXVolume
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 5839025935551390168, guid: 6e5bc35dcae04824cb92edf8731c607b,
+        type: 3}
+      propertyPath: stunSFXVolume
+      value: 0.3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

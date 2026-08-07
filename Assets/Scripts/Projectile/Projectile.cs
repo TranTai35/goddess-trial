@@ -6,6 +6,38 @@ public class Projectile : MonoBehaviour
     public float speed = 10f;
     public float lifeTime = 5f;
 
+    [Header("Impact VFX")]
+    [Tooltip("VFX phát khi projectile va chạm hoặc hết lifetime.")]
+    [SerializeField] private GameObject impactVFX;
+
+    [Tooltip("Thời gian tồn tại của VFX impact trước khi Destroy.")]
+    [Min(0f)]
+    [SerializeField] private float impactVFXLifeTime = 2f;
+
+    [Tooltip("Offset vị trí VFX so với điểm va chạm.")]
+    [SerializeField]
+    private Vector3 impactVFXPositionOffset =
+        Vector3.zero;
+
+    [Tooltip("Offset góc xoay VFX. Dùng nếu prefab VFX bị xoay sai hướng.")]
+    [SerializeField]
+    private Vector3 impactVFXRotationOffset =
+        Vector3.zero;
+
+    [Tooltip("Nếu bật, VFX sẽ quay theo hướng bề mặt va chạm.")]
+    [SerializeField] private bool rotateImpactVFX = true;
+
+    [Header("Impact SFX")]
+    [Tooltip("Âm thanh phát khi projectile va chạm hoặc hết lifetime.")]
+    [SerializeField] private AudioClip impactSFX;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float impactSFXVolume = 1f;
+
+    // =========================================================
+    // RUNTIME DATA
+    // =========================================================
+
     private Vector3 direction;
     private float damage;
     private float timer;
@@ -15,7 +47,16 @@ public class Projectile : MonoBehaviour
     private float effectDuration;
     private float effectValue;
 
-    // Homing
+    /*
+     * Tránh trường hợp projectile chạm nhiều collider
+     * trong cùng một frame và Impact() bị gọi nhiều lần.
+     */
+    private bool hasImpacted;
+
+    // =========================================================
+    // HOMING
+    // =========================================================
+
     private bool isHoming;
     private Transform homingTarget;
     private float homingTurnSpeed;
@@ -23,10 +64,31 @@ public class Projectile : MonoBehaviour
     private float homingTimer;
     private float homingTargetHeight;
 
+    // =========================================================
+    // POOL RESET
+    // =========================================================
+
+    private void OnEnable()
+    {
+        /*
+         * Projectile vừa được lấy ra từ PoolManager.
+         * Cho phép projectile này impact trở lại.
+         */
+        hasImpacted = false;
+    }
+
+    // =========================================================
+    // OWNER
+    // =========================================================
+
     public void SetOwner(GameObject newOwner)
     {
         owner = newOwner;
     }
+
+    // =========================================================
+    // INITIALIZE NORMAL
+    // =========================================================
 
     public void Initialize(
         Transform target,
@@ -38,6 +100,8 @@ public class Projectile : MonoBehaviour
     {
         ResetHoming();
 
+        hasImpacted = false;
+
         damage = projectileDamage;
 
         effectType = newEffectType;
@@ -48,20 +112,36 @@ public class Projectile : MonoBehaviour
 
         if (target == null)
         {
-            direction = transform.forward;
+            direction =
+                transform.right.normalized;
+
+            if (direction == Vector3.zero)
+            {
+                direction = Vector3.forward;
+            }
+
             return;
         }
 
-        Vector3 targetPosition = target.position;
+        Vector3 targetPosition =
+            target.position;
 
-        // Projectile thường bay ngang.
-        targetPosition.y = transform.position.y;
+        /*
+         * Projectile thường bay ngang.
+         */
+        targetPosition.y =
+            transform.position.y;
 
         direction =
-            (targetPosition - transform.position).normalized;
+            (targetPosition -
+             transform.position).normalized;
 
         RotateProjectile(direction);
     }
+
+    // =========================================================
+    // INITIALIZE DIRECTION
+    // =========================================================
 
     public void InitializeDirection(
         Vector3 newDirection,
@@ -73,17 +153,32 @@ public class Projectile : MonoBehaviour
     {
         ResetHoming();
 
-        direction = newDirection.normalized;
-        damage = projectileDamage;
+        hasImpacted = false;
 
-        effectType = newEffectType;
-        effectDuration = newEffectDuration;
-        effectValue = newEffectValue;
+        direction =
+            newDirection.normalized;
 
-        timer = lifeTime;
+        damage =
+            projectileDamage;
+
+        effectType =
+            newEffectType;
+
+        effectDuration =
+            newEffectDuration;
+
+        effectValue =
+            newEffectValue;
+
+        timer =
+            lifeTime;
 
         RotateProjectile(direction);
     }
+
+    // =========================================================
+    // INITIALIZE HOMING
+    // =========================================================
 
     public void InitializeHoming(
         Transform target,
@@ -96,40 +191,88 @@ public class Projectile : MonoBehaviour
         float newEffectDuration = 0f,
         float newEffectValue = 0f)
     {
-        damage = projectileDamage;
+        hasImpacted = false;
 
-        effectType = newEffectType;
-        effectDuration = newEffectDuration;
-        effectValue = newEffectValue;
+        damage =
+            projectileDamage;
 
-        timer = lifeTime;
+        effectType =
+            newEffectType;
 
-        isHoming = true;
-        homingTarget = target;
-        homingTurnSpeed = Mathf.Max(0f, turnSpeed);
-        homingDelay = Mathf.Max(0f, delay);
-        homingTimer = 0f;
-        homingTargetHeight = targetHeight;
+        effectDuration =
+            newEffectDuration;
+
+        effectValue =
+            newEffectValue;
+
+        timer =
+            lifeTime;
+
+        isHoming =
+            true;
+
+        homingTarget =
+            target;
+
+        homingTurnSpeed =
+            Mathf.Max(
+                0f,
+                turnSpeed
+            );
+
+        homingDelay =
+            Mathf.Max(
+                0f,
+                delay
+            );
+
+        homingTimer =
+            0f;
+
+        homingTargetHeight =
+            targetHeight;
 
         if (target != null)
         {
             Vector3 targetPosition =
                 target.position +
-                Vector3.up * homingTargetHeight;
+                Vector3.up *
+                homingTargetHeight;
 
             direction =
-                (targetPosition - transform.position).normalized;
+                (targetPosition -
+                 transform.position).normalized;
         }
         else
         {
-            direction = transform.forward.normalized;
+            /*
+             * Projectile của bạn dùng trục X
+             * làm hướng bay nên dùng transform.right.
+             */
+            direction =
+                transform.right.normalized;
+
+            if (direction == Vector3.zero)
+            {
+                direction =
+                    Vector3.forward;
+            }
         }
 
         RotateProjectile(direction);
     }
 
+    // =========================================================
+    // UPDATE
+    // =========================================================
+
     private void Update()
     {
+        if (hasImpacted)
+        {
+            return;
+        }
+
         UpdateHomingDirection();
 
         transform.position +=
@@ -137,35 +280,67 @@ public class Projectile : MonoBehaviour
             speed *
             Time.deltaTime;
 
-        timer -= Time.deltaTime;
+        timer -=
+            Time.deltaTime;
 
+        /*
+         * Hết lifetime nhưng không trúng gì.
+         *
+         * Vẫn phát VFX + SFX rồi mới về Pool.
+         */
         if (timer <= 0f)
         {
-            ReturnToPool();
+            Vector3 fallbackNormal =
+                direction != Vector3.zero
+                    ? -direction
+                    : -transform.right;
+
+            Impact(
+                transform.position,
+                fallbackNormal
+            );
         }
     }
 
+    // =========================================================
+    // HOMING
+    // =========================================================
+
     private void UpdateHomingDirection()
     {
-        if (!isHoming || homingTarget == null)
+        if (!isHoming ||
+            homingTarget == null)
+        {
             return;
+        }
 
-        homingTimer += Time.deltaTime;
+        homingTimer +=
+            Time.deltaTime;
 
         Vector3 targetPosition =
             homingTarget.position +
-            Vector3.up * homingTargetHeight;
+            Vector3.up *
+            homingTargetHeight;
 
         Vector3 desiredDirection =
-            (targetPosition - transform.position).normalized;
+            (targetPosition -
+             transform.position).normalized;
 
-        if (desiredDirection == Vector3.zero)
+        if (desiredDirection ==
+            Vector3.zero)
+        {
             return;
+        }
 
-        // Trong thời gian homingDelay, projectile vẫn tiếp tục bay
-        // theo hướng khởi đầu.
-        if (homingTimer < homingDelay)
+        /*
+         * Trong thời gian homingDelay,
+         * projectile vẫn tiếp tục bay theo hướng khởi đầu.
+         */
+        if (homingTimer <
+            homingDelay)
+        {
             return;
+        }
 
         float maxRadians =
             homingTurnSpeed *
@@ -183,26 +358,70 @@ public class Projectile : MonoBehaviour
         RotateProjectile(direction);
     }
 
-    private void RotateProjectile(Vector3 newDirection)
-    {
-        if (newDirection == Vector3.zero)
-            return;
+    // =========================================================
+    // ROTATION
+    // =========================================================
 
-        // Projectile hiện tại dùng trục X làm hướng bay.
-        transform.right = newDirection;
+    private void RotateProjectile(
+        Vector3 newDirection)
+    {
+        if (newDirection ==
+            Vector3.zero)
+        {
+            return;
+        }
+
+        /*
+         * Projectile hiện tại dùng trục X
+         * làm hướng bay.
+         */
+        transform.right =
+            newDirection;
     }
 
-    private void OnTriggerEnter(Collider other)
+    // =========================================================
+    // COLLISION
+    // =========================================================
+
+    private void OnTriggerEnter(
+        Collider other)
     {
+        /*
+         * Projectile đã xử lý impact rồi
+         * thì bỏ qua tất cả collision tiếp theo.
+         */
+        if (hasImpacted)
+        {
+            return;
+        }
+
+        if (other == null)
+        {
+            return;
+        }
+
+        // =====================================================
+        // IGNORE OWNER
+        // =====================================================
+
         if (owner != null)
         {
-            // Bỏ qua toàn bộ collider thuộc object chủ projectile.
-            if (other.gameObject == owner ||
-                other.transform.IsChildOf(owner.transform))
+            /*
+             * Bỏ qua chính object chủ projectile
+             * và toàn bộ collider con của owner.
+             */
+            if (other.gameObject ==
+                    owner ||
+                other.transform.IsChildOf(
+                    owner.transform))
             {
                 return;
             }
         }
+
+        // =====================================================
+        // PLAYER
+        // =====================================================
 
         if (other.CompareTag("Player"))
         {
@@ -210,59 +429,124 @@ public class Projectile : MonoBehaviour
             return;
         }
 
+        // =====================================================
+        // ENEMY / BOSS
+        // =====================================================
+
         if (other.CompareTag("Enemy"))
         {
             HitEnemy(other);
             return;
         }
 
+        /*
+         * Trigger phụ như:
+         *
+         * - detection zone
+         * - spawn trigger
+         * - portal trigger
+         * - attack range trigger
+         *
+         * không nên làm projectile nổ.
+         *
+         * Player/Enemy đã được kiểm tra phía trên
+         * nên collider Player/Enemy dạng Trigger
+         * vẫn xử lý bình thường.
+         */
         if (other.isTrigger)
         {
             return;
         }
 
-        ReturnToPool();
+        // =====================================================
+        // ROCK / WALL / GROUND / TREE / ...
+        // =====================================================
+
+        Vector3 hitPosition =
+            GetImpactPosition(other);
+
+        Vector3 hitNormal =
+            GetImpactNormal(
+                hitPosition
+            );
+
+        Impact(
+            hitPosition,
+            hitNormal
+        );
     }
 
-    private void HitPlayer(Collider other)
-    {
-        PlayerController player =
-            other.GetComponentInParent<PlayerController>();
+    // =========================================================
+    // HIT PLAYER
+    // =========================================================
 
+    private void HitPlayer(
+        Collider other)
+    {
+        Vector3 hitPosition =
+            GetImpactPosition(other);
+
+        Vector3 hitNormal =
+            GetImpactNormal(
+                hitPosition
+            );
+
+        PlayerController player =
+            other.GetComponentInParent<
+                PlayerController>();
+
+        /*
+         * Player đang dash/invincible:
+         *
+         * không nhận damage,
+         * nhưng projectile vẫn va chạm và biến mất.
+         */
         if (player != null &&
             player.IsInvincible)
         {
-            ReturnToPool();
+            Impact(
+                hitPosition,
+                hitNormal
+            );
+
             return;
         }
 
         PlayerStats stats =
-            other.GetComponentInParent<PlayerStats>();
+            other.GetComponentInParent<
+                PlayerStats>();
 
         if (stats != null)
         {
-            if (FeedbackManager.Instance != null)
+            if (FeedbackManager.Instance !=
+                null)
             {
-                FeedbackManager.Instance.PlayHitFeedback(
-                    0f,
-                    1f,
-                    0.15f,
-                    0.03f
-                );
+                FeedbackManager.Instance
+                    .PlayHitFeedback(
+                        0f,
+                        1f,
+                        0.15f,
+                        0.03f
+                    );
 
-                FeedbackManager.Instance.PlayDamageFlash(
-                    0.1f
-                );
+                FeedbackManager.Instance
+                    .PlayDamageFlash(
+                        0.1f
+                    );
             }
 
-            stats.TakeDamage(damage);
+            stats.TakeDamage(
+                damage
+            );
         }
 
         PlayerStatusEffects statusEffects =
-            other.GetComponentInParent<PlayerStatusEffects>();
+            other.GetComponentInParent<
+                PlayerStatusEffects>();
 
         if (statusEffects != null &&
-            effectType != ProjectileEffectType.None)
+            effectType !=
+                ProjectileEffectType.None)
         {
             statusEffects.ApplyEffect(
                 effectType,
@@ -271,72 +555,353 @@ public class Projectile : MonoBehaviour
             );
         }
 
-        ReturnToPool();
+        /*
+         * Sau khi damage/status xong:
+         * VFX + SFX + về pool.
+         */
+        Impact(
+            hitPosition,
+            hitNormal
+        );
     }
 
-    private void HitEnemy(Collider other)
+    // =========================================================
+    // HIT ENEMY / BOSS
+    // =========================================================
+
+    private void HitEnemy(
+        Collider other)
     {
+        Vector3 hitPosition =
+            GetImpactPosition(other);
+
+        Vector3 hitNormal =
+            GetImpactNormal(
+                hitPosition
+            );
+
         EnemyController enemy =
-            other.GetComponentInParent<EnemyController>();
+            other.GetComponentInParent<
+                EnemyController>();
 
         if (enemy != null)
         {
-            enemy.TakeDamage(damage);
-            ReturnToPool();
+            enemy.TakeDamage(
+                damage
+            );
+
+            Impact(
+                hitPosition,
+                hitNormal
+            );
+
             return;
         }
 
         BossController boss =
-            other.GetComponentInParent<BossController>();
+            other.GetComponentInParent<
+                BossController>();
 
         if (boss != null)
         {
-            boss.TakeDamage(damage);
+            boss.TakeDamage(
+                damage
+            );
         }
+
+        /*
+         * Dù collider có tag Enemy nhưng không tìm thấy
+         * EnemyController/BossController thì projectile
+         * vẫn coi đây là va chạm.
+         */
+        Impact(
+            hitPosition,
+            hitNormal
+        );
+    }
+
+    // =========================================================
+    // IMPACT
+    // =========================================================
+
+    private void Impact(
+        Vector3 position,
+        Vector3 normal)
+    {
+        /*
+         * Đây là guard quan trọng nhất.
+         *
+         * Nếu projectile cùng lúc chạm nhiều collider,
+         * Impact chỉ chạy đúng một lần.
+         */
+        if (hasImpacted)
+        {
+            return;
+        }
+
+        hasImpacted =
+            true;
+
+        // =====================================================
+        // VFX
+        // =====================================================
+
+        SpawnImpactVFX(
+            position,
+            normal
+        );
+
+        // =====================================================
+        // SFX
+        // =====================================================
+
+        PlayImpactSFX(
+            position
+        );
+
+        // =====================================================
+        // RETURN TO POOL
+        // =====================================================
 
         ReturnToPool();
     }
 
+    // =========================================================
+    // IMPACT POSITION
+    // =========================================================
+
+    private Vector3 GetImpactPosition(
+        Collider other)
+    {
+        if (other == null)
+        {
+            return transform.position;
+        }
+
+        Vector3 closestPoint =
+            other.ClosestPoint(
+                transform.position
+            );
+
+        /*
+         * ClosestPoint đôi khi trả về chính vị trí projectile
+         * nếu projectile đã đi vào bên trong collider.
+         *
+         * Trường hợp đó dùng transform.position luôn cũng ổn.
+         */
+        return closestPoint;
+    }
+
+    // =========================================================
+    // IMPACT NORMAL
+    // =========================================================
+
+    private Vector3 GetImpactNormal(
+        Vector3 hitPosition)
+    {
+        /*
+         * OnTriggerEnter không có ContactPoint.normal
+         * như OnCollisionEnter.
+         *
+         * Ta ước lượng normal dựa trên điểm va chạm.
+         */
+        Vector3 normal =
+            transform.position -
+            hitPosition;
+
+        if (normal.sqrMagnitude <
+            0.0001f)
+        {
+            /*
+             * Projectile đang nằm trong Collider,
+             * dùng ngược hướng bay làm normal dự phòng.
+             */
+            if (direction !=
+                Vector3.zero)
+            {
+                normal =
+                    -direction;
+            }
+            else
+            {
+                normal =
+                    -transform.right;
+            }
+        }
+
+        return normal.normalized;
+    }
+
+    // =========================================================
+    // SPAWN VFX
+    // =========================================================
+
+    private void SpawnImpactVFX(
+        Vector3 position,
+        Vector3 normal)
+    {
+        if (impactVFX == null)
+        {
+            return;
+        }
+
+        Vector3 spawnPosition =
+            position +
+            impactVFXPositionOffset;
+
+        Quaternion spawnRotation =
+            Quaternion.identity;
+
+        if (rotateImpactVFX &&
+            normal.sqrMagnitude >
+            0.0001f)
+        {
+            spawnRotation =
+                Quaternion.LookRotation(
+                    normal
+                );
+        }
+
+        spawnRotation *=
+            Quaternion.Euler(
+                impactVFXRotationOffset
+            );
+
+        GameObject spawnedVFX =
+            Instantiate(
+                impactVFX,
+                spawnPosition,
+                spawnRotation
+            );
+
+        if (spawnedVFX == null)
+        {
+            return;
+        }
+
+        if (impactVFXLifeTime >
+            0f)
+        {
+            Destroy(
+                spawnedVFX,
+                impactVFXLifeTime
+            );
+        }
+    }
+
+    // =========================================================
+    // SFX
+    // =========================================================
+
+    private void PlayImpactSFX(
+        Vector3 position)
+    {
+        if (impactSFX == null)
+        {
+            return;
+        }
+
+        /*
+         * Không phát AudioSource trên chính Projectile.
+         *
+         * Vì ngay sau đó Projectile bị SetActive(false)
+         * để quay về Pool => AudioSource cũng sẽ bị tắt.
+         *
+         * PlayClipAtPoint tạo AudioSource tạm bên ngoài,
+         * nên tiếng vẫn phát hết.
+         */
+        AudioSource.PlayClipAtPoint(
+            impactSFX,
+            position,
+            impactSFXVolume
+        );
+    }
+
+    // =========================================================
+    // RETURN TO POOL
+    // =========================================================
+
     private void ReturnToPool()
     {
         if (!gameObject.activeInHierarchy)
-            return;
-
-        if (PoolManager.Instance != null)
         {
-            PoolManager.Instance.ReturnObject(
-                gameObject
-            );
+            return;
+        }
+
+        if (PoolManager.Instance !=
+            null)
+        {
+            PoolManager.Instance
+                .ReturnObject(
+                    gameObject
+                );
         }
         else
         {
-            gameObject.SetActive(false);
+            gameObject.SetActive(
+                false
+            );
         }
     }
 
+    // =========================================================
+    // RESET HOMING
+    // =========================================================
+
     private void ResetHoming()
     {
-        isHoming = false;
-        homingTarget = null;
-        homingTurnSpeed = 0f;
-        homingDelay = 0f;
-        homingTimer = 0f;
-        homingTargetHeight = 0f;
+        isHoming =
+            false;
+
+        homingTarget =
+            null;
+
+        homingTurnSpeed =
+            0f;
+
+        homingDelay =
+            0f;
+
+        homingTimer =
+            0f;
+
+        homingTargetHeight =
+            0f;
     }
+
+    // =========================================================
+    // DISABLE / RETURNED TO POOL
+    // =========================================================
 
     private void OnDisable()
     {
-        direction = Vector3.zero;
-        damage = 0f;
-        timer = 0f;
-        owner = null;
+        direction =
+            Vector3.zero;
+
+        damage =
+            0f;
+
+        timer =
+            0f;
+
+        owner =
+            null;
 
         effectType =
             ProjectileEffectType.None;
 
-        effectDuration = 0f;
-        effectValue = 0f;
+        effectDuration =
+            0f;
+
+        effectValue =
+            0f;
 
         ResetHoming();
+
+        /*
+         * Không cần reset hasImpacted ở đây.
+         * Nó sẽ được reset trong OnEnable()
+         * khi projectile được lấy ra từ pool lần sau.
+         */
     }
 }

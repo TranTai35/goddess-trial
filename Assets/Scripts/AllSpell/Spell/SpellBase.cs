@@ -11,6 +11,12 @@ public abstract class SpellBase : MonoBehaviour
     [Min(0f)]
     public float cooldown = 5f;
 
+    [Header("Cast SFX")]
+    [SerializeField] protected AudioClip castSFX;
+
+    [Range(0f, 1f)]
+    [SerializeField] protected float castSFXVolume = 1f;
+
     /*
      * NonSerialized ngăn Unity lưu thời gian runtime
      * vào prefab hoặc Inspector.
@@ -33,7 +39,8 @@ public abstract class SpellBase : MonoBehaviour
     {
         return Mathf.Max(
             0f,
-            lastCastTime + cooldown - Time.time);
+            lastCastTime + cooldown - Time.time
+        );
     }
 
     protected void StartCooldown()
@@ -41,5 +48,22 @@ public abstract class SpellBase : MonoBehaviour
         lastCastTime = Time.time;
     }
 
-    public abstract void Cast(PlayerController player);
+    protected void PlayCastSFX(
+        Vector3 position)
+    {
+        if (castSFX == null)
+        {
+            return;
+        }
+
+        AudioSource.PlayClipAtPoint(
+            castSFX,
+            position,
+            castSFXVolume
+        );
+    }
+
+    public abstract void Cast(
+        PlayerController player
+    );
 }

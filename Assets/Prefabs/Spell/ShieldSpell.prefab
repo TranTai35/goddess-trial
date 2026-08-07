@@ -24590,6 +24590,8 @@ MonoBehaviour:
   icon: {fileID: 1277275244, guid: d0f95f76e856d064086de2380f1c5eb2, type: 3}
   manaCost: 10
   cooldown: 10
+  castSFX: {fileID: 8300000, guid: 3896feb77560b2241aa7859188194e00, type: 3}
+  castSFXVolume: 1
   duration: 5
   shieldVFX: {fileID: 5536264175868522203}
 --- !u!1 &6166396801649768939

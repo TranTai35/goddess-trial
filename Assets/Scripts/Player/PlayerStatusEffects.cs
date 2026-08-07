@@ -15,8 +15,24 @@ public class PlayerStatusEffects : MonoBehaviour
     [SerializeField] private GameObject slowVFX;
     [SerializeField] private GameObject burnVFX;
 
+    [Header("Status SFX")]
+    [SerializeField] private AudioClip stunSFX;
+    [SerializeField] private AudioClip slowSFX;
+    [SerializeField] private AudioClip burnSFX;
+
+    [Header("Status SFX Volume")]
+    [Range(0f, 1f)]
+    [SerializeField] private float stunSFXVolume = 0.3f;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float slowSFXVolume = 0.05f;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float burnSFXVolume = 0.05f;
+
     [Header("VFX Position")]
     [SerializeField] private float stunVFXHeight = 2.2f;
+    [SerializeField] private float slowVFXHeight = 0f;
     [SerializeField] private float burnVFXHeight = 1f;
 
     private float normalMoveSpeed;
@@ -26,19 +42,73 @@ public class PlayerStatusEffects : MonoBehaviour
 
     private GameObject activeVFX;
 
+    // AudioSource riêng cho Slow.
+    private AudioSource slowAudioSource;
+
+    // AudioSource riêng cho Burn.
+    private AudioSource burnAudioSource;
+
+    // =========================================================
+    // UNITY
+    // =========================================================
+
     private void Awake()
     {
-        playerController = GetComponent<PlayerController>();
-        playerStats = GetComponent<PlayerStats>();
+        playerController =
+            GetComponent<PlayerController>();
+
+        playerStats =
+            GetComponent<PlayerStats>();
+
+        // =====================================================
+        // SLOW AUDIO SOURCE
+        // =====================================================
+
+        slowAudioSource =
+            gameObject.AddComponent<AudioSource>();
+
+        slowAudioSource.playOnAwake = false;
+
+        /*
+         * Nếu muốn tiếng Slow chạy liên tục trong thời gian
+         * bị Slow thì để true.
+         */
+        slowAudioSource.loop = true;
+
+        // 2D sound, không phụ thuộc khoảng cách camera.
+        slowAudioSource.spatialBlend = 0f;
+
+        slowAudioSource.clip = null;
+
+        // =====================================================
+        // BURN AUDIO SOURCE
+        // =====================================================
+
+        burnAudioSource =
+            gameObject.AddComponent<AudioSource>();
+
+        burnAudioSource.playOnAwake = false;
+
+        burnAudioSource.loop = true;
+
+        // 2D sound, không phụ thuộc khoảng cách camera.
+        burnAudioSource.spatialBlend = 0f;
+
+        burnAudioSource.clip = null;
     }
 
     private void Start()
     {
         if (playerController != null)
         {
-            normalMoveSpeed = playerController.moveSpeed;
+            normalMoveSpeed =
+                playerController.moveSpeed;
         }
     }
+
+    // =========================================================
+    // APPLY EFFECT
+    // =========================================================
 
     public void ApplyEffect(
         ProjectileEffectType effectType,
@@ -58,14 +128,24 @@ public class PlayerStatusEffects : MonoBehaviour
                 break;
 
             case ProjectileEffectType.Slow:
-                ApplySlow(duration, effectValue);
+                ApplySlow(
+                    duration,
+                    effectValue
+                );
                 break;
 
             case ProjectileEffectType.Burn:
-                ApplyBurn(duration, effectValue);
+                ApplyBurn(
+                    duration,
+                    effectValue
+                );
                 break;
         }
     }
+
+    // =========================================================
+    // STUN
+    // =========================================================
 
     #region Stun
 
@@ -78,11 +158,14 @@ public class PlayerStatusEffects : MonoBehaviour
 
         isEffectActive = true;
 
-        stunCoroutine = StartCoroutine(
-            StunRoutine(duration));
+        stunCoroutine =
+            StartCoroutine(
+                StunRoutine(duration)
+            );
     }
 
-    private IEnumerator StunRoutine(float duration)
+    private IEnumerator StunRoutine(
+        float duration)
     {
         if (playerController == null)
         {
@@ -90,32 +173,64 @@ public class PlayerStatusEffects : MonoBehaviour
             yield break;
         }
 
+        // =========================
+        // VFX
+        // =========================
+
         if (stunVFX != null)
         {
-            // Đặt VFX cao trên đầu Player.
             Vector3 spawnPosition =
                 playerController.transform.position +
-                Vector3.up * stunVFXHeight;
+                Vector3.up *
+                stunVFXHeight;
 
-            activeVFX = Instantiate(
-                stunVFX,
-                spawnPosition,
-                Quaternion.identity,
-                playerController.transform);
+            activeVFX =
+                Instantiate(
+                    stunVFX,
+                    spawnPosition,
+                    Quaternion.identity,
+                    playerController.transform
+                );
         }
 
-        playerController.SetControlEnabled(false);
+        // =========================
+        // SFX
+        // =========================
 
-        yield return new WaitForSeconds(duration);
+        /*
+         * Stun chỉ phát một lần.
+         */
+        PlayOneShotStatusSFX(
+            stunSFX,
+            stunSFXVolume
+        );
 
-        playerController.SetControlEnabled(true);
+        // =========================
+        // STATE
+        // =========================
 
-        stunCoroutine = null;
+        playerController
+            .SetControlEnabled(false);
+
+        yield return
+            new WaitForSeconds(
+                duration
+            );
+
+        playerController
+            .SetControlEnabled(true);
+
+        stunCoroutine =
+            null;
 
         EndCurrentEffect();
     }
 
     #endregion
+
+    // =========================================================
+    // SLOW
+    // =========================================================
 
     #region Slow
 
@@ -130,8 +245,13 @@ public class PlayerStatusEffects : MonoBehaviour
 
         isEffectActive = true;
 
-        slowCoroutine = StartCoroutine(
-            SlowRoutine(duration, slowPercent));
+        slowCoroutine =
+            StartCoroutine(
+                SlowRoutine(
+                    duration,
+                    slowPercent
+                )
+            );
     }
 
     private IEnumerator SlowRoutine(
@@ -144,37 +264,77 @@ public class PlayerStatusEffects : MonoBehaviour
             yield break;
         }
 
-        // Giữ nguyên vị trí VFX Slow như code cũ.
+        // =========================
+        // VFX
+        // =========================
+
         if (slowVFX != null)
         {
-            activeVFX = Instantiate(
-                slowVFX,
-                playerController.transform.position,
-                Quaternion.identity,
-                playerController.transform);
+            Vector3 spawnPosition =
+                playerController.transform.position +
+                Vector3.up *
+                slowVFXHeight;
+
+            activeVFX =
+                Instantiate(
+                    slowVFX,
+                    spawnPosition,
+                    Quaternion.identity,
+                    playerController.transform
+                );
         }
+
+        // =========================
+        // SFX
+        // =========================
+
+        /*
+         * Phát Slow SFX bằng AudioSource riêng.
+         *
+         * Khi Slow hết thì StopSlowSFX()
+         * sẽ tắt tiếng ngay.
+         */
+        PlaySlowSFX();
+
+        // =========================
+        // STATE
+        // =========================
 
         normalMoveSpeed =
             playerController.BaseMoveSpeed;
 
         slowPercent =
-            Mathf.Clamp01(slowPercent);
+            Mathf.Clamp01(
+                slowPercent
+            );
 
         playerController.moveSpeed =
             normalMoveSpeed *
             (1f - slowPercent);
 
-        yield return new WaitForSeconds(duration);
+        yield return
+            new WaitForSeconds(
+                duration
+            );
 
+        // Trả tốc độ về bình thường.
         playerController.moveSpeed =
             playerController.BaseMoveSpeed;
 
-        slowCoroutine = null;
+        // Tắt sound Slow ngay khi hết Slow.
+        StopSlowSFX();
+
+        slowCoroutine =
+            null;
 
         EndCurrentEffect();
     }
 
     #endregion
+
+    // =========================================================
+    // BURN
+    // =========================================================
 
     #region Burn
 
@@ -189,10 +349,13 @@ public class PlayerStatusEffects : MonoBehaviour
 
         isEffectActive = true;
 
-        burnCoroutine = StartCoroutine(
-            BurnRoutine(
-                duration,
-                damagePerSecond));
+        burnCoroutine =
+            StartCoroutine(
+                BurnRoutine(
+                    duration,
+                    damagePerSecond
+                )
+            );
     }
 
     private IEnumerator BurnRoutine(
@@ -206,72 +369,271 @@ public class PlayerStatusEffects : MonoBehaviour
             yield break;
         }
 
+        // =========================
+        // VFX
+        // =========================
+
         if (burnVFX != null)
         {
-            // Đặt VFX ở phần thân Player.
             Vector3 spawnPosition =
                 playerController.transform.position +
-                Vector3.up * burnVFXHeight;
+                Vector3.up *
+                burnVFXHeight;
 
-            activeVFX = Instantiate(
-                burnVFX,
-                spawnPosition,
-                Quaternion.identity,
-                playerController.transform);
+            activeVFX =
+                Instantiate(
+                    burnVFX,
+                    spawnPosition,
+                    Quaternion.identity,
+                    playerController.transform
+                );
         }
 
-        float elapsedTime = 0f;
-        float damageInterval = 0.5f;
+        // =========================
+        // BURN SFX
+        // =========================
+
+        PlayBurnSFX();
+
+        // =========================
+        // DAMAGE OVER TIME
+        // =========================
+
+        float elapsedTime =
+            0f;
+
+        float damageInterval =
+            0.5f;
 
         while (elapsedTime < duration)
         {
-            yield return new WaitForSeconds(
-                damageInterval);
+            float waitTime =
+                Mathf.Min(
+                    damageInterval,
+                    duration - elapsedTime
+                );
+
+            yield return
+                new WaitForSeconds(
+                    waitTime
+                );
 
             playerStats.TakeDamage(
                 damagePerSecond *
-                damageInterval);
+                waitTime
+            );
 
-            elapsedTime += damageInterval;
+            elapsedTime +=
+                waitTime;
         }
 
-        burnCoroutine = null;
+        // Tắt sound Burn ngay khi hết Burn.
+        StopBurnSFX();
+
+        burnCoroutine =
+            null;
 
         EndCurrentEffect();
     }
 
     #endregion
 
+    // =========================================================
+    // STUN ONE SHOT AUDIO
+    // =========================================================
+
+    private void PlayOneShotStatusSFX(
+        AudioClip clip,
+        float volume)
+    {
+        if (clip == null)
+        {
+            return;
+        }
+
+        float finalVolume =
+            Mathf.Clamp01(
+                volume
+            );
+
+        AudioSource.PlayClipAtPoint(
+            clip,
+            transform.position,
+            finalVolume
+        );
+    }
+
+    // =========================================================
+    // SLOW AUDIO
+    // =========================================================
+
+    private void PlaySlowSFX()
+    {
+        if (slowSFX == null ||
+            slowAudioSource == null)
+        {
+            return;
+        }
+
+        slowAudioSource.Stop();
+
+        slowAudioSource.clip =
+            slowSFX;
+
+        /*
+         * Slow sound sẽ loop cho tới khi hết effect.
+         */
+        slowAudioSource.loop =
+            true;
+
+        slowAudioSource.volume =
+            Mathf.Clamp01(
+                slowSFXVolume
+            );
+
+        slowAudioSource.Play();
+    }
+
+    private void StopSlowSFX()
+    {
+        if (slowAudioSource == null)
+        {
+            return;
+        }
+
+        slowAudioSource.Stop();
+
+        slowAudioSource.clip =
+            null;
+
+        slowAudioSource.loop =
+            false;
+    }
+
+    // =========================================================
+    // BURN AUDIO
+    // =========================================================
+
+    private void PlayBurnSFX()
+    {
+        if (burnSFX == null ||
+            burnAudioSource == null)
+        {
+            return;
+        }
+
+        burnAudioSource.Stop();
+
+        burnAudioSource.clip =
+            burnSFX;
+
+        burnAudioSource.loop =
+            true;
+
+        burnAudioSource.volume =
+            Mathf.Clamp01(
+                burnSFXVolume
+            );
+
+        burnAudioSource.Play();
+    }
+
+    private void StopBurnSFX()
+    {
+        if (burnAudioSource == null)
+        {
+            return;
+        }
+
+        burnAudioSource.Stop();
+
+        burnAudioSource.clip =
+            null;
+
+        burnAudioSource.loop =
+            false;
+    }
+
+    // =========================================================
+    // END EFFECT
+    // =========================================================
+
     private void EndCurrentEffect()
     {
+        // =========================
+        // REMOVE VFX
+        // =========================
+
         if (activeVFX != null)
         {
             Destroy(activeVFX);
-            activeVFX = null;
+
+            activeVFX =
+                null;
         }
 
-        isEffectActive = false;
+        // =========================
+        // STOP STATUS SOUNDS
+        // =========================
+
+        /*
+         * Chỉ có một effect được chạy cùng lúc,
+         * nên gọi cả hai cũng không có vấn đề.
+         */
+        StopSlowSFX();
+        StopBurnSFX();
+
+        isEffectActive =
+            false;
     }
+
+    // =========================================================
+    // DISABLE
+    // =========================================================
 
     private void OnDisable()
     {
         StopAllCoroutines();
 
-        stunCoroutine = null;
-        slowCoroutine = null;
-        burnCoroutine = null;
+        stunCoroutine =
+            null;
 
-        isEffectActive = false;
+        slowCoroutine =
+            null;
+
+        burnCoroutine =
+            null;
+
+        isEffectActive =
+            false;
+
+        // =========================
+        // REMOVE VFX
+        // =========================
 
         if (activeVFX != null)
         {
             Destroy(activeVFX);
-            activeVFX = null;
+
+            activeVFX =
+                null;
         }
+
+        // =========================
+        // STOP STATUS SOUNDS
+        // =========================
+
+        StopSlowSFX();
+        StopBurnSFX();
+
+        // =========================
+        // RESET PLAYER
+        // =========================
 
         if (playerController != null)
         {
-            playerController.SetControlEnabled(true);
+            playerController
+                .SetControlEnabled(true);
 
             playerController.moveSpeed =
                 playerController.BaseMoveSpeed;

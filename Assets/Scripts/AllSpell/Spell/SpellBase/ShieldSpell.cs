@@ -12,12 +12,22 @@ public class ShieldSpell : SpellBase
     private Coroutine activeRoutine;
     private GameObject activeVFX;
 
-    public override void Cast(PlayerController player)
+    public override void Cast(
+        PlayerController player)
     {
         if (player == null)
+        {
             return;
+        }
 
         StartCooldown();
+
+        /*
+         * PHÁT SFX NGAY KHI SHIELD ĐƯỢC DÙNG.
+         */
+        PlayCastSFX(
+            player.transform.position
+        );
 
         /*
          * Nếu còn shield cũ thì dừng và xóa trước,
@@ -25,20 +35,27 @@ public class ShieldSpell : SpellBase
          */
         if (activeRoutine != null)
         {
-            player.StopCoroutine(activeRoutine);
+            player.StopCoroutine(
+                activeRoutine
+            );
+
             activeRoutine = null;
         }
 
         RemoveShieldVFX();
 
         activeRoutine =
-            player.StartCoroutine(ShieldRoutine(player));
+            player.StartCoroutine(
+                ShieldRoutine(player)
+            );
     }
 
     private IEnumerator ShieldRoutine(
         PlayerController player)
     {
-        Debug.Log("Shield ON");
+        Debug.Log(
+            "Shield ON"
+        );
 
         if (shieldVFX != null)
         {
@@ -46,23 +63,34 @@ public class ShieldSpell : SpellBase
                 shieldVFX,
                 player.transform.position,
                 Quaternion.identity,
-                player.transform);
+                player.transform
+            );
         }
 
-        yield return new WaitForSeconds(duration);
+        yield return
+            new WaitForSeconds(
+                duration
+            );
 
-        Debug.Log("Shield OFF");
+        Debug.Log(
+            "Shield OFF"
+        );
 
         RemoveShieldVFX();
-        activeRoutine = null;
+
+        activeRoutine =
+            null;
     }
 
     private void RemoveShieldVFX()
     {
         if (activeVFX == null)
+        {
             return;
+        }
 
         Destroy(activeVFX);
+
         activeVFX = null;
     }
 }

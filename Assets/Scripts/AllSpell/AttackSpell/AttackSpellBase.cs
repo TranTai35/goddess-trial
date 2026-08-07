@@ -12,6 +12,12 @@ public abstract class AttackSpellBase : MonoBehaviour
     [Min(0f)]
     public float cooldown = 5f;
 
+    [Header("Cast SFX")]
+    [SerializeField] protected AudioClip castSFX;
+
+    [Range(0f, 1f)]
+    [SerializeField] protected float castSFXVolume = 1f;
+
     // Chỉ là dữ liệu runtime, không lưu lên prefab.
     private float lastCastTime;
 
@@ -28,24 +34,49 @@ public abstract class AttackSpellBase : MonoBehaviour
 
     public bool CanCast()
     {
-        return Time.time >= lastCastTime + cooldown;
+        return Time.time >=
+               lastCastTime +
+               cooldown;
     }
 
     public float GetRemainingCooldown()
     {
         return Mathf.Max(
             0f,
-            lastCastTime + cooldown - Time.time);
+            lastCastTime +
+            cooldown -
+            Time.time
+        );
     }
 
     protected void StartCooldown()
     {
-        lastCastTime = Time.time;
+        lastCastTime =
+            Time.time;
     }
 
-    public abstract void StartAim(PlayerController player);
+    protected void PlayCastSFX(
+        Vector3 position)
+    {
+        if (castSFX == null)
+        {
+            return;
+        }
 
-    public abstract void Cast(PlayerController player);
+        AudioSource.PlayClipAtPoint(
+            castSFX,
+            position,
+            castSFXVolume
+        );
+    }
+
+    public abstract void StartAim(
+        PlayerController player
+    );
+
+    public abstract void Cast(
+        PlayerController player
+    );
 
     public abstract void CancelAim();
 }

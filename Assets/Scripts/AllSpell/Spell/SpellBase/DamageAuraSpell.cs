@@ -20,32 +20,50 @@ public class DamageAuraSpell : SpellBase
     private Coroutine activeRoutine;
     private GameObject activeVFX;
 
-    public override void Cast(PlayerController player)
+    public override void Cast(
+        PlayerController player)
     {
         if (player == null)
+        {
             return;
+        }
 
         StartCooldown();
+
+        /*
+         * PHÁT SFX NGAY KHI NHẤN Q
+         * và spell thật sự được cast.
+         */
+        PlayCastSFX(
+            player.transform.position
+        );
 
         /*
          * Ngăn nhiều aura tồn tại cùng lúc.
          */
         if (activeRoutine != null)
         {
-            player.StopCoroutine(activeRoutine);
+            player.StopCoroutine(
+                activeRoutine
+            );
+
             activeRoutine = null;
         }
 
         RemoveAuraVFX();
 
         activeRoutine =
-            player.StartCoroutine(AuraRoutine(player));
+            player.StartCoroutine(
+                AuraRoutine(player)
+            );
     }
 
     private IEnumerator AuraRoutine(
         PlayerController player)
     {
-        Debug.Log("Damage Aura ĐÃ BẬT!");
+        Debug.Log(
+            "Damage Aura ĐÃ BẬT!"
+        );
 
         if (auraVFX != null)
         {
@@ -57,11 +75,14 @@ public class DamageAuraSpell : SpellBase
                 auraVFX,
                 spawnPosition,
                 Quaternion.identity,
-                player.transform);
+                player.transform
+            );
         }
 
         float elapsed = 0f;
-        const float tickInterval = 1f;
+
+        const float tickInterval =
+            1f;
 
         while (elapsed < duration)
         {
@@ -70,50 +91,70 @@ public class DamageAuraSpell : SpellBase
                     player.transform.position,
                     damageRadius,
                     enemyLayer,
-                    QueryTriggerInteraction.Ignore);
+                    QueryTriggerInteraction.Ignore
+                );
 
-            foreach (Collider col in hitColliders)
+            foreach (
+                Collider col
+                in hitColliders)
             {
                 EnemyController enemy =
-                    col.GetComponentInParent<EnemyController>();
+                    col.GetComponentInParent<
+                        EnemyController>();
 
                 if (enemy != null)
                 {
-                    enemy.TakeDamage(damagePerSecond);
+                    enemy.TakeDamage(
+                        damagePerSecond
+                    );
                 }
             }
 
             float waitTime =
                 Mathf.Min(
                     tickInterval,
-                    duration - elapsed);
+                    duration - elapsed
+                );
 
-            yield return new WaitForSeconds(waitTime);
+            yield return
+                new WaitForSeconds(
+                    waitTime
+                );
 
-            elapsed += waitTime;
+            elapsed +=
+                waitTime;
         }
 
-        Debug.Log("Damage Aura ĐÃ HẾT THỜI GIAN!");
+        Debug.Log(
+            "Damage Aura ĐÃ HẾT THỜI GIAN!"
+        );
 
         RemoveAuraVFX();
-        activeRoutine = null;
+
+        activeRoutine =
+            null;
     }
 
     private void RemoveAuraVFX()
     {
         if (activeVFX == null)
+        {
             return;
+        }
 
         Destroy(activeVFX);
+
         activeVFX = null;
     }
 
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.red;
+        Gizmos.color =
+            Color.red;
 
         Gizmos.DrawWireSphere(
             transform.position,
-            damageRadius);
+            damageRadius
+        );
     }
 }

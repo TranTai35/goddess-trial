@@ -15114,6 +15114,8 @@ MonoBehaviour:
   manaCost: 10
   attackRange: 8
   cooldown: 5
+  castSFX: {fileID: 8300000, guid: 32a4f758c7b977144941da79a1571045, type: 3}
+  castSFXVolume: 1
   projectilePrefab: {fileID: 1248541493677574273, guid: e94aa7667d018ca42b38098c89b6332b,
     type: 3}
   rangeIndicatorPrefab: {fileID: 8777957837593806992, guid: 39b43b03b8fc0fd439e63608b04383c6,

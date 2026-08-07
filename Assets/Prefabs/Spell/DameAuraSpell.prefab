@@ -14722,6 +14722,8 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 8f83571993734074e9720ad8c1a3c98d, type: 3}
   manaCost: 10
   cooldown: 10
+  castSFX: {fileID: 8300000, guid: 3896feb77560b2241aa7859188194e00, type: 3}
+  castSFXVolume: 1
   duration: 5
   auraVFX: {fileID: 6558543888313772627}
   damagePerSecond: 5

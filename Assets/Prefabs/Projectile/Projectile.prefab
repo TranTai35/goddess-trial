@@ -122,6 +122,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 15
   lifeTime: 10
+  impactVFX: {fileID: 1835174905073365006, guid: adfd6c86cf180e64aaaa1bece2395926,
+    type: 3}
+  impactVFXLifeTime: 2
+  impactVFXPositionOffset: {x: 0, y: 0, z: 0}
+  impactVFXRotationOffset: {x: 0, y: 0, z: 0}
+  rotateImpactVFX: 1
+  impactSFX: {fileID: 8300000, guid: 146d43150bca4e346abf0787c2a71483, type: 3}
+  impactSFXVolume: 1
 --- !u!54 &5782129912753305968
 Rigidbody:
   m_ObjectHideFlags: 0
