@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -140,6 +141,14 @@ public class BossController : MonoBehaviour
 
     public int attacksBeforeSummon = 3;
 
+    [Header("Summoned Enemy Cleanup")]
+    [Min(0f)]
+    [Tooltip("Khoảng cách thời gian giữa từng Enemy chết khi Boss bị tiêu diệt.")]
+    public float summonedEnemyDeathInterval = 0.15f;
+
+    private readonly List<EnemyController> summonedEnemies =
+        new List<EnemyController>();
+
     [Header("Cooldown")]
     public float cooldownTime = 1f;
     public float cooldownMoveDistance = 3f;
@@ -147,7 +156,25 @@ public class BossController : MonoBehaviour
     [Header("Teleport Retreat")]
     public float retreatTriggerDistance = 5f;
     public float retreatDistance = 20f;
-    public float burrowDuration = 1.5f;
+    public float burrowDuration = 1f;
+
+    [Header("Teleport VFX")]
+    [Tooltip("VFX xuất hiện tại nơi Boss chuẩn bị dịch chuyển tới.")]
+    public GameObject teleportVFXPrefab;
+
+    [Tooltip("Độ lệch vị trí của VFX so với điểm teleport.")]
+    public Vector3 teleportVFXPositionOffset = Vector3.zero;
+
+    [Tooltip("Độ lệch góc xoay của VFX.")]
+    public Vector3 teleportVFXRotationOffset = Vector3.zero;
+
+    [Min(0f)]
+    [Tooltip("Thời gian VFX hiện trước khi Boss xuất hiện.")]
+    public float teleportVFXLeadTime = 0.3f;
+
+    [Min(0f)]
+    [Tooltip("Thời gian VFX còn tồn tại sau khi Boss xuất hiện.")]
+    public float teleportVFXPostTime = 0.2f;
 
     private BossState currentState;
 
@@ -320,34 +347,62 @@ public class BossController : MonoBehaviour
 
     private IEnumerator BurrowRetreatRoutine()
     {
+        if (player == null)
+        {
+            yield break;
+        }
+
         if (agent != null)
         {
             agent.isStopped = true;
         }
+
+        // =====================================================
+        // BOSS BẮT ĐẦU BURROW
+        // =====================================================
 
         if (animator != null)
         {
             animator.SetTrigger(BurrowHash);
         }
 
-        // =====================================================
-        // TELEPORT SFX
-        // Phát khi Boss bắt đầu hành động dịch chuyển.
-        // =====================================================
-
+        // Phát SFX teleport.
         if (bossAudio != null)
         {
             bossAudio.PlayTeleportSFX();
         }
 
+        /*
+         * Chờ phần đầu animation để Boss biến mất.
+         */
         yield return new WaitForSeconds(
             burrowDuration * 0.5f
         );
 
-        Vector2 randomCircle =
-            Random.insideUnitCircle.normalized;
+        if (player == null)
+        {
+            yield break;
+        }
 
-        Vector3 targetPos =
+        // =====================================================
+        // TÍNH VỊ TRÍ TELEPORT
+        // =====================================================
+
+        Vector2 randomCircle =
+            Random.insideUnitCircle;
+
+        /*
+         * Tránh trường hợp random ra vector gần bằng 0.
+         */
+        if (randomCircle.sqrMagnitude < 0.001f)
+        {
+            randomCircle =
+                Vector2.right;
+        }
+
+        randomCircle.Normalize();
+
+        Vector3 desiredPosition =
             player.position +
             new Vector3(
                 randomCircle.x,
@@ -355,20 +410,108 @@ public class BossController : MonoBehaviour
                 randomCircle.y
             ) * retreatDistance;
 
-        if (agent != null &&
-            NavMesh.SamplePosition(
-                targetPos,
+        /*
+         * Tìm vị trí hợp lệ trên NavMesh.
+         */
+        if (agent == null ||
+            !NavMesh.SamplePosition(
+                desiredPosition,
                 out NavMeshHit hit,
                 5f,
                 NavMesh.AllAreas
             ))
         {
-            agent.Warp(hit.position);
+            yield break;
         }
 
-        yield return new WaitForSeconds(
-            burrowDuration * 0.5f
-        );
+        Vector3 teleportPosition =
+            hit.position;
+
+        // =====================================================
+        // HIỆN VFX Ở NƠI BOSS SẼ XUẤT HIỆN
+        // =====================================================
+
+        GameObject teleportVFX =
+            null;
+
+        if (teleportVFXPrefab != null)
+        {
+            Vector3 vfxPosition =
+                teleportPosition +
+                teleportVFXPositionOffset;
+
+            Quaternion vfxRotation =
+                Quaternion.Euler(
+                    teleportVFXRotationOffset
+                );
+
+            teleportVFX =
+                Instantiate(
+                    teleportVFXPrefab,
+                    vfxPosition,
+                    vfxRotation
+                );
+        }
+
+        /*
+         * VFX xuất hiện trước để Player thấy
+         * Boss chuẩn bị teleport tới đâu.
+         */
+        if (teleportVFXLeadTime > 0f)
+        {
+            yield return new WaitForSeconds(
+                teleportVFXLeadTime
+            );
+        }
+
+        // =====================================================
+        // TELEPORT BOSS
+        // =====================================================
+
+        if (agent != null &&
+            agent.enabled &&
+            agent.isOnNavMesh)
+        {
+            agent.Warp(
+                teleportPosition
+            );
+        }
+        else
+        {
+            transform.position =
+                teleportPosition;
+        }
+
+        // =====================================================
+        // VFX TỰ TẮT, KHÔNG GIỮ BOSS ĐỨNG CHỜ
+        // =====================================================
+
+        if (teleportVFX != null)
+        {
+            if (teleportVFXPostTime > 0f)
+            {
+                Destroy(
+                    teleportVFX,
+                    teleportVFXPostTime
+                );
+            }
+            else
+            {
+                Destroy(
+                    teleportVFX
+                );
+            }
+        }
+
+        /*
+         * QUAN TRỌNG:
+         *
+         * Không có yield WaitForSeconds nào nữa sau Warp.
+         *
+         * Hàm kết thúc ngay tại đây.
+         * RangedAttackRoutine sẽ tiếp tục ngay lập tức,
+         * nên Boss có thể Prepare -> bắn projectile ngay.
+         */
     }
 
     // =========================================================
@@ -1014,7 +1157,48 @@ public class BossController : MonoBehaviour
 
         enemy.OnSpawn(player);
 
+        // Đánh dấu Enemy này thuộc về Boss hiện tại.
+        enemy.SetSummonOwner(this);
+
+        if (!summonedEnemies.Contains(enemy))
+        {
+            summonedEnemies.Add(enemy);
+        }
+
         return true;
+    }
+
+    // =========================================================
+    // KILL SUMMONED ENEMIES WHEN BOSS DIES
+    // =========================================================
+
+    private IEnumerator KillSummonedEnemiesRoutine()
+    {
+        for (int i = 0; i < summonedEnemies.Count; i++)
+        {
+            EnemyController enemy = summonedEnemies[i];
+
+            if (enemy == null ||
+                !enemy.gameObject.activeInHierarchy ||
+                !enemy.IsSummonedBy(this) ||
+                enemy.IsDead)
+            {
+                continue;
+            }
+
+            // Gọi đúng logic Die của Enemy:
+            // dừng AI -> bật animation Die -> sau 3 giây trả về pool.
+            enemy.ForceDieFromBoss();
+
+            if (summonedEnemyDeathInterval > 0f)
+            {
+                yield return new WaitForSeconds(
+                    summonedEnemyDeathInterval
+                );
+            }
+        }
+
+        summonedEnemies.Clear();
     }
 
     // =========================================================
@@ -1227,6 +1411,11 @@ public class BossController : MonoBehaviour
             animator.SetBool(RunHash, false);
             animator.SetTrigger(DieHash);
         }
+
+        // Cho các Enemy do Boss triệu hồi chết lần lượt.
+        StartCoroutine(
+            KillSummonedEnemiesRoutine()
+        );
 
         StartCoroutine(
             DeathRoutine()

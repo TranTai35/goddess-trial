@@ -55,7 +55,11 @@ public class EnemyController : MonoBehaviour
     private EnemySpawnArea spawnArea;
     private int spawnTypeIndex = -1;
 
+    // Boss sở hữu Enemy này nếu Enemy được Boss triệu hồi.
+    private BossController summonOwner;
+
     public int SpawnTypeIndex => spawnTypeIndex;
+    public bool IsDead => isDead;
 
     protected readonly int WalkHash =
         Animator.StringToHash("Walk");
@@ -94,11 +98,25 @@ public class EnemyController : MonoBehaviour
         spawnTypeIndex = -1;
     }
 
+    public void SetSummonOwner(BossController owner)
+    {
+        summonOwner = owner;
+    }
+
+    public bool IsSummonedBy(BossController owner)
+    {
+        return summonOwner == owner;
+    }
+
     public virtual void OnSpawn(Transform targetPlayer)
     {
         StopAllCoroutines();
 
         player = targetPlayer;
+
+        // Mỗi lần lấy từ pool ra thì bỏ owner cũ.
+        // Nếu được Boss triệu hồi, BossController sẽ gắn owner lại sau OnSpawn().
+        summonOwner = null;
 
         currentHP = maxHP;
 
@@ -433,6 +451,14 @@ public class EnemyController : MonoBehaviour
 
     #region DEATH
 
+    public void ForceDieFromBoss()
+    {
+        if (isDead || !gameObject.activeInHierarchy)
+            return;
+
+        Die();
+    }
+
     protected virtual void Die()
     {
         if (isDead)
@@ -462,6 +488,7 @@ public class EnemyController : MonoBehaviour
         EnemySpawnArea ownerArea = spawnArea;
         int ownerTypeIndex = spawnTypeIndex;
 
+        summonOwner = null;
         ClearSpawnArea();
 
         if (ownerArea != null)

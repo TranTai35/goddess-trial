@@ -454,7 +454,7 @@ PrefabInstance:
     - target: {fileID: 4677809443743737919, guid: 06ad6ff35362bc34eb184127bf0ead5c,
         type: 3}
       propertyPath: maxHP
-      value: 1000
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 4677809443743737919, guid: 06ad6ff35362bc34eb184127bf0ead5c,
         type: 3}
@@ -476,6 +476,12 @@ PrefabInstance:
       propertyPath: projectileDamage
       value: 30
       objectReference: {fileID: 0}
+    - target: {fileID: 4677809443743737919, guid: 06ad6ff35362bc34eb184127bf0ead5c,
+        type: 3}
+      propertyPath: teleportVFXPrefab
+      value: 
+      objectReference: {fileID: 2834388740668858265, guid: 90ffece102c8e004fad57d44ee14f340,
+        type: 3}
     - target: {fileID: 4677809443743737919, guid: 06ad6ff35362bc34eb184127bf0ead5c,
         type: 3}
       propertyPath: summonPoints.Array.size
