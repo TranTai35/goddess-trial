@@ -158,6 +158,12 @@ public class BossController : MonoBehaviour
 
     private int attackCounter;
 
+    // =========================================================
+    // AUDIO
+    // =========================================================
+
+    private BossAudio bossAudio;
+
     private readonly int WalkHash =
         Animator.StringToHash("Walk");
 
@@ -184,6 +190,13 @@ public class BossController : MonoBehaviour
 
     private void Start()
     {
+        // =====================================================
+        // AUDIO
+        // =====================================================
+
+        bossAudio =
+            GetComponent<BossAudio>();
+
         currentHP = maxHP;
 
         currentState = BossState.Idle;
@@ -301,6 +314,10 @@ public class BossController : MonoBehaviour
         );
     }
 
+    // =========================================================
+    // TELEPORT
+    // =========================================================
+
     private IEnumerator BurrowRetreatRoutine()
     {
         if (agent != null)
@@ -311,6 +328,16 @@ public class BossController : MonoBehaviour
         if (animator != null)
         {
             animator.SetTrigger(BurrowHash);
+        }
+
+        // =====================================================
+        // TELEPORT SFX
+        // Phát khi Boss bắt đầu hành động dịch chuyển.
+        // =====================================================
+
+        if (bossAudio != null)
+        {
+            bossAudio.PlayTeleportSFX();
         }
 
         yield return new WaitForSeconds(
@@ -343,6 +370,10 @@ public class BossController : MonoBehaviour
             burrowDuration * 0.5f
         );
     }
+
+    // =========================================================
+    // MELEE
+    // =========================================================
 
     private IEnumerator MeleeAttackRoutine()
     {
@@ -387,6 +418,7 @@ public class BossController : MonoBehaviour
 
         Vector3 lookPos = player.position;
         lookPos.y = transform.position.y;
+
         transform.LookAt(lookPos);
 
         animator.SetTrigger(SlashHash);
@@ -394,6 +426,16 @@ public class BossController : MonoBehaviour
         yield return new WaitForSeconds(
             meleeImpactDelay
         );
+
+        // =====================================================
+        // SLASH SFX
+        // Phát đúng lúc đòn chém/VFX xảy ra.
+        // =====================================================
+
+        if (bossAudio != null)
+        {
+            bossAudio.PlaySlashSFX();
+        }
 
         StartCoroutine(
             SpawnMeleeSlashVFXRoutine()
@@ -469,6 +511,10 @@ public class BossController : MonoBehaviour
             );
         }
     }
+
+    // =========================================================
+    // RANGED
+    // =========================================================
 
     private IEnumerator RangedAttackRoutine()
     {
@@ -558,6 +604,10 @@ public class BossController : MonoBehaviour
         }
     }
 
+    // =========================================================
+    // MELEE VFX
+    // =========================================================
+
     private IEnumerator SpawnMeleeSlashVFXRoutine()
     {
         if (meleeSlashVFX == null)
@@ -617,6 +667,10 @@ public class BossController : MonoBehaviour
         }
     }
 
+    // =========================================================
+    // PROJECTILE
+    // =========================================================
+
     private void SpawnProjectile()
     {
         if (projectilePrefab == null ||
@@ -674,7 +728,21 @@ public class BossController : MonoBehaviour
         );
 
         projectile.SetOwner(gameObject);
+
+        // =====================================================
+        // RANGED ATTACK SFX
+        // Mỗi projectile được tạo -> phát 1 lần.
+        // =====================================================
+
+        if (bossAudio != null)
+        {
+            bossAudio.PlayRangedAttackSFX();
+        }
     }
+
+    // =========================================================
+    // SUMMON
+    // =========================================================
 
     private IEnumerator SummonRoutine()
     {
@@ -689,6 +757,16 @@ public class BossController : MonoBehaviour
             animator.SetBool(WalkHash, false);
             animator.SetBool(RunHash, false);
             animator.SetTrigger(SpawnHash);
+        }
+
+        // =====================================================
+        // CAST SFX
+        // Phát ngay khi Boss bắt đầu animation triệu hồi.
+        // =====================================================
+
+        if (bossAudio != null)
+        {
+            bossAudio.PlayCastSFX();
         }
 
         // Boss chỉ đứng chờ animation triệu hồi hoàn tất.
@@ -829,7 +907,8 @@ public class BossController : MonoBehaviour
         }
     }
 
-    private EnemyController GetSummonPrefab(int spawnIndex)
+    private EnemyController GetSummonPrefab(
+        int spawnIndex)
     {
         if (summonPrefabs != null &&
             summonPrefabs.Length > 0)
@@ -855,7 +934,8 @@ public class BossController : MonoBehaviour
         return summonPrefab;
     }
 
-    private Transform GetSummonPoint(int spawnIndex)
+    private Transform GetSummonPoint(
+        int spawnIndex)
     {
         if (summonPoints == null ||
             summonPoints.Length == 0)
@@ -876,7 +956,7 @@ public class BossController : MonoBehaviour
 
         int index =
             spawnIndex %
-            summonPoints.Length;
+                summonPoints.Length;
 
         return summonPoints[index];
     }
@@ -931,10 +1011,15 @@ public class BossController : MonoBehaviour
         }
 
         enemy.ClearSpawnArea();
+
         enemy.OnSpawn(player);
 
         return true;
     }
+
+    // =========================================================
+    // COOLDOWN
+    // =========================================================
 
     private IEnumerator CooldownRoutine()
     {
@@ -979,6 +1064,10 @@ public class BossController : MonoBehaviour
         isCoolingDown = false;
         currentState = BossState.Combat;
     }
+
+    // =========================================================
+    // DAMAGE
+    // =========================================================
 
     public void TakeDamage(
         float damage,
@@ -1031,8 +1120,8 @@ public class BossController : MonoBehaviour
     }
 
     private void ShowDamageText(
-    float damage,
-    bool isCritical)
+        float damage,
+        bool isCritical)
     {
         if (damageTextPrefab == null)
             return;
@@ -1041,15 +1130,17 @@ public class BossController : MonoBehaviour
 
         if (PoolManager.Instance != null)
         {
-            obj = PoolManager.Instance.GetObject(
-                damageTextPrefab
-            );
+            obj =
+                PoolManager.Instance.GetObject(
+                    damageTextPrefab
+                );
         }
         else
         {
-            obj = Instantiate(
-                damageTextPrefab
-            );
+            obj =
+                Instantiate(
+                    damageTextPrefab
+                );
         }
 
         if (obj == null)
@@ -1090,7 +1181,9 @@ public class BossController : MonoBehaviour
 
             if (PoolManager.Instance != null)
             {
-                PoolManager.Instance.ReturnObject(obj);
+                PoolManager.Instance.ReturnObject(
+                    obj
+                );
             }
             else
             {
@@ -1098,6 +1191,10 @@ public class BossController : MonoBehaviour
             }
         }
     }
+
+    // =========================================================
+    // DIE
+    // =========================================================
 
     private void Die()
     {
@@ -1153,6 +1250,10 @@ public class BossController : MonoBehaviour
             );
         }
     }
+
+    // =========================================================
+    // GIZMOS
+    // =========================================================
 
     private void OnDrawGizmosSelected()
     {

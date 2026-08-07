@@ -1754,9 +1754,9 @@ MonoBehaviour:
   stunSFX: {fileID: 8300000, guid: 9096440fb0f8deb4fa80b508cbae48a9, type: 3}
   slowSFX: {fileID: 8300000, guid: 6ef79930bf3e9304384ed3f57b183875, type: 3}
   burnSFX: {fileID: 8300000, guid: 17f4f41d459342c449c7001f81d3c046, type: 3}
-  stunSFXVolume: 1
-  slowSFXVolume: 1
-  burnSFXVolume: 1
+  stunSFXVolume: 0.3
+  slowSFXVolume: 0.05
+  burnSFXVolume: 0.05
   stunVFXHeight: 2.2
   slowVFXHeight: 0
   burnVFXHeight: 0

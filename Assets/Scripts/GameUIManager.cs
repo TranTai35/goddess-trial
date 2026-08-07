@@ -123,6 +123,8 @@ public class GameUIManager : MonoBehaviour
         {
             animator.SetTrigger("Die");
         }
+        Time.timeScale = 0f;
+
     }
 
 
