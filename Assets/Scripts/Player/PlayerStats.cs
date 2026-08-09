@@ -9,7 +9,9 @@ public class PlayerStats : MonoBehaviour
 
     private Animator animator;
 
-    private const string TakeDamageTrigger = "TakeDamage";
+    private const string TakeDamageTrigger =
+        "TakeDamage";
+
 
     // =========================================================
     // DAMAGE FEEDBACK
@@ -18,28 +20,38 @@ public class PlayerStats : MonoBehaviour
     [Header("Damage Feedback")]
 
     [Tooltip("Màu player khi nhận damage")]
-    public Color damageColor = Color.red;
+    public Color damageColor =
+        Color.red;
 
     [Tooltip("Thời gian giữ màu đỏ")]
-    public float damageFlashDuration = 0.15f;
+    public float damageFlashDuration =
+        0.15f;
 
 
-    private bool isTakingDamage = false;
+    private bool isTakingDamage =
+        false;
 
-    // Danh sách material trên cơ thể Player
+
     private List<Material> playerMaterials =
         new List<Material>();
 
-    // Lưu màu gốc của từng material
+
     private List<Color> originalColors =
         new List<Color>();
 
 
+    // =========================================================
+    // AWAKE
+    // =========================================================
+
     private void Awake()
     {
-        animator = GetComponent<Animator>();
+        animator =
+            GetComponent<Animator>();
+
 
         InitializeRunStats();
+
 
         CachePlayerMaterials();
     }
@@ -53,43 +65,176 @@ public class PlayerStats : MonoBehaviour
     {
         if (baseStats == null)
         {
-            Debug.LogError("PlayerStats chưa được gắn PlayerStatsData.");
+            Debug.LogError(
+                "PlayerStats chưa được gắn PlayerStatsData."
+            );
+
             return;
         }
+
 
         string currentScene =
             SceneManager.GetActiveScene().name;
 
+
         if (currentScene == "Village")
         {
-            PlayerRunState.ResetToFull(baseStats);
+            PlayerRunState.ResetToFull(
+                baseStats
+            );
         }
         else
         {
-            PlayerRunState.RestoreOrStart(baseStats);
+            PlayerRunState.RestoreOrStart(
+                baseStats
+            );
         }
     }
 
-    public bool TrySpendMana(float amount)
+
+    // =========================================================
+    // SPEND MANA
+    // =========================================================
+
+    public bool TrySpendMana(
+        float amount)
     {
-        if (baseStats == null || amount < 0f)
+        if (
+            baseStats == null ||
+            amount < 0f
+        )
         {
             return false;
         }
 
-        if (baseStats.currentMana < amount)
+
+        if (
+            baseStats.currentMana <
+            amount
+        )
         {
             return false;
         }
 
-        baseStats.currentMana -= amount;
-        PlayerRunState.Save(baseStats);
+
+        baseStats.currentMana -=
+            amount;
+
+
+        PlayerRunState.Save(
+            baseStats
+        );
+
+
         return true;
     }
 
+
+    // =========================================================
+    // HEAL HP PERCENT
+    // =========================================================
+
+    public void HealPercent(
+        float percent)
+    {
+        if (baseStats == null)
+            return;
+
+
+        percent =
+            Mathf.Max(
+                0f,
+                percent
+            );
+
+
+        float healAmount =
+            baseStats.maxHealth *
+            percent;
+
+
+        float oldHealth =
+            baseStats.currentHealth;
+
+
+        baseStats.currentHealth =
+            Mathf.Clamp(
+                baseStats.currentHealth +
+                healAmount,
+                0f,
+                baseStats.maxHealth
+            );
+
+
+        PlayerRunState.Save(
+            baseStats
+        );
+
+
+        Debug.Log(
+            $"Heal HP: {oldHealth} -> " +
+            $"{baseStats.currentHealth}"
+        );
+    }
+
+
+    // =========================================================
+    // RESTORE MANA PERCENT
+    // =========================================================
+
+    public void RestoreManaPercent(
+        float percent)
+    {
+        if (baseStats == null)
+            return;
+
+
+        percent =
+            Mathf.Max(
+                0f,
+                percent
+            );
+
+
+        float manaAmount =
+            baseStats.maxMana *
+            percent;
+
+
+        float oldMana =
+            baseStats.currentMana;
+
+
+        baseStats.currentMana =
+            Mathf.Clamp(
+                baseStats.currentMana +
+                manaAmount,
+                0f,
+                baseStats.maxMana
+            );
+
+
+        PlayerRunState.Save(
+            baseStats
+        );
+
+
+        Debug.Log(
+            $"Restore Mana: {oldMana} -> " +
+            $"{baseStats.currentMana}"
+        );
+    }
+
+
+    // =========================================================
+    // SAVE
+    // =========================================================
+
     public void SaveRunStats()
     {
-        PlayerRunState.Save(baseStats);
+        PlayerRunState.Save(
+            baseStats
+        );
     }
 
 
@@ -100,19 +245,14 @@ public class PlayerStats : MonoBehaviour
     private void CachePlayerMaterials()
     {
         playerMaterials.Clear();
+
         originalColors.Clear();
 
 
-        // -----------------------------
-        // SKINNED MESH
-        // Ví dụ:
-        // Body
-        // Cloak
-        // ...
-        // -----------------------------
-
         SkinnedMeshRenderer[] skinnedRenderers =
-            GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            GetComponentsInChildren<SkinnedMeshRenderer>(
+                true
+            );
 
 
         foreach (
@@ -124,25 +264,22 @@ public class PlayerStats : MonoBehaviour
                 renderer.materials;
 
 
-            foreach (Material material in materials)
+            foreach (
+                Material material
+                in materials
+            )
             {
-                AddMaterial(material);
+                AddMaterial(
+                    material
+                );
             }
         }
 
 
-        // -----------------------------
-        // NORMAL MESH
-        // Ví dụ:
-        // Hair
-        // Head
-        // Backpack
-        // Weapon
-        // ...
-        // -----------------------------
-
         MeshRenderer[] meshRenderers =
-            GetComponentsInChildren<MeshRenderer>(true);
+            GetComponentsInChildren<MeshRenderer>(
+                true
+            );
 
 
         foreach (
@@ -154,33 +291,50 @@ public class PlayerStats : MonoBehaviour
                 renderer.materials;
 
 
-            foreach (Material material in materials)
+            foreach (
+                Material material
+                in materials
+            )
             {
-                AddMaterial(material);
+                AddMaterial(
+                    material
+                );
             }
         }
     }
 
 
-    private void AddMaterial(Material material)
+    // =========================================================
+    // ADD MATERIAL
+    // =========================================================
+
+    private void AddMaterial(
+        Material material)
     {
         if (material == null)
             return;
 
 
-        // Tránh lưu material trùng
-        if (playerMaterials.Contains(material))
+        if (
+            playerMaterials.Contains(
+                material
+            )
+        )
+        {
             return;
+        }
 
 
-        // Shader có property màu hay không
         if (
             material.HasProperty("_BaseColor")
             ||
             material.HasProperty("_Color")
         )
         {
-            playerMaterials.Add(material);
+            playerMaterials.Add(
+                material
+            );
+
 
             originalColors.Add(
                 material.color
@@ -193,16 +347,15 @@ public class PlayerStats : MonoBehaviour
     // TAKE DAMAGE
     // =========================================================
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(
+        float damage)
     {
         PlayerController player =
             GetComponent<PlayerController>();
 
 
-        // Nếu đang bất tử khi dash
         if (
-            player != null
-            &&
+            player != null &&
             player.IsInvincible
         )
         {
@@ -210,27 +363,27 @@ public class PlayerStats : MonoBehaviour
         }
 
 
-        baseStats.currentHealth = Mathf.Max(
-            0f,
-            baseStats.currentHealth - damage);
+        baseStats.currentHealth =
+            Mathf.Max(
+                0f,
+                baseStats.currentHealth -
+                damage
+            );
 
-        PlayerRunState.Save(baseStats);
+
+        PlayerRunState.Save(
+            baseStats
+        );
 
 
         Debug.Log(
-            "Player HP: "
-            +
+            "Player HP: " +
             baseStats.currentHealth
         );
 
 
-        // =====================================================
-        // DAMAGE FEEDBACK
-        // =====================================================
-
         if (
-            !isTakingDamage
-            &&
+            !isTakingDamage &&
             animator != null
         )
         {
@@ -240,11 +393,9 @@ public class PlayerStats : MonoBehaviour
         }
 
 
-        // =====================================================
-        // DIE
-        // =====================================================
-
-        if (baseStats.currentHealth <= 0)
+        if (
+            baseStats.currentHealth <= 0
+        )
         {
             Die();
         }
@@ -252,49 +403,36 @@ public class PlayerStats : MonoBehaviour
 
 
     // =========================================================
-    // DAMAGE FEEDBACK ROUTINE
+    // DAMAGE FEEDBACK
     // =========================================================
 
     private IEnumerator PlayDamageFeedbackRoutine()
     {
-        isTakingDamage = true;
+        isTakingDamage =
+            true;
 
-
-        // -----------------------------------------------------
-        // 1. BẬT ANIMATION TAKE DAMAGE
-        // -----------------------------------------------------
 
         animator.SetTrigger(
             TakeDamageTrigger
         );
 
 
-        // -----------------------------------------------------
-        // 2. PLAYER BIẾN THÀNH MÀU ĐỎ
-        // -----------------------------------------------------
-
         SetPlayerColor(
             damageColor
         );
 
 
-        // Giữ màu đỏ trong một khoảng ngắn
         yield return new WaitForSeconds(
             damageFlashDuration
         );
 
 
-        // -----------------------------------------------------
-        // 3. TRẢ PLAYER VỀ MÀU GỐC
-        // -----------------------------------------------------
-
         RestorePlayerColor();
 
 
-        // Animation TakeDamage của bạn hiện đang
-        // khóa damage animation trong khoảng 1 giây.
         float remainingTime =
-            1f - damageFlashDuration;
+            1f -
+            damageFlashDuration;
 
 
         if (remainingTime > 0f)
@@ -305,15 +443,17 @@ public class PlayerStats : MonoBehaviour
         }
 
 
-        isTakingDamage = false;
+        isTakingDamage =
+            false;
     }
 
 
     // =========================================================
-    // SET RED
+    // SET COLOR
     // =========================================================
 
-    private void SetPlayerColor(Color color)
+    private void SetPlayerColor(
+        Color color)
     {
         for (
             int i = 0;
@@ -329,13 +469,14 @@ public class PlayerStats : MonoBehaviour
                 continue;
 
 
-            material.color = color;
+            material.color =
+                color;
         }
     }
 
 
     // =========================================================
-    // RESTORE ORIGINAL COLOR
+    // RESTORE COLOR
     // =========================================================
 
     private void RestorePlayerColor()
@@ -366,13 +507,20 @@ public class PlayerStats : MonoBehaviour
 
     private void Die()
     {
-        baseStats.currentHealth = 0;
-        PlayerRunState.Save(baseStats);
+        baseStats.currentHealth =
+            0;
 
-        // Phòng trường hợp player chết
-        // đúng lúc đang đỏ
+
+        PlayerRunState.Save(
+            baseStats
+        );
+
+
         RestorePlayerColor();
 
-        Debug.Log("PLAYER DEAD");
+
+        Debug.Log(
+            "PLAYER DEAD"
+        );
     }
 }
