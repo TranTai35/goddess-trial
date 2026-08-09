@@ -507,6 +507,11 @@ public class EnemySpawnArea : MonoBehaviour
         offScreenTimer = 0f;
 
         Log("[BUILD TEST] Shift + R: khu vực đã được hoàn thành cưỡng bức.");
+
+        if (AudioController.Instance != null)
+        {
+            AudioController.Instance.CheckAndFadeBattleMusicIfAllAreasCompleted();
+        }
     }
 
     public void NotifyEnemyKilled(
@@ -550,6 +555,12 @@ public class EnemySpawnArea : MonoBehaviour
         {
             areaCompleted = true;
             Log("Đã tiêu diệt hết toàn bộ khu vực.");
+
+            if (AudioController.Instance != null)
+            {
+                AudioController.Instance.CheckAndFadeBattleMusicIfAllAreasCompleted();
+            }
+
             return;
         }
 
