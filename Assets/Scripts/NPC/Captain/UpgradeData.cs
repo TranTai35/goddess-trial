@@ -1,6 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public enum UpgradeType
 {
@@ -11,19 +9,28 @@ public enum UpgradeType
     ManaRegen
 }
 
-
 [System.Serializable]
 public class UpgradeData
 {
     public UpgradeType type;
 
-    public int level ;
+    [Tooltip("Level dùng để tính giá và giá trị nâng.")]
+    public int level = 1;
 
     public int baseCost;
 
     public void SetDefault()
     {
-        level = 1;
+        /*
+         * Không được reset level = 1 ở đây nữa.
+         * Vì OnValidate có thể chạy nhiều lần trong Editor.
+         */
+
+        if (level < 1)
+        {
+            level = 1;
+        }
+
         switch (type)
         {
             case UpgradeType.MaxHealth:
@@ -47,11 +54,27 @@ public class UpgradeData
                 break;
         }
     }
+
+    /// <summary>
+    /// Đồng bộ level với số lần đã nâng.
+    ///
+    /// 0 lần nâng -> level 1
+    /// 1 lần nâng -> level 2
+    /// ...
+    /// </summary>
+    public void SetUpgradeCount(
+        int upgradeCount)
+    {
+        level =
+            Mathf.Max(0, upgradeCount) + 1;
+    }
+
     public int GetCost()
     {
         return Mathf.RoundToInt(
             baseCost *
-            Mathf.Pow(1.4f, level));
+            Mathf.Pow(1.4f, level)
+        );
     }
 
     public float GetValuePerLevel()

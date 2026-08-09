@@ -649,9 +649,12 @@ MonoBehaviour:
   villageMusic: {fileID: 8300000, guid: ac7a7e5507451b84e97018c5d54e0710, type: 3}
   battleMusic: {fileID: 8300000, guid: 5e0e21a151594e14b9a4d180e62079e7, type: 3}
   bossMusic: {fileID: 8300000, guid: 5b2692f78655fb24396ea27363a27a21, type: 3}
+  buttonClickSFX: {fileID: 8300000, guid: 086ff2436b1c4ad4385c3d866133e9c8, type: 3}
+  buttonClickVolume: 1
   musicVolume: 0.7
   sfxVolume: 1
   fadeDuration: 0.5
+  battleClearFadeDuration: 2.5
 --- !u!4 &475058931
 Transform:
   m_ObjectHideFlags: 0
