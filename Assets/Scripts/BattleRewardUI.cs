@@ -2,54 +2,90 @@
 
 public class BattleRewardUI : MonoBehaviour
 {
+    public static BattleRewardUI Instance { get; private set; }
+
     [Header("References")]
-    [SerializeField]
-    private GameObject rewardPanel;
+    [SerializeField] private GameObject rewardPanel;
+    [SerializeField] private PlayerStats playerStats;
 
-    [SerializeField]
-    private PlayerStats playerStats;
+    [Header("Reward Interact UI")]
+    [Tooltip("Text kiểu: Nhấn R để nhận phần thưởng")]
+    [SerializeField] private GameObject rewardInteractText;
 
+    [Header("Reward VFX")]
+    [Tooltip("Prefab VFX xuất hiện dưới Player sau khi clear enemy.")]
+    [SerializeField] private GameObject rewardVfxPrefab;
+
+    [Tooltip("Offset của VFX so với Player.")]
+    [SerializeField]
+    private Vector3 rewardVfxOffset =
+        new Vector3(0f, 0.05f, 0f);
 
     [Header("HP Reward")]
     [Range(0f, 1f)]
-    [SerializeField]
-    private float healthRestorePercent =
-        0.20f;
-
+    [SerializeField] private float healthRestorePercent = 0.20f;
 
     [Header("Mana Reward")]
     [Range(0f, 1f)]
-    [SerializeField]
-    private float manaRestorePercent =
-        0.10f;
-
+    [SerializeField] private float manaRestorePercent = 0.10f;
 
     [Header("Gold Reward")]
-    [SerializeField]
-    private int goldReward =
-        50;
-
+    [SerializeField] private int goldReward = 50;
 
     [Header("Diamond Reward")]
-    [SerializeField]
-    private int diamondReward =
-        20;
-
+    [SerializeField] private int diamondReward = 20;
 
     [Header("Settings")]
-    [Tooltip(
-        "Có khóa game khi bảng reward hiện ra hay không."
-    )]
-    [SerializeField]
-    private bool pauseGameWhileChoosing =
-        true;
+    [SerializeField] private bool pauseGameWhileChoosing = true;
+
+    [Header("Debug")]
+    [SerializeField] private bool showDebugLogs = true;
 
 
-    private bool rewardShown =
-        false;
+    private GameObject spawnedRewardVfx;
 
-    private bool rewardSelected =
-        false;
+    /*
+     * Enemy đã clear, reward đang nằm dưới Player,
+     * chờ người chơi nhấn R.
+     */
+    private bool rewardAvailable = false;
+
+    /*
+     * Panel 4 lựa chọn đang mở.
+     */
+    private bool rewardPanelOpen = false;
+
+    /*
+     * Đã lấy reward của màn này.
+     */
+    private bool rewardSelected = false;
+
+
+    // =========================================================
+    // PUBLIC STATE
+    // =========================================================
+
+    public bool RewardAvailable =>
+        rewardAvailable;
+
+    public bool RewardPanelOpen =>
+        rewardPanelOpen;
+
+    /// <summary>
+    /// Portal dùng biến này để biết có cần nhường
+    /// quyền tương tác cho Reward hay không.
+    /// </summary>
+    public static bool IsBlockingPortalInteraction
+    {
+        get
+        {
+            if (Instance == null)
+                return false;
+
+            return Instance.rewardAvailable ||
+                   Instance.rewardPanelOpen;
+        }
+    }
 
 
     // =========================================================
@@ -58,30 +94,52 @@ public class BattleRewardUI : MonoBehaviour
 
     private void Awake()
     {
+        Instance = this;
+
         if (rewardPanel != null)
         {
-            rewardPanel.SetActive(
-                false
-            );
+            rewardPanel.SetActive(false);
+        }
+
+        if (rewardInteractText != null)
+        {
+            rewardInteractText.SetActive(false);
         }
     }
 
 
     // =========================================================
-    // EVENT SUBSCRIBE
+    // ENABLE
     // =========================================================
 
     private void OnEnable()
     {
         AudioController.OnBattleMusicFadeCompleted +=
-            ShowRewardPanel;
+            PrepareReward;
     }
 
+
+    // =========================================================
+    // DISABLE
+    // =========================================================
 
     private void OnDisable()
     {
         AudioController.OnBattleMusicFadeCompleted -=
-            ShowRewardPanel;
+            PrepareReward;
+    }
+
+
+    // =========================================================
+    // DESTROY
+    // =========================================================
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 
 
@@ -96,6 +154,36 @@ public class BattleRewardUI : MonoBehaviour
 
 
     // =========================================================
+    // UPDATE
+    // =========================================================
+
+    private void Update()
+    {
+        /*
+         * Reward đã xuất hiện dưới Player
+         * nhưng chưa mở panel.
+         */
+        if (!rewardAvailable)
+            return;
+
+        if (rewardPanelOpen)
+            return;
+
+        if (rewardSelected)
+            return;
+
+
+        /*
+         * Reward được ưu tiên phím R trước Portal.
+         */
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            OpenRewardPanel();
+        }
+    }
+
+
+    // =========================================================
     // FIND PLAYER
     // =========================================================
 
@@ -105,10 +193,30 @@ public class BattleRewardUI : MonoBehaviour
             return;
 
 
-        GameObject playerObject =
-            GameObject.FindGameObjectWithTag(
-                "Player"
+        playerStats =
+            FindFirstObjectByType<PlayerStats>();
+
+
+        if (playerStats != null)
+        {
+            Log(
+                $"Tìm thấy PlayerStats: {playerStats.gameObject.name}"
             );
+
+            return;
+        }
+
+
+        GameObject playerObject = null;
+
+        try
+        {
+            playerObject =
+                GameObject.FindGameObjectWithTag("Player");
+        }
+        catch
+        {
+        }
 
 
         if (playerObject != null)
@@ -116,63 +224,153 @@ public class BattleRewardUI : MonoBehaviour
             playerStats =
                 playerObject.GetComponent<PlayerStats>();
         }
+
+
+        if (playerStats == null)
+        {
+            Debug.LogWarning(
+                "BattleRewardUI không tìm thấy PlayerStats."
+            );
+        }
     }
 
 
     // =========================================================
-    // SHOW REWARD
+    // PREPARE REWARD
     // =========================================================
 
-    private void ShowRewardPanel()
+    private void PrepareReward()
     {
         /*
-         * Không hiện lại lần 2.
+         * Không tạo lại nếu đã tạo reward rồi.
          */
-        if (rewardShown)
+        if (rewardAvailable ||
+            rewardPanelOpen ||
+            rewardSelected)
+        {
             return;
-
-
-        rewardShown =
-            true;
-
-
-        rewardSelected =
-            false;
+        }
 
 
         FindPlayer();
 
 
-        if (rewardPanel == null)
+        if (playerStats == null)
         {
-            Debug.LogWarning(
-                "BattleRewardUI chưa được gắn Reward Panel."
+            Debug.LogError(
+                "Không tìm thấy Player nên không thể tạo Battle Reward."
             );
 
             return;
         }
 
 
-        rewardPanel.SetActive(
-            true
-        );
+        rewardAvailable = true;
 
 
-        if (pauseGameWhileChoosing)
+        // =====================================================
+        // CREATE VFX UNDER PLAYER
+        // =====================================================
+
+        if (rewardVfxPrefab != null)
         {
-            Time.timeScale =
-                0f;
+            spawnedRewardVfx =
+                Instantiate(
+                    rewardVfxPrefab,
+                    playerStats.transform
+                );
+
+
+            spawnedRewardVfx.transform.localPosition =
+                rewardVfxOffset;
+
+
+            spawnedRewardVfx.transform.localRotation =
+                Quaternion.identity;
         }
 
 
-        Debug.Log(
-            "Battle Reward Panel xuất hiện."
+        // =====================================================
+        // SHOW "PRESS R"
+        // =====================================================
+
+        if (rewardInteractText != null)
+        {
+            rewardInteractText.SetActive(true);
+        }
+
+
+        Log(
+            "Reward đã xuất hiện. Nhấn R để nhận."
         );
     }
 
 
     // =========================================================
-    // CHOOSE HEALTH
+    // OPEN REWARD PANEL
+    // =========================================================
+
+    private void OpenRewardPanel()
+    {
+        if (!rewardAvailable)
+            return;
+
+        if (rewardSelected)
+            return;
+
+
+        rewardAvailable = false;
+        rewardPanelOpen = true;
+
+
+        // =====================================================
+        // REMOVE VFX
+        // =====================================================
+
+        if (spawnedRewardVfx != null)
+        {
+            Destroy(spawnedRewardVfx);
+
+            spawnedRewardVfx = null;
+        }
+
+
+        // =====================================================
+        // HIDE R TEXT
+        // =====================================================
+
+        if (rewardInteractText != null)
+        {
+            rewardInteractText.SetActive(false);
+        }
+
+
+        // =====================================================
+        // SHOW PANEL
+        // =====================================================
+
+        if (rewardPanel != null)
+        {
+            rewardPanel.SetActive(true);
+
+            rewardPanel.transform.SetAsLastSibling();
+        }
+
+
+        if (pauseGameWhileChoosing)
+        {
+            Time.timeScale = 0f;
+        }
+
+
+        Log(
+            "Mở Battle Reward Panel."
+        );
+    }
+
+
+    // =========================================================
+    // HEALTH
     // =========================================================
 
     public void ChooseHealth()
@@ -186,14 +384,12 @@ public class BattleRewardUI : MonoBehaviour
         );
 
 
-        CompleteSelection(
-            "HP"
-        );
+        CompleteSelection("HP");
     }
 
 
     // =========================================================
-    // CHOOSE MANA
+    // MANA
     // =========================================================
 
     public void ChooseMana()
@@ -207,14 +403,12 @@ public class BattleRewardUI : MonoBehaviour
         );
 
 
-        CompleteSelection(
-            "Mana"
-        );
+        CompleteSelection("Mana");
     }
 
 
     // =========================================================
-    // CHOOSE GOLD
+    // GOLD
     // =========================================================
 
     public void ChooseGold()
@@ -230,14 +424,12 @@ public class BattleRewardUI : MonoBehaviour
         playerStats.SaveRunStats();
 
 
-        CompleteSelection(
-            "Gold"
-        );
+        CompleteSelection("Gold");
     }
 
 
     // =========================================================
-    // CHOOSE DIAMOND
+    // DIAMOND
     // =========================================================
 
     public void ChooseDiamond()
@@ -253,9 +445,7 @@ public class BattleRewardUI : MonoBehaviour
         playerStats.SaveRunStats();
 
 
-        CompleteSelection(
-            "Diamond"
-        );
+        CompleteSelection("Diamond");
     }
 
 
@@ -265,10 +455,11 @@ public class BattleRewardUI : MonoBehaviour
 
     private bool CanSelectReward()
     {
-        /*
-         * Đã chọn rồi thì không cho click thêm.
-         */
         if (rewardSelected)
+            return false;
+
+
+        if (!rewardPanelOpen)
             return false;
 
 
@@ -278,15 +469,9 @@ public class BattleRewardUI : MonoBehaviour
         }
 
 
-        if (
-            playerStats == null ||
-            playerStats.baseStats == null
-        )
+        if (playerStats == null ||
+            playerStats.baseStats == null)
         {
-            Debug.LogWarning(
-                "BattleRewardUI không tìm thấy PlayerStats."
-            );
-
             return false;
         }
 
@@ -302,27 +487,41 @@ public class BattleRewardUI : MonoBehaviour
     private void CompleteSelection(
         string rewardName)
     {
-        rewardSelected =
-            true;
-
-
-        Debug.Log(
-            $"Player chọn Battle Reward: {rewardName}"
-        );
+        rewardSelected = true;
+        rewardPanelOpen = false;
 
 
         if (rewardPanel != null)
         {
-            rewardPanel.SetActive(
-                false
-            );
+            rewardPanel.SetActive(false);
         }
 
 
         if (pauseGameWhileChoosing)
         {
-            Time.timeScale =
-                1f;
+            Time.timeScale = 1f;
         }
+
+
+        Log(
+            $"Player chọn Reward: {rewardName}"
+        );
+    }
+
+
+    // =========================================================
+    // LOG
+    // =========================================================
+
+    private void Log(
+        string message)
+    {
+        if (!showDebugLogs)
+            return;
+
+
+        Debug.Log(
+            $"[BattleRewardUI] {message}"
+        );
     }
 }
