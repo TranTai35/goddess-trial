@@ -1,6 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class GameUIManager : MonoBehaviour
@@ -10,6 +8,7 @@ public class GameUIManager : MonoBehaviour
     public GameObject settingsPanel;
     public GameObject deathPanel;
 
+
     [Header("Stats")]
     public PlayerStats playerStats;
 
@@ -17,24 +16,53 @@ public class GameUIManager : MonoBehaviour
     private bool isPaused;
     private bool isDead;
 
+
+    // =========================================================
+    // START
+    // =========================================================
+
     private void Start()
     {
-        pausePanel.SetActive(false);
-        settingsPanel.SetActive(false);
-        deathPanel.SetActive(false);
+        if (pausePanel != null)
+        {
+            pausePanel.SetActive(false);
+        }
+
+
+        if (settingsPanel != null)
+        {
+            settingsPanel.SetActive(false);
+        }
+
+
+        if (deathPanel != null)
+        {
+            deathPanel.SetActive(false);
+        }
     }
+
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
 
     private void Update()
     {
         HandlePause();
-        CheckPlayerDeath();
 
+        CheckPlayerDeath();
     }
+
+
+    // =========================================================
+    // PAUSE
+    // =========================================================
 
     private void HandlePause()
     {
         if (isDead)
             return;
+
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -54,88 +82,203 @@ public class GameUIManager : MonoBehaviour
     {
         isPaused = true;
 
-        pausePanel.SetActive(true);
+
+        if (pausePanel != null)
+        {
+            pausePanel.SetActive(true);
+        }
+
 
         Time.timeScale = 0f;
     }
+
 
     public void ResumeGame()
     {
         isPaused = false;
 
-        pausePanel.SetActive(false);
 
-        settingsPanel.SetActive(false);
+        if (pausePanel != null)
+        {
+            pausePanel.SetActive(false);
+        }
+
+
+        if (settingsPanel != null)
+        {
+            settingsPanel.SetActive(false);
+        }
+
 
         Time.timeScale = 1f;
     }
 
+
+    // =========================================================
+    // SETTINGS
+    // =========================================================
+
     public void OpenSettings()
     {
-        settingsPanel.SetActive(true);
+        if (settingsPanel != null)
+        {
+            settingsPanel.SetActive(true);
+        }
     }
+
 
     public void CloseSettings()
     {
-        settingsPanel.SetActive(false);
+        if (settingsPanel != null)
+        {
+            settingsPanel.SetActive(false);
+        }
     }
+
+
+    // =========================================================
+    // EXIT TO MENU + SAVE
+    // =========================================================
 
     public void ExitToMenu()
     {
         Time.timeScale = 1f;
 
-        SceneManager.LoadScene("MainMenu");
+
+        /*
+         * SAVE GAME trước khi về MainMenu.
+         */
+        if (
+            playerStats != null &&
+            playerStats.baseStats != null
+        )
+        {
+            string sceneName =
+                SceneManager.GetActiveScene().name;
+
+
+            SaveGameManager.SaveGame(
+                playerStats.baseStats,
+                sceneName
+            );
+        }
+
+
+        SceneManager.LoadScene(
+            "MainMenu"
+        );
     }
+
+
+    // =========================================================
+    // EXIT TO VILLAGE
+    // =========================================================
 
     public void ExitToVillage()
     {
         Time.timeScale = 1f;
 
+
         if (playerStats != null)
         {
-            PlayerRunState.ResetToFull(playerStats.baseStats);
+            PlayerRunState.ResetToFull(
+                playerStats.baseStats
+            );
+
+
+            /*
+             * Về Village cũng cập nhật save.
+             */
+            SaveGameManager.SaveGame(
+                playerStats.baseStats,
+                "Village"
+            );
         }
 
-        SceneManager.LoadScene("Village");
+
+        SceneManager.LoadScene(
+            "Village"
+        );
     }
+
+
+    // =========================================================
+    // PLAYER DEATH
+    // =========================================================
 
     private void CheckPlayerDeath()
     {
         if (isDead)
             return;
 
-        if (playerStats.baseStats.currentHealth <= 0)
+
+        if (
+            playerStats == null ||
+            playerStats.baseStats == null
+        )
+        {
+            return;
+        }
+
+
+        if (
+            playerStats.baseStats.currentHealth
+            <=
+            0
+        )
         {
             ShowDeathUI();
         }
     }
 
+
     public void ShowDeathUI()
     {
         isDead = true;
 
-        deathPanel.SetActive(true);
+
+        if (deathPanel != null)
+        {
+            deathPanel.SetActive(true);
+        }
+
 
         Animator animator =
-     playerStats.GetComponent<Animator>();
+            playerStats.GetComponent<Animator>();
+
 
         if (animator != null)
         {
-            animator.SetTrigger("Die");
+            animator.SetTrigger(
+                "Die"
+            );
         }
-        Time.timeScale = 0f;
 
+
+        Time.timeScale = 0f;
     }
 
+
+    // =========================================================
+    // RESPAWN
+    // =========================================================
 
     public void Respawn()
     {
         Time.timeScale = 1f;
 
-        GameManager.Instance
-            .RespawnPlayer(playerStats);
 
-        deathPanel.SetActive(false);
+        GameManager.Instance
+            .RespawnPlayer(
+                playerStats
+            );
+
+
+        if (deathPanel != null)
+        {
+            deathPanel.SetActive(false);
+        }
+
 
         isDead = false;
     }

@@ -77,18 +77,46 @@ public class PlayerStats : MonoBehaviour
             SceneManager.GetActiveScene().name;
 
 
+        // =========================================================
+        // VILLAGE
+        // =========================================================
+
         if (currentScene == "Village")
         {
+            /*
+             * Village luôn hồi đầy HP/Mana.
+             */
             PlayerRunState.ResetToFull(
                 baseStats
             );
+
+            return;
         }
-        else
+
+
+        // =========================================================
+        // BATTLE
+        // =========================================================
+
+        /*
+         * Nếu vừa Load Game từ MainMenu,
+         * currentHealth/currentMana đã được lấy từ save.
+         *
+         * Bắt đầu PlayerRunState bằng chính giá trị đó.
+         */
+        if (!PlayerRunState.IsRunActive)
         {
-            PlayerRunState.RestoreOrStart(
+            PlayerRunState.StartFromCurrent(
                 baseStats
             );
+
+            return;
         }
+
+
+        PlayerRunState.RestoreOrStart(
+            baseStats
+        );
     }
 
 

@@ -1,33 +1,212 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class MainMenuUI : MonoBehaviour
 {
-    public GameObject settingPanel;
+    [Header("Panels")]
+    [SerializeField]
+    private GameObject settingPanel;
 
-    [Header("Scene Name")]
-    public string gameSceneName = "Village";
+    [SerializeField]
+    private GameObject newGamePanel;
 
-    public void OpenSetting()
+
+    [Header("Player Data")]
+    [Tooltip(
+        "Kéo PlayerStatsData ScriptableObject của Player vào đây."
+    )]
+    [SerializeField]
+    private PlayerStatsData playerStatsData;
+
+
+    [Header("Scene")]
+    [SerializeField]
+    private string newGameSceneName =
+        "Village";
+
+
+    // =========================================================
+    // START
+    // =========================================================
+
+    private void Start()
     {
-        settingPanel.SetActive(true);
+        Time.timeScale = 1f;
+
+
+        if (settingPanel != null)
+        {
+            settingPanel.SetActive(false);
+        }
+
+
+        if (newGamePanel != null)
+        {
+            newGamePanel.SetActive(false);
+        }
     }
 
-    public void CloseSetting()
+
+    // =========================================================
+    // NEW GAME BUTTON
+    // =========================================================
+
+    public void NewGame()
     {
-        settingPanel.SetActive(false);
+        /*
+         * Không xóa save ngay.
+         *
+         * Chỉ hiện bảng xác nhận.
+         */
+        if (newGamePanel != null)
+        {
+            newGamePanel.SetActive(true);
+            newGamePanel.transform.SetAsLastSibling();
+        }
     }
+
+
+    // =========================================================
+    // NEW GAME - NO
+    // =========================================================
+
+    public void NewGameNo()
+    {
+        if (newGamePanel != null)
+        {
+            newGamePanel.SetActive(false);
+        }
+    }
+
+
+    // =========================================================
+    // NEW GAME - YES
+    // =========================================================
+
+    public void NewGameYes()
+    {
+        if (playerStatsData == null)
+        {
+            Debug.LogError(
+                "MainMenuUI: Chưa gắn PlayerStatsData."
+            );
+
+            return;
+        }
+
+
+        /*
+         * Tạo game mới.
+         *
+         * Save cũ sẽ bị xóa và ghi đè bằng
+         * save mới.
+         */
+        SaveGameManager.CreateNewGame(
+            playerStatsData
+        );
+
+
+        Time.timeScale =
+            1f;
+
+
+        SceneManager.LoadScene(
+            newGameSceneName
+        );
+    }
+
+
+    // =========================================================
+    // LOAD GAME
+    // =========================================================
 
     public void LoadGame()
     {
-        SceneManager.LoadScene(gameSceneName);
+        /*
+         * CHƯA TỪNG NEW GAME
+         *
+         * Load Game sẽ mở panel New Game.
+         */
+        if (!SaveGameManager.HasSave())
+        {
+            NewGame();
+
+            return;
+        }
+
+
+        if (playerStatsData == null)
+        {
+            Debug.LogError(
+                "MainMenuUI: Chưa gắn PlayerStatsData."
+            );
+
+            return;
+        }
+
+
+        // =====================================================
+        // LOAD PLAYER DATA
+        // =====================================================
+
+        SaveGameManager.LoadStats(
+            playerStatsData
+        );
+
+
+        // =====================================================
+        // GET LAST SCENE
+        // =====================================================
+
+        string savedScene =
+            SaveGameManager.GetSavedScene();
+
+
+        if (string.IsNullOrEmpty(savedScene))
+        {
+            savedScene =
+                newGameSceneName;
+        }
+
+
+        Time.timeScale =
+            1f;
+
+
+        SceneManager.LoadScene(
+            savedScene
+        );
     }
+
+
+    // =========================================================
+    // SETTINGS
+    // =========================================================
+
+    public void OpenSetting()
+    {
+        if (settingPanel != null)
+        {
+            settingPanel.SetActive(true);
+        }
+    }
+
+
+    public void CloseSetting()
+    {
+        if (settingPanel != null)
+        {
+            settingPanel.SetActive(false);
+        }
+    }
+
+
+    // =========================================================
+    // EXIT
+    // =========================================================
 
     public void ExitGame()
     {
         Application.Quit();
     }
-
 }

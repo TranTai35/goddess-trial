@@ -5,19 +5,25 @@ public static class CaptainUpgradeState
     public const int MaxUpgradeCount = 7;
 
     private static int[] upgradeCounts =
-        new int[System.Enum.GetValues(typeof(UpgradeType)).Length];
+        new int[
+            System.Enum.GetValues(
+                typeof(UpgradeType)
+            ).Length
+        ];
 
-    /// <summary>
-    /// Reset mỗi lần bắt đầu một lần Play mới.
-    /// Không reset khi chuyển scene.
-    /// </summary>
+
     [RuntimeInitializeOnLoadMethod(
         RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void Initialize()
     {
         upgradeCounts =
-            new int[System.Enum.GetValues(typeof(UpgradeType)).Length];
+            new int[
+                System.Enum.GetValues(
+                    typeof(UpgradeType)
+                ).Length
+            ];
     }
+
 
     public static int GetUpgradeCount(
         UpgradeType type)
@@ -33,12 +39,14 @@ public static class CaptainUpgradeState
         return upgradeCounts[index];
     }
 
+
     public static bool CanUpgrade(
         UpgradeType type)
     {
         return GetUpgradeCount(type) <
                MaxUpgradeCount;
     }
+
 
     public static bool RegisterUpgrade(
         UpgradeType type)
@@ -62,12 +70,36 @@ public static class CaptainUpgradeState
         return true;
     }
 
+
     public static bool IsMaxed(
         UpgradeType type)
     {
         return GetUpgradeCount(type) >=
                MaxUpgradeCount;
     }
+
+
+    // Dùng khi LOAD GAME.
+    public static void SetUpgradeCount(
+        UpgradeType type,
+        int count)
+    {
+        int index = (int)type;
+
+        if (index < 0 ||
+            index >= upgradeCounts.Length)
+        {
+            return;
+        }
+
+        upgradeCounts[index] =
+            Mathf.Clamp(
+                count,
+                0,
+                MaxUpgradeCount
+            );
+    }
+
 
     public static void ResetAll()
     {

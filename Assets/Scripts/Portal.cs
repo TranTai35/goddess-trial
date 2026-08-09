@@ -475,6 +475,41 @@ public class Portal : MonoBehaviour
         );
 
 
+        // =====================================================
+        // SAVE DESTINATION SCENE
+        // =====================================================
+
+        if (playerController != null)
+        {
+            PlayerStats stats =
+                playerController.GetComponent<PlayerStats>();
+
+
+            if (
+                stats != null &&
+                stats.baseStats != null
+            )
+            {
+                /*
+                 * Save scene SẮP đi tới.
+                 *
+                 * Ví dụ:
+                 * Level1_1 -> portal -> Level1_2
+                 *
+                 * Load Game sau này sẽ vào Level1_2.
+                 */
+                SaveGameManager.SaveGame(
+                    stats.baseStats,
+                    destinationScene
+                );
+            }
+        }
+
+
+        // =====================================================
+        // LOAD SCENE
+        // =====================================================
+
         SceneManager.LoadScene(
             destinationScene
         );
