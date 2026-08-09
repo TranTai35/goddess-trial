@@ -647,7 +647,7 @@ MonoBehaviour:
   sfxSource: {fileID: 475058928}
   mainMenuMusic: {fileID: 8300000, guid: ecaef2e59d5dcb14a9d636fe99bff596, type: 3}
   villageMusic: {fileID: 8300000, guid: ac7a7e5507451b84e97018c5d54e0710, type: 3}
-  battleMusic: {fileID: 8300000, guid: c0d5550be49b14e2389d8f11f2cac724, type: 3}
+  battleMusic: {fileID: 8300000, guid: 5e0e21a151594e14b9a4d180e62079e7, type: 3}
   bossMusic: {fileID: 8300000, guid: 5b2692f78655fb24396ea27363a27a21, type: 3}
   musicVolume: 0.7
   sfxVolume: 1
