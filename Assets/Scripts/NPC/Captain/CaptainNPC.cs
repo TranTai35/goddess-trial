@@ -6,6 +6,7 @@ public class CaptainNPC : NPC
     [SerializeField]
     private List<UpgradeData> upgrades;
 
+
     private void Awake()
     {
         SyncUpgradeLevels();
@@ -60,10 +61,6 @@ public class CaptainNPC : NPC
 
         if (data != null)
         {
-            /*
-             * Luôn đồng bộ với số lần nâng
-             * đang được lưu xuyên scene.
-             */
             int upgradeCount =
                 CaptainUpgradeState.GetUpgradeCount(
                     type
@@ -87,9 +84,6 @@ public class CaptainNPC : NPC
             return false;
         }
 
-        /*
-         * ĐÃ NÂNG ĐỦ 7 LẦN
-         */
         if (!CaptainUpgradeState.CanUpgrade(type))
         {
             Debug.Log(
@@ -109,9 +103,6 @@ public class CaptainNPC : NPC
         int cost =
             data.GetCost();
 
-        /*
-         * KHÔNG ĐỦ VÀNG
-         */
         if (player.baseStats.gold < cost)
         {
             Debug.Log(
@@ -121,17 +112,11 @@ public class CaptainNPC : NPC
             return false;
         }
 
-        /*
-         * TRỪ VÀNG
-         */
         player.baseStats.gold -= cost;
 
         float value =
             data.GetValuePerLevel();
 
-        /*
-         * NÂNG CHỈ SỐ
-         */
         switch (type)
         {
             case UpgradeType.MaxHealth:
@@ -172,27 +157,12 @@ public class CaptainNPC : NPC
                 }
 
                 break;
-
-
-            case UpgradeType.ManaRegen:
-
-                player.baseStats.manaRegen +=
-                    value;
-
-                break;
         }
 
-        /*
-         * GHI NHẬN ĐÃ NÂNG THÊM 1 LẦN
-         */
         CaptainUpgradeState.RegisterUpgrade(
             type
         );
 
-        /*
-         * Đồng bộ level mới để lần tiếp theo
-         * tính giá mới.
-         */
         int newUpgradeCount =
             CaptainUpgradeState.GetUpgradeCount(
                 type
@@ -210,4 +180,6 @@ public class CaptainNPC : NPC
 
         return true;
     }
+
+
 }

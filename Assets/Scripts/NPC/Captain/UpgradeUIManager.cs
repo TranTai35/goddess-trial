@@ -7,6 +7,7 @@ public class UpgradeUIManager : MonoBehaviour
     public CaptainNPC captain;
     public PlayerStats player;
 
+
     [Header("Gold")]
     public TMP_Text goldText;
 
@@ -31,17 +32,6 @@ public class UpgradeUIManager : MonoBehaviour
     public TMP_Text manaValue;
 
     public Button manaButton;
-
-
-    // =========================================================
-    // MANA REGEN
-    // =========================================================
-
-    [Header("Mana Regen")]
-    public TMP_Text regenCost;
-    public TMP_Text regenValue;
-
-    public Button regenButton;
 
 
     // =========================================================
@@ -85,10 +75,6 @@ public class UpgradeUIManager : MonoBehaviour
 
     private void OnEnable()
     {
-        Debug.Log(
-            "UpgradeUIManager Enabled"
-        );
-
         RefreshUI();
     }
 
@@ -143,14 +129,6 @@ public class UpgradeUIManager : MonoBehaviour
             speedValue,
             speedButton
         );
-
-
-        UpdateStat(
-            UpgradeType.ManaRegen,
-            regenCost,
-            regenValue,
-            regenButton
-        );
     }
 
 
@@ -183,10 +161,6 @@ public class UpgradeUIManager : MonoBehaviour
             );
 
 
-        // =====================================================
-        // ĐÃ MAX 7/7
-        // =====================================================
-
         if (isMaxed)
         {
             if (cost != null)
@@ -209,10 +183,6 @@ public class UpgradeUIManager : MonoBehaviour
             return;
         }
 
-
-        // =====================================================
-        // CHƯA MAX
-        // =====================================================
 
         if (cost != null)
         {
@@ -251,9 +221,6 @@ public class UpgradeUIManager : MonoBehaviour
             button.colors;
 
 
-        /*
-         * Màu khi Button bị disabled.
-         */
         colors.disabledColor =
             maxUpgradeButtonColor;
 
@@ -262,9 +229,6 @@ public class UpgradeUIManager : MonoBehaviour
             colors;
 
 
-        /*
-         * Max -> không bấm được.
-         */
         button.interactable =
             !isMaxed;
     }
@@ -330,17 +294,4 @@ public class UpgradeUIManager : MonoBehaviour
     }
 
 
-    // =========================================================
-    // MANA REGEN
-    // =========================================================
-
-    public void UpgradeManaRegen()
-    {
-        captain.UpgradeStat(
-            UpgradeType.ManaRegen,
-            player
-        );
-
-        RefreshUI();
-    }
 }
