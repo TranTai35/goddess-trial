@@ -2540,6 +2540,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &144303422
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -2681,6 +2683,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &152565113
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -3563,6 +3567,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Guard
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!114 &195055541
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3803,6 +3809,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &211978748
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -4308,6 +4316,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &231343791
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -4443,6 +4453,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &235106340
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -4533,6 +4545,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Guard
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!114 &241428950
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5233,6 +5247,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &309760203
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -6577,6 +6593,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 8300000, guid: e1245ecd9b37fc14eaac54c630e05c4b, type: 3}
+  knightSFXVolume: 1
 --- !u!136 &393359587
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -7416,6 +7434,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Guard
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!114 &438909452
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8106,6 +8126,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &496943738
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -8319,6 +8341,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &514683382
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -10855,6 +10879,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &702489147
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -10996,6 +11022,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &711016085
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -14207,6 +14235,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &945731237
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -16579,6 +16609,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &1095151357
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -17573,6 +17605,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &1163977710
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -18712,6 +18746,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &1232462862
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -19114,6 +19150,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &1266297054
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -20775,6 +20813,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Guard
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!114 &1359125657
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21815,6 +21855,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &1410798722
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -22055,6 +22097,8 @@ MonoBehaviour:
   boardAttackSpell: {fileID: 8014544837785246823}
   imageSpell: {fileID: 3122736355632497003}
   imageAttackSpell: {fileID: 2485962229096657400}
+  magicianInteractSFX: {fileID: 8300000, guid: 54c9083e0945e714193907e5d690f0e7, type: 3}
+  magicianInteractVolume: 1
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   choiceColor: {r: 0.5, g: 1, b: 0.5, a: 1}
 --- !u!65 &1418381682
@@ -22109,6 +22153,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &1423837422
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -22532,6 +22578,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &1437389951
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -22996,6 +23044,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &1457186049
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -23749,6 +23799,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &1513243220
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -26460,6 +26512,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &1682156470
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -27526,6 +27580,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &1726177820
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -28368,6 +28424,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pressRUI: {fileID: 8785747827643082590}
   upgradeUI: {fileID: 1234009966137882790}
+  captainInteractSFX: {fileID: 8300000, guid: 66551cd8b6919e641a124ce4a0262ab4, type: 3}
+  captainInteractVolume: 1
 --- !u!4 &1786667272 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6912737215428899286, guid: 8021499f7c00f52429c42dd55f25db0e,
@@ -30480,6 +30538,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &1894207611
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -33544,6 +33604,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcName: Knight
+  knightSFX: {fileID: 0}
+  knightSFXVolume: 1
 --- !u!136 &2081093135
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -58955,7 +59017,7 @@ PrefabInstance:
     - target: {fileID: 883274060540218783, guid: 016b9b9951c84b443a44035a789164ec,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1126560917644704031, guid: 016b9b9951c84b443a44035a789164ec,
         type: 3}
@@ -59105,7 +59167,7 @@ PrefabInstance:
     - target: {fileID: 3478547166468059105, guid: 016b9b9951c84b443a44035a789164ec,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5370072525007471222, guid: 016b9b9951c84b443a44035a789164ec,
         type: 3}

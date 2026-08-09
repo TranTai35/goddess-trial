@@ -1,72 +1,172 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CaptainTrigger : MonoBehaviour
 {
+    [Header("UI")]
     public GameObject pressRUI;
     public GameObject upgradeUI;
+
+    [Header("Captain SFX")]
+    [SerializeField] private AudioClip captainInteractSFX;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float captainInteractVolume = 1f;
 
     private bool playerInside;
     private bool isOpenPress;
     private bool isOpenUpgrade;
 
+
     private void Start()
     {
-        pressRUI.SetActive(false);
-        upgradeUI.SetActive(false);
+        if (pressRUI != null)
+        {
+            pressRUI.SetActive(false);
+        }
+
+        if (upgradeUI != null)
+        {
+            upgradeUI.SetActive(false);
+        }
     }
+
 
     private void Update()
     {
         if (!playerInside)
             return;
-        if(isOpenPress == true)
+
+
+        // =====================================================
+        // PRESS R TO OPEN CAPTAIN UPGRADE
+        // =====================================================
+
+        if (isOpenPress)
         {
             if (Input.GetKeyDown(KeyCode.R))
             {
                 isOpenUpgrade = true;
                 isOpenPress = false;
-                upgradeUI.SetActive(isOpenUpgrade);
-                pressRUI.SetActive(isOpenPress);
+
+                if (upgradeUI != null)
+                {
+                    upgradeUI.SetActive(true);
+                }
+
+                if (pressRUI != null)
+                {
+                    pressRUI.SetActive(false);
+                }
+
+
+                /*
+                 * Chỉ phát 1 lần khi mở bảng Captain.
+                 */
+                PlayCaptainInteractSFX();
+
+
                 Time.timeScale = 0f;
             }
         }
+
+
+        // =====================================================
+        // PRESS R TO CLOSE
+        // =====================================================
+
         else
         {
             if (Input.GetKeyDown(KeyCode.R))
             {
                 isOpenUpgrade = false;
                 isOpenPress = true;
-                upgradeUI.SetActive(isOpenUpgrade);
-                pressRUI.SetActive(isOpenPress);
+
+                if (upgradeUI != null)
+                {
+                    upgradeUI.SetActive(false);
+                }
+
+                if (pressRUI != null)
+                {
+                    pressRUI.SetActive(true);
+                }
+
+
                 Time.timeScale = 1f;
             }
         }
-        
     }
 
-    private void OnTriggerEnter(
-        Collider other)
+
+    // =========================================================
+    // CAPTAIN SFX
+    // =========================================================
+
+    private void PlayCaptainInteractSFX()
+    {
+        if (captainInteractSFX == null)
+            return;
+
+
+        if (AudioController.Instance == null)
+            return;
+
+
+        AudioController.Instance.PlaySFX(
+            captainInteractSFX,
+            captainInteractVolume
+        );
+    }
+
+
+    // =========================================================
+    // TRIGGER ENTER
+    // =========================================================
+
+    private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player"))
             return;
+
 
         playerInside = true;
         isOpenPress = true;
-        pressRUI.SetActive(isOpenPress);
+
+
+        if (pressRUI != null)
+        {
+            pressRUI.SetActive(true);
+        }
     }
 
-    private void OnTriggerExit(
-        Collider other)
+
+    // =========================================================
+    // TRIGGER EXIT
+    // =========================================================
+
+    private void OnTriggerExit(Collider other)
     {
         if (!other.CompareTag("Player"))
             return;
+
 
         playerInside = false;
         isOpenPress = false;
         isOpenUpgrade = false;
-        pressRUI.SetActive(isOpenPress);
-        upgradeUI.SetActive(isOpenUpgrade);
+
+
+        if (pressRUI != null)
+        {
+            pressRUI.SetActive(false);
+        }
+
+
+        if (upgradeUI != null)
+        {
+            upgradeUI.SetActive(false);
+        }
+
+
+        Time.timeScale = 1f;
     }
 }

@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class MagicianTrigger : MonoBehaviour
 {
@@ -15,92 +12,285 @@ public class MagicianTrigger : MonoBehaviour
     public Image imageSpell;
     public Image imageAttackSpell;
 
+
+    [Header("Magician SFX")]
+    [SerializeField] private AudioClip magicianInteractSFX;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float magicianInteractVolume = 1f;
+
+
+    [Header("Colors")]
+    public Color normalColor = Color.white;
+
+    public Color choiceColor =
+        new Color(
+            0.5f,
+            1f,
+            0.5f
+        );
+
+
     private bool playerInside;
     private bool isOpenPress;
     private bool isOpenBoard;
 
-    [Header("Colors")]
-    public Color normalColor = Color.white;
-    public Color choiceColor = new Color(0.5f, 1f, 0.5f);
 
+    // =========================================================
+    // START
+    // =========================================================
 
     private void Start()
     {
-        pressRUI.SetActive(false);
-        boardUI.SetActive(false);
+        if (pressRUI != null)
+        {
+            pressRUI.SetActive(false);
+        }
+
+
+        if (boardUI != null)
+        {
+            boardUI.SetActive(false);
+        }
     }
+
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
 
     private void Update()
     {
         if (!playerInside)
             return;
-        if (isOpenPress == true)
+
+
+        // =====================================================
+        // OPEN MAGICIAN
+        // =====================================================
+
+        if (isOpenPress)
         {
             if (Input.GetKeyDown(KeyCode.R))
             {
                 isOpenBoard = true;
                 isOpenPress = false;
-                boardUI.SetActive(isOpenBoard);
-                pressRUI.SetActive(isOpenPress);
-                boardSpell.SetActive(true);
-                boardAttackSpell.SetActive(false);
-                imageSpell.color = choiceColor;
-                imageAttackSpell.color = normalColor;
+
+
+                if (boardUI != null)
+                {
+                    boardUI.SetActive(true);
+                }
+
+
+                if (pressRUI != null)
+                {
+                    pressRUI.SetActive(false);
+                }
+
+
+                if (boardSpell != null)
+                {
+                    boardSpell.SetActive(true);
+                }
+
+
+                if (boardAttackSpell != null)
+                {
+                    boardAttackSpell.SetActive(false);
+                }
+
+
+                if (imageSpell != null)
+                {
+                    imageSpell.color =
+                        choiceColor;
+                }
+
+
+                if (imageAttackSpell != null)
+                {
+                    imageAttackSpell.color =
+                        normalColor;
+                }
+
+
+                /*
+                 * Phát đúng 1 lần khi mở shop.
+                 */
+                PlayMagicianInteractSFX();
+
+
                 Time.timeScale = 0f;
             }
         }
+
+
+        // =====================================================
+        // CLOSE MAGICIAN
+        // =====================================================
+
         else
         {
             if (Input.GetKeyDown(KeyCode.R))
             {
                 isOpenBoard = false;
                 isOpenPress = true;
-                boardUI.SetActive(isOpenBoard);
-                pressRUI.SetActive(isOpenPress);
+
+
+                if (boardUI != null)
+                {
+                    boardUI.SetActive(false);
+                }
+
+
+                if (pressRUI != null)
+                {
+                    pressRUI.SetActive(true);
+                }
+
+
                 Time.timeScale = 1f;
             }
         }
-
     }
 
-    private void OnTriggerEnter(
-        Collider other)
+
+    // =========================================================
+    // MAGICIAN SFX
+    // =========================================================
+
+    private void PlayMagicianInteractSFX()
+    {
+        if (magicianInteractSFX == null)
+            return;
+
+
+        if (AudioController.Instance == null)
+            return;
+
+
+        AudioController.Instance.PlaySFX(
+            magicianInteractSFX,
+            magicianInteractVolume
+        );
+    }
+
+
+    // =========================================================
+    // ENTER
+    // =========================================================
+
+    private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player"))
             return;
+
 
         playerInside = true;
         isOpenPress = true;
-        pressRUI.SetActive(isOpenPress);
+
+
+        if (pressRUI != null)
+        {
+            pressRUI.SetActive(true);
+        }
     }
 
-    private void OnTriggerExit(
-        Collider other)
+
+    // =========================================================
+    // EXIT
+    // =========================================================
+
+    private void OnTriggerExit(Collider other)
     {
         if (!other.CompareTag("Player"))
             return;
+
 
         playerInside = false;
         isOpenPress = false;
         isOpenBoard = false;
-        pressRUI.SetActive(isOpenPress);
-        boardUI.SetActive(isOpenBoard);
+
+
+        if (pressRUI != null)
+        {
+            pressRUI.SetActive(false);
+        }
+
+
+        if (boardUI != null)
+        {
+            boardUI.SetActive(false);
+        }
+
+
+        Time.timeScale = 1f;
     }
 
+
+    // =========================================================
+    // SPELL TAB
+    // =========================================================
 
     public void OnClickTabSpell()
     {
-        boardSpell.SetActive(true);
-        boardAttackSpell.SetActive(false);
-        imageSpell.color = choiceColor;
-        imageAttackSpell.color = normalColor;
+        if (boardSpell != null)
+        {
+            boardSpell.SetActive(true);
+        }
+
+
+        if (boardAttackSpell != null)
+        {
+            boardAttackSpell.SetActive(false);
+        }
+
+
+        if (imageSpell != null)
+        {
+            imageSpell.color =
+                choiceColor;
+        }
+
+
+        if (imageAttackSpell != null)
+        {
+            imageAttackSpell.color =
+                normalColor;
+        }
     }
+
+
+    // =========================================================
+    // ATTACK SPELL TAB
+    // =========================================================
 
     public void OnClickTabAttackSpell()
     {
-        boardSpell.SetActive(false);
-        boardAttackSpell.SetActive(true);
-        imageSpell.color = normalColor;
-        imageAttackSpell.color = choiceColor;
+        if (boardSpell != null)
+        {
+            boardSpell.SetActive(false);
+        }
+
+
+        if (boardAttackSpell != null)
+        {
+            boardAttackSpell.SetActive(true);
+        }
+
+
+        if (imageSpell != null)
+        {
+            imageSpell.color =
+                normalColor;
+        }
+
+
+        if (imageAttackSpell != null)
+        {
+            imageAttackSpell.color =
+                choiceColor;
+        }
     }
 }
