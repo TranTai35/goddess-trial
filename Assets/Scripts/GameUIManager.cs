@@ -234,8 +234,45 @@ public class GameUIManager : MonoBehaviour
 
     public void ShowDeathUI()
     {
+        if (isDead)
+            return;
+
+
         isDead = true;
 
+
+        // =========================================================
+        // KHÓA PLAYER
+        // =========================================================
+
+        if (playerStats != null)
+        {
+            PlayerController playerController =
+                playerStats.GetComponent<PlayerController>();
+
+
+            if (playerController != null)
+            {
+                playerController.SetControlEnabled(
+                    false
+                );
+            }
+        }
+
+
+        // =========================================================
+        // KHÓA FEEDBACK
+        // =========================================================
+
+        if (FeedbackManager.Instance != null)
+        {
+            FeedbackManager.Instance.LockGameTime();
+        }
+
+
+        // =========================================================
+        // DEATH UI
+        // =========================================================
 
         if (deathPanel != null)
         {
@@ -243,17 +280,37 @@ public class GameUIManager : MonoBehaviour
         }
 
 
+        // =========================================================
+        // DEATH ANIMATION
+        // =========================================================
+
         Animator animator =
-            playerStats.GetComponent<Animator>();
+            playerStats != null
+            ? playerStats.GetComponent<Animator>()
+            : null;
 
 
         if (animator != null)
         {
+            animator.SetBool(
+                "Moving",
+                false
+            );
+
+            animator.SetBool(
+                "IsAttacking",
+                false
+            );
+
             animator.SetTrigger(
                 "Die"
             );
         }
 
+
+        // =========================================================
+        // FREEZE GAME
+        // =========================================================
 
         Time.timeScale = 0f;
     }
@@ -265,13 +322,31 @@ public class GameUIManager : MonoBehaviour
 
     public void Respawn()
     {
+        if (FeedbackManager.Instance != null)
+        {
+            FeedbackManager.Instance.UnlockGameTime();
+        }
+
+
         Time.timeScale = 1f;
 
 
-        GameManager.Instance
-            .RespawnPlayer(
-                playerStats
-            );
+        if (playerStats != null)
+        {
+            PlayerController playerController =
+                playerStats.GetComponent<PlayerController>();
+
+
+            if (playerController != null)
+            {
+                playerController.SetControlEnabled(
+                    true
+                );
+            }
+        }
+
+
+        isDead = false;
 
 
         if (deathPanel != null)
@@ -280,6 +355,14 @@ public class GameUIManager : MonoBehaviour
         }
 
 
-        isDead = false;
+        if (
+            GameManager.Instance != null &&
+            playerStats != null
+        )
+        {
+            GameManager.Instance.RespawnPlayer(
+                playerStats
+            );
+        }
     }
 }

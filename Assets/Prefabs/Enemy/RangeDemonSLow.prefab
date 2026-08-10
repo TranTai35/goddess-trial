@@ -635,7 +635,7 @@ MonoBehaviour:
   runSpeed: 4.5
   attackRange: 10
   cooldownTime: 2
-  maxHP: 100
+  maxHP: 50
   damageTextPrefab: {fileID: 2894932530838055010, guid: b3eca2bacfe1a0b448cfea955fee8b51,
     type: 3}
   projectilePrefab: {fileID: 5154395300972485834, guid: 3ad7c275b8b3f3d49bd02f9f9f0fbbd4,

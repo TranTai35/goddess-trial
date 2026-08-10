@@ -84,7 +84,9 @@ public class PlayerStats : MonoBehaviour
         if (currentScene == "Village")
         {
             /*
-             * Village luôn hồi đầy HP/Mana.
+             * Khi trở về Village:
+             * - kết thúc run cũ
+             * - hồi đầy HP/Mana
              */
             PlayerRunState.ResetToFull(
                 baseStats
@@ -95,17 +97,40 @@ public class PlayerStats : MonoBehaviour
 
 
         // =========================================================
-        // BATTLE
+        // BATTLE SCENE
         // =========================================================
 
         /*
-         * Nếu vừa Load Game từ MainMenu,
-         * currentHealth/currentMana đã được lấy từ save.
-         *
-         * Bắt đầu PlayerRunState bằng chính giá trị đó.
+         * Nếu chưa có một run đang hoạt động.
          */
         if (!PlayerRunState.IsRunActive)
         {
+            /*
+             * Trường hợp PlayerStatsData còn giữ HP = 0
+             * từ lần test/chết trước.
+             *
+             * Không được bắt đầu run với HP = 0.
+             */
+            if (baseStats.currentHealth <= 0f)
+            {
+                PlayerRunState.StartNewRun(
+                    baseStats
+                );
+
+                return;
+            }
+
+
+            /*
+             * Nếu HP hiện tại vẫn hợp lệ,
+             * có thể đây là dữ liệu vừa Load Game.
+             *
+             * Ví dụ save đang có:
+             * HP = 70
+             * Mana = 40
+             *
+             * thì bắt đầu run từ 70/40.
+             */
             PlayerRunState.StartFromCurrent(
                 baseStats
             );
@@ -114,6 +139,20 @@ public class PlayerStats : MonoBehaviour
         }
 
 
+        // =========================================================
+        // ĐANG TRONG CÙNG MỘT RUN
+        // =========================================================
+
+        /*
+         * Ví dụ:
+         *
+         * Level1_1:
+         * HP 100 -> còn 65
+         *
+         * chuyển Level1_2
+         *
+         * => Player vẫn còn 65 HP.
+         */
         PlayerRunState.RestoreOrStart(
             baseStats
         );

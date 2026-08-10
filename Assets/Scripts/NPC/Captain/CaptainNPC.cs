@@ -124,6 +124,10 @@ public class CaptainNPC : NPC
                 player.baseStats.maxHealth +=
                     value;
 
+                // Khi nâng Max Health thì hồi đầy luôn
+                player.baseStats.currentHealth =
+                    player.baseStats.maxHealth;
+
                 break;
 
 
@@ -131,6 +135,10 @@ public class CaptainNPC : NPC
 
                 player.baseStats.maxMana +=
                     value;
+
+                // Khi nâng Max Mana thì hồi đầy luôn
+                player.baseStats.currentMana =
+                    player.baseStats.maxMana;
 
                 break;
 

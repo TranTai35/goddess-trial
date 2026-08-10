@@ -442,7 +442,7 @@ MonoBehaviour:
   runSpeed: 4.5
   attackRange: 2.5
   cooldownTime: 2
-  maxHP: 100
+  maxHP: 50
   damageTextPrefab: {fileID: 2894932530838055010, guid: b3eca2bacfe1a0b448cfea955fee8b51,
     type: 3}
   damage: 10

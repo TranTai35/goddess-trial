@@ -1,10 +1,13 @@
 ﻿using UnityEngine;
 
-public class EnergyBlastSpell
-    : AttackSpellBase
+public class EnergyBlastSpell : AttackSpellBase
 {
     [Header("Projectile")]
     public GameObject projectilePrefab;
+
+    [Header("Projectile Damage")]
+    [SerializeField]
+    private float projectileDamage = 30f;
 
     [Header("Range Indicator")]
     public GameObject rangeIndicatorPrefab;
@@ -13,16 +16,15 @@ public class EnergyBlastSpell
 
     private PlayerController currentPlayer;
 
+
     public override void StartAim(
         PlayerController player)
     {
-        currentPlayer =
-            player;
+        currentPlayer = player;
 
         /*
-         * KHÔNG phát SFX tại đây.
-         *
-         * Nhấn E chỉ là bắt đầu ngắm.
+         * Nhấn E chỉ bắt đầu ngắm.
+         * Chưa cast nên chưa phát SFX.
          */
 
         if (currentRangeIndicator == null)
@@ -62,6 +64,7 @@ public class EnergyBlastSpell
                 );
     }
 
+
     public override void CancelAim()
     {
         if (currentRangeIndicator != null)
@@ -70,9 +73,9 @@ public class EnergyBlastSpell
                 .SetActive(false);
         }
 
-        currentPlayer =
-            null;
+        currentPlayer = null;
     }
+
 
     public override void Cast(
         PlayerController player)
@@ -82,10 +85,17 @@ public class EnergyBlastSpell
             return;
         }
 
+        if (Camera.main == null)
+        {
+            return;
+        }
+
+
         Ray ray =
             Camera.main.ScreenPointToRay(
                 Input.mousePosition
             );
+
 
         Plane plane =
             new Plane(
@@ -93,9 +103,10 @@ public class EnergyBlastSpell
                 player.transform.position
             );
 
+
         /*
-         * Nếu click nhưng không lấy được điểm,
-         * không cast, không cooldown và cũng không phát SFX.
+         * Click nhưng không lấy được điểm
+         * thì không cast.
          */
         if (!plane.Raycast(
             ray,
@@ -104,15 +115,18 @@ public class EnergyBlastSpell
             return;
         }
 
+
         Vector3 mousePoint =
             ray.GetPoint(enter);
+
 
         Vector3 direction =
             mousePoint -
             player.transform.position;
 
-        direction.y =
-            0f;
+
+        direction.y = 0f;
+
 
         if (direction.sqrMagnitude <
             0.001f)
@@ -120,31 +134,46 @@ public class EnergyBlastSpell
             return;
         }
 
+
         direction.Normalize();
 
-        /*
-         * TỚI ĐÂY MỚI XÁC NHẬN
-         * ATTACK SPELL THẬT SỰ ĐƯỢC CAST.
-         */
+
+        // =====================================================
+        // CAST THÀNH CÔNG
+        // =====================================================
+
         StartCooldown();
 
-        /*
-         * PHÁT SFX TẠI THỜI ĐIỂM CLICK CHỌN HƯỚNG.
-         */
+
         PlayCastSFX(
             player.transform.position
         );
 
+
         Debug.Log(
-            "Energy Blast Cast"
+            "Energy Blast Cast - Damage: " +
+            projectileDamage
         );
+
+
+        // =====================================================
+        // SPAWN PROJECTILE
+        // =====================================================
 
         Vector3 spawnPos =
             player.transform.position +
             Vector3.up * 1f +
             direction * 1.5f;
 
+
+        Quaternion rotation =
+            Quaternion.LookRotation(
+                direction
+            );
+
+
         GameObject obj;
+
 
         if (PoolManager.Instance != null)
         {
@@ -153,9 +182,7 @@ public class EnergyBlastSpell
                     .GetObject(
                         projectilePrefab,
                         spawnPos,
-                        Quaternion.LookRotation(
-                            direction
-                        )
+                        rotation
                     );
         }
         else
@@ -164,20 +191,26 @@ public class EnergyBlastSpell
                 Instantiate(
                     projectilePrefab,
                     spawnPos,
-                    Quaternion.LookRotation(
-                        direction
-                    )
+                    rotation
                 );
         }
 
+
         if (obj == null)
         {
+            CancelAim();
+
             return;
         }
 
+
+        // =====================================================
+        // PROJECTILE
+        // =====================================================
+
         Projectile projectile =
-            obj.GetComponent<
-                Projectile>();
+            obj.GetComponent<Projectile>();
+
 
         if (projectile != null)
         {
@@ -185,30 +218,23 @@ public class EnergyBlastSpell
                 player.gameObject
             );
 
-            PlayerStats stats =
-                player.GetComponent<
-                    PlayerStats>();
 
-            float projectileDamage =
-                0f;
-
-            if (stats != null &&
-                stats.baseStats != null)
-            {
-                projectileDamage =
-                    stats.baseStats.damage;
-            }
-
-            projectile
-                .InitializeDirection(
-                    direction,
-                    projectileDamage
-                );
+            /*
+             * Damage của Energy Blast
+             * lấy trực tiếp từ projectileDamage
+             * trong Inspector.
+             */
+            projectile.InitializeDirection(
+                direction,
+                projectileDamage
+            );
         }
 
-        /*
-         * Sau khi bắn xong thì ẩn indicator.
-         */
+
+        // =====================================================
+        // HIDE INDICATOR
+        // =====================================================
+
         CancelAim();
     }
 }
