@@ -103,6 +103,26 @@ public class SpellLoadoutManager : MonoBehaviour
 
 
     // =========================================================
+    // RESET ALL SPELL PROGRESS
+    // Dùng khi bắt đầu NEW GAME
+    // =========================================================
+
+    public void ResetAllSpells()
+    {
+        // Xóa toàn bộ spell đã học / đã mua
+        purchasedSpells.Clear();
+
+        // Bỏ toàn bộ spell đang trang bị
+        equippedUtilitySpell = null;
+        equippedAttackSpell = null;
+
+        Debug.Log(
+            "SpellLoadoutManager: Đã reset toàn bộ spell cho New Game."
+        );
+    }
+
+
+    // =========================================================
     // SPELL ID
     // =========================================================
 

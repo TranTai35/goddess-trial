@@ -378,6 +378,16 @@ public static class SaveGameManager
 
 
         // =====================================================
+        // RESET SPELLS
+        // =====================================================
+
+        if (SpellLoadoutManager.Instance != null)
+        {
+            SpellLoadoutManager.Instance.ResetAllSpells();
+        }
+
+
+        // =====================================================
         // RESET CAPTAIN
         // =====================================================
 

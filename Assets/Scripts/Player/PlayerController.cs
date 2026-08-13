@@ -13,6 +13,9 @@ public class PlayerController : MonoBehaviour
     public float attackRange = 1.5f;
     public LayerMask enemyLayer;
 
+    [Header("Attack Sword Trail")]
+    [SerializeField] private GameObject attackSwordTrail;
+
     [Header("Ultimate")]
     public float ultimateDuration = 2f;
     public GameObject swordTrail;
@@ -24,7 +27,7 @@ public class PlayerController : MonoBehaviour
     [Header("Dash")]
     public float dashDistance = 5f;
     public float dashDuration = 0.2f;
-    public float dashCooldown = 0.8f;
+    public float dashCooldown = 1f;
 
     [Header("Dash Trail")]
     [SerializeField] private TrailRenderer dashTrail1;
@@ -124,6 +127,16 @@ public class PlayerController : MonoBehaviour
         {
             dashTrail2.emitting = false;
             dashTrail2.Clear();
+        }
+
+        if (attackSwordTrail != null)
+        {
+            attackSwordTrail.SetActive(false);
+        }
+
+        if (swordTrail != null)
+        {
+            swordTrail.SetActive(false);
         }
     }
 
@@ -355,6 +368,8 @@ public class PlayerController : MonoBehaviour
             AttackPressed,
             false
         );
+
+        SetAttackSwordTrail(false);
     }
 
     private void SendAttackInput()
@@ -381,6 +396,8 @@ public class PlayerController : MonoBehaviour
             IsAttacking,
             isAttackAnim
         );
+
+        SetAttackSwordTrail(isAttackAnim);
 
         if (!isAttackAnim)
         {
@@ -422,6 +439,19 @@ public class PlayerController : MonoBehaviour
             DealDamage();
 
             hasHitThisAttack = true;
+        }
+    }
+
+    private void SetAttackSwordTrail(bool active)
+    {
+        if (attackSwordTrail == null)
+        {
+            return;
+        }
+
+        if (attackSwordTrail.activeSelf != active)
+        {
+            attackSwordTrail.SetActive(active);
         }
     }
 
@@ -692,6 +722,7 @@ public class PlayerController : MonoBehaviour
     private IEnumerator UltimateCoroutine()
     {
         ResetAttackInput();
+        SetAttackSwordTrail(false);
 
         isUltimateActive = true;
         IsInvincible = true;
@@ -1079,6 +1110,7 @@ public class PlayerController : MonoBehaviour
         if (!enabled)
         {
             ResetAttackInput();
+            SetAttackSwordTrail(false);
 
             isAimingAttackSpell = false;
 
