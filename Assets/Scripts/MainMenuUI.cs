@@ -54,13 +54,14 @@ public class MainMenuUI : MonoBehaviour
     public void NewGame()
     {
         /*
-         * Không xóa save ngay.
+         * Chưa tạo game mới ngay.
          *
          * Chỉ hiện bảng xác nhận.
          */
         if (newGamePanel != null)
         {
             newGamePanel.SetActive(true);
+
             newGamePanel.transform.SetAsLastSibling();
         }
     }
@@ -98,16 +99,26 @@ public class MainMenuUI : MonoBehaviour
         /*
          * Tạo game mới.
          *
-         * Save cũ sẽ bị xóa và ghi đè bằng
-         * save mới.
+         * Save cũ sẽ bị xóa và ghi đè
+         * bằng save mới.
          */
         SaveGameManager.CreateNewGame(
             playerStatsData
         );
 
 
-        Time.timeScale =
-            1f;
+        /*
+         * Đánh dấu đây là New Game.
+         *
+         * Khi scene Village được load,
+         * VillageIntroCutscene sẽ kiểm tra
+         * giá trị này để quyết định có chạy
+         * Cutscene 1 hay không.
+         */
+        GameSession.IsNewGame = true;
+
+
+        Time.timeScale = 1f;
 
 
         SceneManager.LoadScene(
@@ -155,6 +166,13 @@ public class MainMenuUI : MonoBehaviour
 
 
         // =====================================================
+        // KHÔNG PHẢI NEW GAME
+        // =====================================================
+
+        GameSession.IsNewGame = false;
+
+
+        // =====================================================
         // GET LAST SCENE
         // =====================================================
 
@@ -169,8 +187,7 @@ public class MainMenuUI : MonoBehaviour
         }
 
 
-        Time.timeScale =
-            1f;
+        Time.timeScale = 1f;
 
 
         SceneManager.LoadScene(

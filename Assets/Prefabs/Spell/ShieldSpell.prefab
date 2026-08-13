@@ -24594,6 +24594,9 @@ MonoBehaviour:
   castSFXVolume: 1
   duration: 5
   shieldVFX: {fileID: 5536264175868522203}
+  shieldHitSFX: {fileID: 8300000, guid: 9ec2778d16974f74695016be242c366e, type: 3}
+  shieldHitSFXVolume: 1
+  shieldHitSFXCooldown: 0.05
 --- !u!1 &6166396801649768939
 GameObject:
   m_ObjectHideFlags: 0

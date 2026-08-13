@@ -787,13 +787,19 @@ public class PlayerController : MonoBehaviour
     private IEnumerator CastSpellRoutine()
     {
         isCastingSpell = true;
-        IsInvincible = true;
 
+        /*
+         * Không bật IsInvincible cho mọi Utility Spell nữa.
+         *
+         * ShieldSpell tự quản lý trạng thái shield và chặn damage
+         * trong PlayerStats.TakeDamage().
+         *
+         * IsInvincible chỉ còn dành cho các trạng thái như Dash / Ultimate.
+         */
         spellCaster.CastSpell();
 
         yield return new WaitForSeconds(5f);
 
-        IsInvincible = false;
         isCastingSpell = false;
     }
 

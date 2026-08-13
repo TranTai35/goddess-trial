@@ -421,6 +421,28 @@ public class PlayerStats : MonoBehaviour
             GetComponent<PlayerController>();
 
 
+        // =========================================================
+        // SHIELD BLOCK
+        // =========================================================
+        // Shield có trạng thái riêng. Khi đang bật:
+        // - không trừ HP
+        // - phát SFX shield hit
+        // - không chạy damage feedback đỏ/animation
+        if (player != null)
+        {
+            SpellCaster spellCaster =
+                GetComponent<SpellCaster>();
+
+            if (spellCaster != null &&
+                spellCaster.equippedSpell is ShieldSpell shieldSpell &&
+                shieldSpell.TryBlockDamage(player))
+            {
+                return;
+            }
+        }
+
+
+        // Dash / Ultimate invincibility vẫn hoạt động như cũ.
         if (
             player != null &&
             player.IsInvincible

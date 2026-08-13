@@ -9,11 +9,23 @@ public class ShieldSpell : SpellBase
 
     public GameObject shieldVFX;
 
+    [Header("Shield Hit SFX")]
+    [Tooltip("Âm thanh phát mỗi khi shield chặn được một đòn đánh/projectile.")]
+    [SerializeField] private AudioClip shieldHitSFX;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float shieldHitSFXVolume = 1f;
+
+    [Tooltip("Khoảng nghỉ rất ngắn để nhiều collider của cùng một đòn không làm âm thanh bị chồng quá dày.")]
+    [Min(0f)]
+    [SerializeField] private float shieldHitSFXCooldown = 0.05f;
+
     private Coroutine activeRoutine;
     private GameObject activeVFX;
+    private PlayerController activePlayer;
+    private float lastShieldHitSFXTime = -999f;
 
-    public override void Cast(
-        PlayerController player)
+    public override void Cast(PlayerController player)
     {
         if (player == null)
         {
@@ -22,40 +34,45 @@ public class ShieldSpell : SpellBase
 
         StartCooldown();
 
-        /*
-         * PHÁT SFX NGAY KHI SHIELD ĐƯỢC DÙNG.
-         */
-        PlayCastSFX(
-            player.transform.position
-        );
+        // Tiếng cast shield vẫn dùng Cast SFX từ SpellBase.
+        PlayCastSFX(player.transform.position);
 
-        /*
-         * Nếu còn shield cũ thì dừng và xóa trước,
-         * tránh nhiều VFX chồng lên nhau.
-         */
-        if (activeRoutine != null)
+        // Nếu còn shield cũ thì dừng và xóa trước, tránh chồng nhiều VFX.
+        if (activeRoutine != null && activePlayer != null)
         {
-            player.StopCoroutine(
-                activeRoutine
-            );
-
+            activePlayer.StopCoroutine(activeRoutine);
             activeRoutine = null;
         }
 
         RemoveShieldVFX();
 
-        activeRoutine =
-            player.StartCoroutine(
-                ShieldRoutine(player)
-            );
+        activePlayer = player;
+        lastShieldHitSFXTime = -999f;
+
+        activeRoutine = player.StartCoroutine(ShieldRoutine(player));
     }
 
-    private IEnumerator ShieldRoutine(
-        PlayerController player)
+    public bool IsActiveFor(PlayerController player)
     {
-        Debug.Log(
-            "Shield ON"
-        );
+        return player != null &&
+               activePlayer == player &&
+               activeRoutine != null;
+    }
+
+    public bool TryBlockDamage(PlayerController player)
+    {
+        if (!IsActiveFor(player))
+        {
+            return false;
+        }
+
+        PlayShieldHitSFX(player.transform.position);
+        return true;
+    }
+
+    private IEnumerator ShieldRoutine(PlayerController player)
+    {
+        Debug.Log("Shield ON");
 
         if (shieldVFX != null)
         {
@@ -67,19 +84,35 @@ public class ShieldSpell : SpellBase
             );
         }
 
-        yield return
-            new WaitForSeconds(
-                duration
-            );
+        yield return new WaitForSeconds(duration);
 
-        Debug.Log(
-            "Shield OFF"
-        );
+        Debug.Log("Shield OFF");
 
         RemoveShieldVFX();
 
-        activeRoutine =
-            null;
+        activeRoutine = null;
+        activePlayer = null;
+    }
+
+    private void PlayShieldHitSFX(Vector3 position)
+    {
+        if (shieldHitSFX == null)
+        {
+            return;
+        }
+
+        if (Time.time < lastShieldHitSFXTime + shieldHitSFXCooldown)
+        {
+            return;
+        }
+
+        lastShieldHitSFXTime = Time.time;
+
+        AudioSource.PlayClipAtPoint(
+            shieldHitSFX,
+            position,
+            shieldHitSFXVolume
+        );
     }
 
     private void RemoveShieldVFX()
@@ -90,7 +123,6 @@ public class ShieldSpell : SpellBase
         }
 
         Destroy(activeVFX);
-
         activeVFX = null;
     }
 }
