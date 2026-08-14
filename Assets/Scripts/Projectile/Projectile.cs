@@ -70,10 +70,6 @@ public class Projectile : MonoBehaviour
 
     private void OnEnable()
     {
-        /*
-         * Projectile vừa được lấy ra từ PoolManager.
-         * Cho phép projectile này impact trở lại.
-         */
         hasImpacted = false;
     }
 
@@ -84,6 +80,25 @@ public class Projectile : MonoBehaviour
     public void SetOwner(GameObject newOwner)
     {
         owner = newOwner;
+    }
+
+    // =========================================================
+    // CHECK ENEMY PROJECTILE
+    // =========================================================
+
+    private bool IsOwnedByEnemy()
+    {
+        if (owner == null)
+            return false;
+
+        /*
+         * Projectile của RangedEnemy được SetOwner(gameObject),
+         * nên object owner sẽ có EnemyController.
+         *
+         * GetComponentInParent giúp hoạt động ngay cả khi
+         * owner là child object.
+         */
+        return owner.GetComponentInParent<EnemyController>() != null;
     }
 
     // =========================================================
@@ -126,9 +141,6 @@ public class Projectile : MonoBehaviour
         Vector3 targetPosition =
             target.position;
 
-        /*
-         * Projectile thường bay ngang.
-         */
         targetPosition.y =
             transform.position.y;
 
@@ -245,10 +257,6 @@ public class Projectile : MonoBehaviour
         }
         else
         {
-            /*
-             * Projectile của bạn dùng trục X
-             * làm hướng bay nên dùng transform.right.
-             */
             direction =
                 transform.right.normalized;
 
@@ -283,11 +291,6 @@ public class Projectile : MonoBehaviour
         timer -=
             Time.deltaTime;
 
-        /*
-         * Hết lifetime nhưng không trúng gì.
-         *
-         * Vẫn phát VFX + SFX rồi mới về Pool.
-         */
         if (timer <= 0f)
         {
             Vector3 fallbackNormal =
@@ -332,10 +335,6 @@ public class Projectile : MonoBehaviour
             return;
         }
 
-        /*
-         * Trong thời gian homingDelay,
-         * projectile vẫn tiếp tục bay theo hướng khởi đầu.
-         */
         if (homingTimer <
             homingDelay)
         {
@@ -371,10 +370,6 @@ public class Projectile : MonoBehaviour
             return;
         }
 
-        /*
-         * Projectile hiện tại dùng trục X
-         * làm hướng bay.
-         */
         transform.right =
             newDirection;
     }
@@ -386,10 +381,6 @@ public class Projectile : MonoBehaviour
     private void OnTriggerEnter(
         Collider other)
     {
-        /*
-         * Projectile đã xử lý impact rồi
-         * thì bỏ qua tất cả collision tiếp theo.
-         */
         if (hasImpacted)
         {
             return;
@@ -406,10 +397,6 @@ public class Projectile : MonoBehaviour
 
         if (owner != null)
         {
-            /*
-             * Bỏ qua chính object chủ projectile
-             * và toàn bộ collider con của owner.
-             */
             if (other.gameObject ==
                     owner ||
                 other.transform.IsChildOf(
@@ -439,20 +426,10 @@ public class Projectile : MonoBehaviour
             return;
         }
 
-        /*
-         * Trigger phụ như:
-         *
-         * - detection zone
-         * - spawn trigger
-         * - portal trigger
-         * - attack range trigger
-         *
-         * không nên làm projectile nổ.
-         *
-         * Player/Enemy đã được kiểm tra phía trên
-         * nên collider Player/Enemy dạng Trigger
-         * vẫn xử lý bình thường.
-         */
+        // =====================================================
+        // IGNORE OTHER TRIGGERS
+        // =====================================================
+
         if (other.isTrigger)
         {
             return;
@@ -495,12 +472,6 @@ public class Projectile : MonoBehaviour
             other.GetComponentInParent<
                 PlayerController>();
 
-        /*
-         * Player đang dash/invincible:
-         *
-         * không nhận damage,
-         * nhưng projectile vẫn va chạm và biến mất.
-         */
         if (player != null &&
             player.IsInvincible)
         {
@@ -555,10 +526,6 @@ public class Projectile : MonoBehaviour
             );
         }
 
-        /*
-         * Sau khi damage/status xong:
-         * VFX + SFX + về pool.
-         */
         Impact(
             hitPosition,
             hitNormal
@@ -579,6 +546,38 @@ public class Projectile : MonoBehaviour
             GetImpactNormal(
                 hitPosition
             );
+
+        /*
+         * =====================================================
+         * ENEMY PROJECTILE
+         * =====================================================
+         *
+         * Nếu projectile được bắn bởi Enemy:
+         *
+         * - Không gây damage Enemy khác.
+         * - Vẫn Impact.
+         * - Vẫn VFX.
+         * - Vẫn SFX.
+         * - Vẫn ReturnToPool().
+         */
+        if (IsOwnedByEnemy())
+        {
+            Impact(
+                hitPosition,
+                hitNormal
+            );
+
+            return;
+        }
+
+        /*
+         * =====================================================
+         * PLAYER PROJECTILE
+         * =====================================================
+         *
+         * Projectile của Player vẫn gây damage Enemy/Boss
+         * như bình thường.
+         */
 
         EnemyController enemy =
             other.GetComponentInParent<
@@ -609,11 +608,6 @@ public class Projectile : MonoBehaviour
             );
         }
 
-        /*
-         * Dù collider có tag Enemy nhưng không tìm thấy
-         * EnemyController/BossController thì projectile
-         * vẫn coi đây là va chạm.
-         */
         Impact(
             hitPosition,
             hitNormal
@@ -628,12 +622,6 @@ public class Projectile : MonoBehaviour
         Vector3 position,
         Vector3 normal)
     {
-        /*
-         * Đây là guard quan trọng nhất.
-         *
-         * Nếu projectile cùng lúc chạm nhiều collider,
-         * Impact chỉ chạy đúng một lần.
-         */
         if (hasImpacted)
         {
             return;
@@ -683,12 +671,6 @@ public class Projectile : MonoBehaviour
                 transform.position
             );
 
-        /*
-         * ClosestPoint đôi khi trả về chính vị trí projectile
-         * nếu projectile đã đi vào bên trong collider.
-         *
-         * Trường hợp đó dùng transform.position luôn cũng ổn.
-         */
         return closestPoint;
     }
 
@@ -699,12 +681,6 @@ public class Projectile : MonoBehaviour
     private Vector3 GetImpactNormal(
         Vector3 hitPosition)
     {
-        /*
-         * OnTriggerEnter không có ContactPoint.normal
-         * như OnCollisionEnter.
-         *
-         * Ta ước lượng normal dựa trên điểm va chạm.
-         */
         Vector3 normal =
             transform.position -
             hitPosition;
@@ -712,10 +688,6 @@ public class Projectile : MonoBehaviour
         if (normal.sqrMagnitude <
             0.0001f)
         {
-            /*
-             * Projectile đang nằm trong Collider,
-             * dùng ngược hướng bay làm normal dự phòng.
-             */
             if (direction !=
                 Vector3.zero)
             {
@@ -801,15 +773,6 @@ public class Projectile : MonoBehaviour
             return;
         }
 
-        /*
-         * Không phát AudioSource trên chính Projectile.
-         *
-         * Vì ngay sau đó Projectile bị SetActive(false)
-         * để quay về Pool => AudioSource cũng sẽ bị tắt.
-         *
-         * PlayClipAtPoint tạo AudioSource tạm bên ngoài,
-         * nên tiếng vẫn phát hết.
-         */
         AudioSource.PlayClipAtPoint(
             impactSFX,
             position,
@@ -897,11 +860,5 @@ public class Projectile : MonoBehaviour
             0f;
 
         ResetHoming();
-
-        /*
-         * Không cần reset hasImpacted ở đây.
-         * Nó sẽ được reset trong OnEnable()
-         * khi projectile được lấy ra từ pool lần sau.
-         */
     }
 }

@@ -1960,7 +1960,7 @@ PrefabInstance:
     - target: {fileID: 4677809443743737919, guid: 06ad6ff35362bc34eb184127bf0ead5c,
         type: 3}
       propertyPath: maxHP
-      value: 500
+      value: 1000
       objectReference: {fileID: 0}
     - target: {fileID: 4677809443743737919, guid: 06ad6ff35362bc34eb184127bf0ead5c,
         type: 3}

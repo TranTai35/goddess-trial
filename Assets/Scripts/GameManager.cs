@@ -8,8 +8,8 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
 
     [Header("Respawn Cost")]
-    public int goldCost = 100;
-    public int diamondCost = 20;
+    public int goldCost = 30;
+    public int diamondCost = 10;
 
     [Header("Respawn Scene")]
     public string respawnScene = "Village";
