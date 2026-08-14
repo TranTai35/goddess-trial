@@ -9,11 +9,13 @@ public class CutsceneManager : MonoBehaviour
     [SerializeField]
     private PlayerController playerController;
 
-
     [Header("Gameplay Camera")]
     [SerializeField]
     private CameraController cameraController;
 
+    [Header("Main Camera")]
+    [SerializeField]
+    private Camera mainCamera;
 
     [Header("Cinemachine")]
     [SerializeField]
@@ -37,27 +39,70 @@ public class CutsceneManager : MonoBehaviour
             Instance != this)
         {
             Destroy(gameObject);
-
             return;
         }
 
         Instance = this;
 
 
-        /*
-         * Bình thường trong Village,
-         * camera được CameraController điều khiển.
-         *
-         * Cinemachine chỉ được bật khi có cutscene.
-         */
+        // -----------------------------------------------------
+        // FIND MAIN CAMERA
+        // -----------------------------------------------------
+
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+        }
+
+
+        // -----------------------------------------------------
+        // FIND CINEMACHINE BRAIN
+        // -----------------------------------------------------
+
+        if (cinemachineBrain == null &&
+            mainCamera != null)
+        {
+            cinemachineBrain =
+                mainCamera.GetComponent<CinemachineBrain>();
+        }
+
+
+        // -----------------------------------------------------
+        // QUAN TRỌNG:
+        // GAMEPLAY MẶC ĐỊNH KHÔNG DÙNG CINEMACHINE
+        // -----------------------------------------------------
+
         if (cinemachineBrain != null)
         {
             cinemachineBrain.enabled = false;
         }
 
+
+        // -----------------------------------------------------
+        // CAMERA GAMEPLAY MẶC ĐỊNH ĐƯỢC BẬT
+        // -----------------------------------------------------
+
         if (cameraController != null)
         {
             cameraController.enabled = true;
+        }
+    }
+
+
+    // =========================================================
+    // START
+    // =========================================================
+
+    private void Start()
+    {
+        /*
+         * Đảm bảo khi scene load,
+         * camera luôn trở về gameplay camera.
+         */
+
+        if (cameraController != null)
+        {
+            cameraController.ResetCameraImmediately();
         }
     }
 
@@ -68,6 +113,9 @@ public class CutsceneManager : MonoBehaviour
 
     public void StartCutscene()
     {
+        if (IsCutscenePlaying)
+            return;
+
         IsCutscenePlaying = true;
 
 
@@ -99,6 +147,11 @@ public class CutsceneManager : MonoBehaviour
         {
             cinemachineBrain.enabled = true;
         }
+
+
+        Debug.Log(
+            "CutsceneManager: Start Cutscene"
+        );
     }
 
 
@@ -108,40 +161,46 @@ public class CutsceneManager : MonoBehaviour
 
     public void EndCutscene()
     {
+        if (!IsCutscenePlaying)
+            return;
+
         IsCutscenePlaying = false;
 
 
-        /*
-         * Quan trọng:
-         *
-         * Phải tắt Cinemachine trước.
-         *
-         * Nếu không CinemachineBrain vẫn tiếp tục
-         * giữ Main Camera ở CM_Intro cuối cùng.
-         */
+        // -----------------------------------------------------
+        // 1. TẮT CINEMACHINE
+        // -----------------------------------------------------
+
         if (cinemachineBrain != null)
         {
             cinemachineBrain.enabled = false;
         }
 
 
-        /*
-         * Sau khi Cinemachine ngừng điều khiển,
-         * trả Main Camera về cho CameraController.
-         */
+        // -----------------------------------------------------
+        // 2. RESET GAMEPLAY CAMERA
+        // -----------------------------------------------------
+
         if (cameraController != null)
         {
+            cameraController.ResetCameraImmediately();
+
             cameraController.enabled = true;
         }
 
 
         // -----------------------------------------------------
-        // UNLOCK PLAYER
+        // 3. PLAYER ON
         // -----------------------------------------------------
 
         if (playerController != null)
         {
             playerController.enabled = true;
         }
+
+
+        Debug.Log(
+            "CutsceneManager: End Cutscene"
+        );
     }
 }

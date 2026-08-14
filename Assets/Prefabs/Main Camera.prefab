@@ -151,5 +151,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targer: {fileID: 0}
-  offset: {x: 5, y: 10, z: -10}
+  offset: {x: 12, y: 20, z: -15}
   smoothSpeed: 0.125
+  gameplayFOV: 40

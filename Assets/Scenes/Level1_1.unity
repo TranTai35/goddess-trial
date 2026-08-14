@@ -2729,6 +2729,7 @@ MonoBehaviour:
   targer: {fileID: 0}
   offset: {x: 8, y: 12, z: -10}
   smoothSpeed: 0.125
+  gameplayFOV: 40
 --- !u!23 &70358594220431991
 MeshRenderer:
   m_ObjectHideFlags: 0
