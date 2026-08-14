@@ -325,7 +325,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   interactText: {fileID: 0}
-  destinationScene: Level1
+  interactTextContent: {fileID: 0}
+  availableMessage: Press R to go through the portal.
+  lockedMessage: Eliminate all enemies first.
+  requiredAreas: []
+  requireAllAreasCompleted: 0
+  destinationScene: Level1_1
   walkTarget: {fileID: 6117889178854176595}
   cutsceneMoveSpeed: 5
   cutsceneRotationSpeed: 10

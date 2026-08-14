@@ -12,52 +12,90 @@ public class AudioController : MonoBehaviour
 
 
     [Header("Audio Sources")]
-    [SerializeField] private AudioSource musicSource;
-    [SerializeField] private AudioSource sfxSource;
+    [SerializeField]
+    private AudioSource musicSource;
+
+    [SerializeField]
+    private AudioSource sfxSource;
 
 
     [Header("Background Music")]
-    [SerializeField] private AudioClip mainMenuMusic;
-    [SerializeField] private AudioClip villageMusic;
-    [SerializeField] private AudioClip battleMusic;
-    [SerializeField] private AudioClip bossMusic;
+    [SerializeField]
+    private AudioClip mainMenuMusic;
+
+    [SerializeField]
+    private AudioClip villageMusic;
+
+    [SerializeField]
+    private AudioClip battleMusic;
+
+    [SerializeField]
+    private AudioClip bossMusic;
+
+
+    [Header("Battle Clear Music")]
+    [Tooltip(
+        "Nhạc nền ngắn phát sau khi toàn bộ enemy trong Level đã bị tiêu diệt."
+    )]
+    [SerializeField]
+    private AudioClip battleClearMusic;
+
+    [Tooltip(
+        "Thời gian fade in của Battle Clear Music."
+    )]
+    [SerializeField]
+    private float battleClearMusicFadeInDuration = 0.5f;
+
 
     [Header("Ending Music")]
-    [Tooltip("Nhạc phát khi bắt đầu Ending Cutscene.")]
-    [SerializeField] private AudioClip endingMusic;
+    [Tooltip(
+        "Nhạc phát khi bắt đầu Ending Cutscene."
+    )]
+    [SerializeField]
+    private AudioClip endingMusic;
 
-    [Tooltip("Thời gian fade in nhạc ending nếu gọi trực tiếp từ AudioController.")]
-    [SerializeField] private float endingMusicFadeInDuration = 1.5f;
+    [Tooltip(
+        "Thời gian fade in nhạc ending nếu gọi trực tiếp từ AudioController."
+    )]
+    [SerializeField]
+    private float endingMusicFadeInDuration = 1.5f;
 
 
     [Header("UI Button SFX")]
-    [SerializeField] private AudioClip buttonClickSFX;
+    [SerializeField]
+    private AudioClip buttonClickSFX;
 
     [Range(0f, 1f)]
-    [SerializeField] private float buttonClickVolume = 1f;
+    [SerializeField]
+    private float buttonClickVolume = 1f;
 
 
     [Header("Volume")]
     [Range(0f, 1f)]
-    [SerializeField] private float musicVolume = 0.7f;
+    [SerializeField]
+    private float musicVolume = 0.7f;
 
     [Range(0f, 1f)]
-    [SerializeField] private float sfxVolume = 1f;
+    [SerializeField]
+    private float sfxVolume = 1f;
 
 
     [Header("Music Transition")]
-    [SerializeField] private float fadeDuration = 0.5f;
+    [SerializeField]
+    private float fadeDuration = 0.5f;
 
 
     [Header("Battle Music")]
     [Tooltip(
         "Thời gian battle music nhỏ dần sau khi giết hết enemy."
     )]
-    [SerializeField] private float battleClearFadeDuration = 2.5f;
+    [SerializeField]
+    private float battleClearFadeDuration = 2.5f;
 
 
     private Coroutine changeMusicCoroutine;
     private Coroutine battleFadeCoroutine;
+    private Coroutine battleClearMusicCoroutine;
 
     private bool currentSceneIsBattle;
 
@@ -166,6 +204,7 @@ public class AudioController : MonoBehaviour
             battleFadeCoroutine = null;
         }
 
+
         if (changeMusicCoroutine != null)
         {
             StopCoroutine(
@@ -174,6 +213,17 @@ public class AudioController : MonoBehaviour
 
             changeMusicCoroutine = null;
         }
+
+
+        if (battleClearMusicCoroutine != null)
+        {
+            StopCoroutine(
+                battleClearMusicCoroutine
+            );
+
+            battleClearMusicCoroutine = null;
+        }
+
 
         musicSource.volume =
             musicVolume;
@@ -313,6 +363,9 @@ public class AudioController : MonoBehaviour
             sceneName.ToLower();
 
 
+        /*
+         * Boss Scene không dùng Battle Clear Music.
+         */
         if (lowerSceneName.Contains("boss"))
         {
             return false;
@@ -384,24 +437,7 @@ public class AudioController : MonoBehaviour
         }
 
 
-        if (changeMusicCoroutine != null)
-        {
-            StopCoroutine(
-                changeMusicCoroutine
-            );
-
-            changeMusicCoroutine = null;
-        }
-
-
-        if (battleFadeCoroutine != null)
-        {
-            StopCoroutine(
-                battleFadeCoroutine
-            );
-
-            battleFadeCoroutine = null;
-        }
+        StopAllMusicCoroutines();
 
 
         musicSource.Stop();
@@ -436,16 +472,6 @@ public class AudioController : MonoBehaviour
         }
 
 
-        if (battleFadeCoroutine != null)
-        {
-            StopCoroutine(
-                battleFadeCoroutine
-            );
-
-            battleFadeCoroutine = null;
-        }
-
-
         if (
             musicSource.clip == clip &&
             musicSource.isPlaying
@@ -463,6 +489,28 @@ public class AudioController : MonoBehaviour
             StopCoroutine(
                 changeMusicCoroutine
             );
+
+            changeMusicCoroutine = null;
+        }
+
+
+        if (battleFadeCoroutine != null)
+        {
+            StopCoroutine(
+                battleFadeCoroutine
+            );
+
+            battleFadeCoroutine = null;
+        }
+
+
+        if (battleClearMusicCoroutine != null)
+        {
+            StopCoroutine(
+                battleClearMusicCoroutine
+            );
+
+            battleClearMusicCoroutine = null;
         }
 
 
@@ -630,16 +678,6 @@ public class AudioController : MonoBehaviour
             return;
 
 
-        if (changeMusicCoroutine != null)
-        {
-            StopCoroutine(
-                changeMusicCoroutine
-            );
-
-            changeMusicCoroutine = null;
-        }
-
-
         if (battleFadeCoroutine != null)
         {
             return;
@@ -665,21 +703,16 @@ public class AudioController : MonoBehaviour
 
         if (battleClearFadeDuration <= 0f)
         {
-            musicSource.volume = 0f;
+            musicSource.volume =
+                0f;
 
             musicSource.Stop();
-
-            musicSource.volume =
-                musicVolume;
 
             battleFadeCoroutine =
                 null;
 
 
-            /*
-             * Báo BattleRewardUI mở Panel.
-             */
-            OnBattleMusicFadeCompleted?.Invoke();
+            StartBattleClearMusic();
 
             yield break;
         }
@@ -717,24 +750,148 @@ public class AudioController : MonoBehaviour
         musicSource.Stop();
 
 
+        battleFadeCoroutine =
+            null;
+
+
+        // -----------------------------------------------------
+        // PHÁT BATTLE CLEAR MUSIC
+        // -----------------------------------------------------
+
+        StartBattleClearMusic();
+
+
         /*
-         * Chuẩn bị volume cho scene sau.
+         * Báo cho BattleRewardUI hoặc hệ thống khác
+         * rằng Battle Music đã fade xong.
+         */
+        OnBattleMusicFadeCompleted?.Invoke();
+    }
+
+
+    // =========================================================
+    // START BATTLE CLEAR MUSIC
+    // =========================================================
+
+    private void StartBattleClearMusic()
+    {
+        if (battleClearMusic == null)
+        {
+            Debug.LogWarning(
+                "AudioController: Chưa gắn Battle Clear Music."
+            );
+
+            return;
+        }
+
+
+        if (musicSource == null)
+            return;
+
+
+        if (battleClearMusicCoroutine != null)
+        {
+            StopCoroutine(
+                battleClearMusicCoroutine
+            );
+
+            battleClearMusicCoroutine = null;
+        }
+
+
+        battleClearMusicCoroutine =
+            StartCoroutine(
+                BattleClearMusicRoutine()
+            );
+    }
+
+
+    // =========================================================
+    // BATTLE CLEAR MUSIC ROUTINE
+    // =========================================================
+
+    private IEnumerator BattleClearMusicRoutine()
+    {
+        musicSource.Stop();
+
+
+        musicSource.clip =
+            battleClearMusic;
+
+        musicSource.time =
+            0f;
+
+        musicSource.loop =
+            false;
+
+        musicSource.volume =
+            0f;
+
+        musicSource.Play();
+
+
+        float targetVolume =
+            musicVolume;
+
+
+        if (
+            battleClearMusicFadeInDuration <= 0f
+        )
+        {
+            musicSource.volume =
+                targetVolume;
+        }
+        else
+        {
+            float timer = 0f;
+
+
+            while (
+                timer <
+                battleClearMusicFadeInDuration
+            )
+            {
+                timer +=
+                    Time.unscaledDeltaTime;
+
+
+                musicSource.volume =
+                    Mathf.Lerp(
+                        0f,
+                        targetVolume,
+                        timer /
+                        battleClearMusicFadeInDuration
+                    );
+
+
+                yield return null;
+            }
+
+
+            musicSource.volume =
+                targetVolume;
+        }
+
+
+        /*
+         * Chờ Battle Clear Music chạy xong.
+         */
+        while (musicSource.isPlaying)
+        {
+            yield return null;
+        }
+
+
+        /*
+         * Trả volume về mức Music Volume.
+         * Không phát lại nhạc.
          */
         musicSource.volume =
             musicVolume;
 
 
-        battleFadeCoroutine =
+        battleClearMusicCoroutine =
             null;
-
-
-        /*
-         * =====================================================
-         * NHẠC FADE XONG
-         * -> HIỆN BATTLE REWARD
-         * =====================================================
-         */
-        OnBattleMusicFadeCompleted?.Invoke();
     }
 
 
@@ -821,11 +978,6 @@ public class AudioController : MonoBehaviour
     // ENDING MUSIC TRANSITION
     // =========================================================
 
-    /// <summary>
-    /// Fade nhạc hiện tại về 0, đổi sang ending music,
-    /// sau đó fade ending music lên musicVolume.
-    /// Coroutine này được gọi song song với fade màn hình.
-    /// </summary>
     public IEnumerator TransitionToEndingMusicRoutine(
         float fadeOutDuration,
         float fadeInDuration
@@ -833,6 +985,7 @@ public class AudioController : MonoBehaviour
     {
         if (musicSource == null)
             yield break;
+
 
         if (endingMusic == null)
         {
@@ -843,89 +996,120 @@ public class AudioController : MonoBehaviour
             yield break;
         }
 
-        if (changeMusicCoroutine != null)
-        {
-            StopCoroutine(changeMusicCoroutine);
-            changeMusicCoroutine = null;
-        }
 
-        if (battleFadeCoroutine != null)
-        {
-            StopCoroutine(battleFadeCoroutine);
-            battleFadeCoroutine = null;
-        }
+        StopAllMusicCoroutines();
 
-        float startVolume = musicSource.volume;
+
+        float startVolume =
+            musicSource.volume;
+
 
         // -----------------------------------------------------
-        // FADE OUT NHẠC BOSS / NHẠC HIỆN TẠI
+        // FADE OUT CURRENT MUSIC
         // -----------------------------------------------------
 
-        if (musicSource.isPlaying && fadeOutDuration > 0f)
+        if (
+            musicSource.isPlaying &&
+            fadeOutDuration > 0f
+        )
         {
             float timer = 0f;
 
-            while (timer < fadeOutDuration)
+
+            while (
+                timer <
+                fadeOutDuration
+            )
             {
-                timer += Time.unscaledDeltaTime;
+                timer +=
+                    Time.unscaledDeltaTime;
+
 
                 musicSource.volume =
                     Mathf.Lerp(
                         startVolume,
                         0f,
-                        timer / fadeOutDuration
+                        timer /
+                        fadeOutDuration
                     );
+
 
                 yield return null;
             }
         }
         else
         {
-            musicSource.volume = 0f;
+            musicSource.volume =
+                0f;
         }
+
 
         musicSource.Stop();
 
+
         // -----------------------------------------------------
-        // ĐỔI SANG ENDING MUSIC
+        // ENDING MUSIC
         // -----------------------------------------------------
 
-        musicSource.clip = endingMusic;
-        musicSource.time = 0f;
-        musicSource.loop = true;
-        musicSource.volume = 0f;
+        musicSource.clip =
+            endingMusic;
+
+        musicSource.time =
+            0f;
+
+        musicSource.loop =
+            true;
+
+        musicSource.volume =
+            0f;
+
         musicSource.Play();
+
 
         // -----------------------------------------------------
         // FADE IN ENDING MUSIC
         // -----------------------------------------------------
 
-        float targetVolume = musicVolume;
+        float targetVolume =
+            musicVolume;
+
+
         float fadeInTime =
             fadeInDuration > 0f
                 ? fadeInDuration
                 : endingMusicFadeInDuration;
 
+
         if (fadeInTime > 0f)
         {
             float timer = 0f;
 
-            while (timer < fadeInTime)
+
+            while (
+                timer <
+                fadeInTime
+            )
             {
-                timer += Time.unscaledDeltaTime;
+                timer +=
+                    Time.unscaledDeltaTime;
+
 
                 musicSource.volume =
                     Mathf.Lerp(
                         0f,
                         targetVolume,
-                        timer / fadeInTime
+                        timer /
+                        fadeInTime
                     );
+
 
                 yield return null;
             }
         }
 
-        musicSource.volume = targetVolume;
+
+        musicSource.volume =
+            targetVolume;
     }
 
 
@@ -934,6 +1118,22 @@ public class AudioController : MonoBehaviour
     // =========================================================
 
     public void StopMusic()
+    {
+        StopAllMusicCoroutines();
+
+
+        if (musicSource != null)
+        {
+            musicSource.Stop();
+        }
+    }
+
+
+    // =========================================================
+    // STOP MUSIC COROUTINES
+    // =========================================================
+
+    private void StopAllMusicCoroutines()
     {
         if (changeMusicCoroutine != null)
         {
@@ -957,9 +1157,14 @@ public class AudioController : MonoBehaviour
         }
 
 
-        if (musicSource != null)
+        if (battleClearMusicCoroutine != null)
         {
-            musicSource.Stop();
+            StopCoroutine(
+                battleClearMusicCoroutine
+            );
+
+            battleClearMusicCoroutine =
+                null;
         }
     }
 

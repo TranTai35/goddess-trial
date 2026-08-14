@@ -17040,6 +17040,8 @@ MonoBehaviour:
   targer: {fileID: 47948938}
   offset: {x: 5, y: 10, z: -10}
   smoothSpeed: 0.125
+  gameplayFOV: 40
+  playerTag: Player
 --- !u!4 &3517982619666798494
 Transform:
   m_ObjectHideFlags: 0
@@ -19843,9 +19845,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   interactText: {fileID: 3610336637409477877}
   interactTextContent: {fileID: 0}
-  availableMessage: "Nh\u1EA5n R \u0111\u1EC3 \u0111i qua Portal"
-  lockedMessage: "H\xE3y ti\xEAu di\u1EC7t to\xE0n b\u1ED9 k\u1EBB \u0111\u1ECBch
-    tr\u01B0\u1EDBc"
+  availableMessage: Press R to go through the portal.
+  lockedMessage: Eliminate all enemies first.
   requiredAreas:
   - {fileID: 4644474472532569102}
   requireAllAreasCompleted: 1
@@ -21108,7 +21109,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: PRESS ANY KEY
+  m_text: Tap the screen.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -21141,7 +21142,7 @@ MonoBehaviour:
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 16
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 256
   m_textAlignment: 65535
@@ -30093,6 +30094,8 @@ MonoBehaviour:
   targer: {fileID: 0}
   offset: {x: 8, y: 12, z: -10}
   smoothSpeed: 0.125
+  gameplayFOV: 40
+  playerTag: Player
 --- !u!205 &6127583725073514352
 LODGroup:
   m_ObjectHideFlags: 0

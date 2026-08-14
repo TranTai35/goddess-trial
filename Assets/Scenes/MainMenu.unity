@@ -707,6 +707,10 @@ MonoBehaviour:
   villageMusic: {fileID: 8300000, guid: ac7a7e5507451b84e97018c5d54e0710, type: 3}
   battleMusic: {fileID: 8300000, guid: 5e0e21a151594e14b9a4d180e62079e7, type: 3}
   bossMusic: {fileID: 8300000, guid: 5b2692f78655fb24396ea27363a27a21, type: 3}
+  battleClearMusic: {fileID: 8300000, guid: 03a8a9cc2541c3140b862e9ed240ffd9, type: 3}
+  battleClearMusicFadeInDuration: 0.5
+  endingMusic: {fileID: 8300000, guid: db6f4ee69b8ce4c48b0bb8833ea27a14, type: 3}
+  endingMusicFadeInDuration: 1.5
   buttonClickSFX: {fileID: 8300000, guid: 086ff2436b1c4ad4385c3d866133e9c8, type: 3}
   buttonClickVolume: 1
   musicVolume: 0.7
@@ -785,7 +789,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: YOU ARE WANT NEW GAME
+  m_text: Do you want a new game ?
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8a89fa14b10d46a99122fd4f73fca9a2, type: 2}
   m_sharedMaterial: {fileID: 2140474, guid: 8a89fa14b10d46a99122fd4f73fca9a2, type: 2}
