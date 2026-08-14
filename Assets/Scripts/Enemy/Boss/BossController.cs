@@ -25,6 +25,11 @@ public class BossController : MonoBehaviour
     [Header("Boss UI")]
     public string bossDisplayName = "Boss";
 
+    [Header("Ending Cutscene")]
+    [Tooltip("EndingCutscene sẽ được gọi sau khi Boss chết.")]
+    [SerializeField]
+    private EndingCutscene endingCutscene;
+
     [Tooltip("Bật thanh máu khi Player đi vào detectRange.")]
     public bool showHealthBarWhenDetected = true;
 
@@ -1424,8 +1429,23 @@ public class BossController : MonoBehaviour
 
     private IEnumerator DeathRoutine()
     {
+        // Chờ Boss hoàn tất death animation.
         yield return new WaitForSeconds(5f);
 
+        // Bắt đầu Ending Cutscene sau khi Boss đã chết.
+        if (endingCutscene != null)
+        {
+            endingCutscene.PlayEnding();
+        }
+        else
+        {
+            Debug.LogWarning(
+                "BossController: Chưa gắn EndingCutscene. Boss sẽ được tắt bình thường.",
+                this
+            );
+        }
+
+        // Boss không còn cần tồn tại trong gameplay.
         gameObject.SetActive(false);
     }
 

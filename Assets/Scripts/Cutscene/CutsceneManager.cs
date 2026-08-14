@@ -68,19 +68,13 @@ public class CutsceneManager : MonoBehaviour
 
 
         // -----------------------------------------------------
-        // QUAN TRỌNG:
-        // GAMEPLAY MẶC ĐỊNH KHÔNG DÙNG CINEMACHINE
+        // GAMEPLAY DEFAULT
         // -----------------------------------------------------
 
         if (cinemachineBrain != null)
         {
             cinemachineBrain.enabled = false;
         }
-
-
-        // -----------------------------------------------------
-        // CAMERA GAMEPLAY MẶC ĐỊNH ĐƯỢC BẬT
-        // -----------------------------------------------------
 
         if (cameraController != null)
         {
@@ -95,11 +89,6 @@ public class CutsceneManager : MonoBehaviour
 
     private void Start()
     {
-        /*
-         * Đảm bảo khi scene load,
-         * camera luôn trở về gameplay camera.
-         */
-
         if (cameraController != null)
         {
             cameraController.ResetCameraImmediately();
@@ -108,7 +97,7 @@ public class CutsceneManager : MonoBehaviour
 
 
     // =========================================================
-    // START CUTSCENE
+    // TIMELINE CUTSCENE 1 / 2
     // =========================================================
 
     public void StartCutscene()
@@ -120,12 +109,23 @@ public class CutsceneManager : MonoBehaviour
 
 
         // -----------------------------------------------------
-        // LOCK PLAYER
+        // RESET + LOCK PLAYER
         // -----------------------------------------------------
 
         if (playerController != null)
         {
-            playerController.enabled = false;
+            /*
+             * Quan trọng:
+             * Không disable PlayerController nữa.
+             *
+             * SetControlEnabled(false) sẽ:
+             * - reset input
+             * - tắt trail
+             * - hủy aim
+             * - reset Animator về Idle
+             * - rồi khóa control
+             */
+            playerController.SetControlEnabled(false);
         }
 
 
@@ -155,10 +155,6 @@ public class CutsceneManager : MonoBehaviour
     }
 
 
-    // =========================================================
-    // END CUTSCENE
-    // =========================================================
-
     public void EndCutscene()
     {
         if (!IsCutscenePlaying)
@@ -168,7 +164,7 @@ public class CutsceneManager : MonoBehaviour
 
 
         // -----------------------------------------------------
-        // 1. TẮT CINEMACHINE
+        // DISABLE CINEMACHINE
         // -----------------------------------------------------
 
         if (cinemachineBrain != null)
@@ -178,7 +174,7 @@ public class CutsceneManager : MonoBehaviour
 
 
         // -----------------------------------------------------
-        // 2. RESET GAMEPLAY CAMERA
+        // RESTORE GAMEPLAY CAMERA
         // -----------------------------------------------------
 
         if (cameraController != null)
@@ -190,17 +186,73 @@ public class CutsceneManager : MonoBehaviour
 
 
         // -----------------------------------------------------
-        // 3. PLAYER ON
+        // UNLOCK PLAYER
         // -----------------------------------------------------
 
         if (playerController != null)
         {
-            playerController.enabled = true;
+            playerController.SetControlEnabled(true);
         }
 
 
         Debug.Log(
             "CutsceneManager: End Cutscene"
+        );
+    }
+
+
+    // =========================================================
+    // ENDING UI CUTSCENE
+    // =========================================================
+
+    public void StartEnding()
+    {
+        if (IsCutscenePlaying)
+            return;
+
+        IsCutscenePlaying = true;
+
+
+        // -----------------------------------------------------
+        // RESET + LOCK PLAYER
+        // -----------------------------------------------------
+
+        if (playerController != null)
+        {
+            playerController.SetControlEnabled(false);
+        }
+
+
+        // -----------------------------------------------------
+        // ENDING UI KHÔNG DÙNG CINEMACHINE
+        // -----------------------------------------------------
+
+        if (cinemachineBrain != null)
+        {
+            cinemachineBrain.enabled = false;
+        }
+
+
+        if (cameraController != null)
+        {
+            cameraController.enabled = true;
+
+            cameraController.ResetCameraImmediately();
+        }
+
+
+        Debug.Log(
+            "CutsceneManager: Start Ending"
+        );
+    }
+
+
+    public void EndEnding()
+    {
+        IsCutscenePlaying = false;
+
+        Debug.Log(
+            "CutsceneManager: End Ending"
         );
     }
 }

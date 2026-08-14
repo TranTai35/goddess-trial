@@ -112,42 +112,35 @@ public static class SaveGameManager
             stats.maxHealth
         );
 
-
         PlayerPrefs.SetFloat(
             CurrentHealthKey,
             stats.currentHealth
         );
-
 
         PlayerPrefs.SetFloat(
             MaxManaKey,
             stats.maxMana
         );
 
-
         PlayerPrefs.SetFloat(
             CurrentManaKey,
             stats.currentMana
         );
-
 
         PlayerPrefs.SetFloat(
             DamageKey,
             stats.damage
         );
 
-
         PlayerPrefs.SetFloat(
             MoveSpeedKey,
             stats.moveSpeed
         );
 
-
         PlayerPrefs.SetInt(
             GoldKey,
             stats.gold
         );
-
 
         PlayerPrefs.SetInt(
             DiamondKey,
@@ -321,6 +314,40 @@ public static class SaveGameManager
 
 
     // =========================================================
+    // SET SAVED SCENE
+    // =========================================================
+
+    public static void SetSavedScene(
+        string sceneName)
+    {
+        if (string.IsNullOrEmpty(sceneName))
+        {
+            sceneName = DefaultScene;
+        }
+
+
+        PlayerPrefs.SetInt(
+            HasSaveKey,
+            1
+        );
+
+
+        PlayerPrefs.SetString(
+            SceneKey,
+            sceneName
+        );
+
+
+        PlayerPrefs.Save();
+
+
+        Debug.Log(
+            $"SAVE GAME: Saved scene changed to {sceneName}"
+        );
+    }
+
+
+    // =========================================================
     // CREATE NEW GAME
     // =========================================================
 
@@ -353,25 +380,20 @@ public static class SaveGameManager
         stats.currentHealth =
             DefaultMaxHealth;
 
-
         stats.maxMana =
             DefaultMaxMana;
 
         stats.currentMana =
             DefaultMaxMana;
 
-
         stats.damage =
             DefaultDamage;
-
 
         stats.moveSpeed =
             DefaultMoveSpeed;
 
-
         stats.gold =
             DefaultGold;
-
 
         stats.diamond =
             DefaultDiamond;

@@ -35,8 +35,6 @@ public class BossIntroCutscene : MonoBehaviour
             return;
         }
 
-        // Rất quan trọng:
-        // Script sẽ tự Play, không cho Director tự Play.
         director.playOnAwake = false;
     }
 
@@ -73,10 +71,6 @@ public class BossIntroCutscene : MonoBehaviour
         isPlaying = true;
         hasFinished = false;
 
-        // -------------------------------------------------
-        // Khóa Player + camera gameplay
-        // -------------------------------------------------
-
         if (CutsceneManager.Instance != null)
         {
             CutsceneManager.Instance.StartCutscene();
@@ -88,34 +82,18 @@ public class BossIntroCutscene : MonoBehaviour
             );
         }
 
-        // -------------------------------------------------
-        // Khóa Boss AI
-        // -------------------------------------------------
-
         if (bossController != null)
         {
             bossController.enabled = false;
         }
-
-        // -------------------------------------------------
-        // Ẩn gameplay UI
-        // -------------------------------------------------
 
         if (gameplayUI != null)
         {
             gameplayUI.SetActive(false);
         }
 
-        // -------------------------------------------------
-        // Đăng ký callback
-        // -------------------------------------------------
-
         director.stopped -= OnTimelineStopped;
         director.stopped += OnTimelineStopped;
-
-        // -------------------------------------------------
-        // Chạy từ đầu
-        // -------------------------------------------------
 
         director.time = 0;
         director.Evaluate();
@@ -133,7 +111,6 @@ public class BossIntroCutscene : MonoBehaviour
         if (director.state != PlayState.Playing)
             return;
 
-        // Nhảy đến cuối Timeline
         director.time = director.duration;
         director.Evaluate();
         director.Stop();
@@ -152,36 +129,20 @@ public class BossIntroCutscene : MonoBehaviour
         hasFinished = true;
         isPlaying = false;
 
-        // -------------------------------------------------
-        // Hủy callback
-        // -------------------------------------------------
-
         if (director != null)
         {
             director.stopped -= OnTimelineStopped;
         }
-
-        // -------------------------------------------------
-        // Hiện gameplay UI
-        // -------------------------------------------------
 
         if (gameplayUI != null)
         {
             gameplayUI.SetActive(true);
         }
 
-        // -------------------------------------------------
-        // Bật Boss AI
-        // -------------------------------------------------
-
         if (bossController != null)
         {
             bossController.enabled = true;
         }
-
-        // -------------------------------------------------
-        // Trả camera + Player về gameplay
-        // -------------------------------------------------
 
         if (CutsceneManager.Instance != null)
         {

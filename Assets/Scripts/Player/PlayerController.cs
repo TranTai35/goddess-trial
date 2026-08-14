@@ -1115,30 +1115,100 @@ public class PlayerController : MonoBehaviour
 
         if (!enabled)
         {
+            // =====================================================
+            // RESET CÁC INPUT / TRẠNG THÁI GAMEPLAY
+            // =====================================================
+
             ResetAttackInput();
+
             SetAttackSwordTrail(false);
 
             isAimingAttackSpell = false;
 
-            animator.SetBool(
-                IsAttacking,
-                false
-            );
-
-            animator.SetBool(
-                IsMoving,
-                false
-            );
-
+            // Nếu đang aim spell tấn công thì hủy aim.
             if (attackSpellCaster != null)
             {
                 attackSpellCaster.CancelAim();
             }
+
+
+            // =====================================================
+            // RESET ANIMATION VỀ IDLE
+            // =====================================================
+
+            if (animator != null)
+            {
+                // Tắt tất cả trạng thái bool gameplay.
+                animator.SetBool(
+                    IsAttacking,
+                    false
+                );
+
+                animator.SetBool(
+                    IsMoving,
+                    false
+                );
+
+                animator.SetBool(
+                    AttackPressed,
+                    false
+                );
+
+                animator.SetBool(
+                    Ultimate,
+                    false
+                );
+
+                /*
+                 * Nếu đang Dash / Attack / Ultimate,
+                 * đưa Animator về Base Layer/Idle ngay lập tức.
+                 *
+                 * Layer 0 thường là layer locomotion/Idle.
+                 */
+                animator.CrossFade(
+                    "Idle",
+                    0.05f,
+                    0,
+                    0f
+                );
+            }
+
+            // =====================================================
+            // RESET CÁC TRẠNG THÁI VFX
+            // =====================================================
+
+            if (swordTrail != null)
+            {
+                swordTrail.SetActive(false);
+            }
+
+            DisableDashTrails();
+
+
+            // =====================================================
+            // RESET DASH / ULTIMATE
+            // =====================================================
+
+            isDashing = false;
+            isUltimateActive = false;
+            isCastingSpell = false;
+
+            IsInvincible = false;
+
+            attackQueued = false;
+            attackInputPulse = false;
+
+            currentAttack = "";
+            hasHitThisAttack = false;
         }
     }
 
+
     public void SetCutsceneMoving(bool isMoving)
     {
+        if (animator == null)
+            return;
+
         animator.SetBool(
             IsMoving,
             isMoving

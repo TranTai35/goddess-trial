@@ -22,6 +22,13 @@ public class AudioController : MonoBehaviour
     [SerializeField] private AudioClip battleMusic;
     [SerializeField] private AudioClip bossMusic;
 
+    [Header("Ending Music")]
+    [Tooltip("Nhạc phát khi bắt đầu Ending Cutscene.")]
+    [SerializeField] private AudioClip endingMusic;
+
+    [Tooltip("Thời gian fade in nhạc ending nếu gọi trực tiếp từ AudioController.")]
+    [SerializeField] private float endingMusicFadeInDuration = 1.5f;
+
 
     [Header("UI Button SFX")]
     [SerializeField] private AudioClip buttonClickSFX;
@@ -807,6 +814,118 @@ public class AudioController : MonoBehaviour
             sfxSource.volume =
                 sfxVolume;
         }
+    }
+
+
+    // =========================================================
+    // ENDING MUSIC TRANSITION
+    // =========================================================
+
+    /// <summary>
+    /// Fade nhạc hiện tại về 0, đổi sang ending music,
+    /// sau đó fade ending music lên musicVolume.
+    /// Coroutine này được gọi song song với fade màn hình.
+    /// </summary>
+    public IEnumerator TransitionToEndingMusicRoutine(
+        float fadeOutDuration,
+        float fadeInDuration
+    )
+    {
+        if (musicSource == null)
+            yield break;
+
+        if (endingMusic == null)
+        {
+            Debug.LogWarning(
+                "AudioController: Chưa gắn Ending Music."
+            );
+
+            yield break;
+        }
+
+        if (changeMusicCoroutine != null)
+        {
+            StopCoroutine(changeMusicCoroutine);
+            changeMusicCoroutine = null;
+        }
+
+        if (battleFadeCoroutine != null)
+        {
+            StopCoroutine(battleFadeCoroutine);
+            battleFadeCoroutine = null;
+        }
+
+        float startVolume = musicSource.volume;
+
+        // -----------------------------------------------------
+        // FADE OUT NHẠC BOSS / NHẠC HIỆN TẠI
+        // -----------------------------------------------------
+
+        if (musicSource.isPlaying && fadeOutDuration > 0f)
+        {
+            float timer = 0f;
+
+            while (timer < fadeOutDuration)
+            {
+                timer += Time.unscaledDeltaTime;
+
+                musicSource.volume =
+                    Mathf.Lerp(
+                        startVolume,
+                        0f,
+                        timer / fadeOutDuration
+                    );
+
+                yield return null;
+            }
+        }
+        else
+        {
+            musicSource.volume = 0f;
+        }
+
+        musicSource.Stop();
+
+        // -----------------------------------------------------
+        // ĐỔI SANG ENDING MUSIC
+        // -----------------------------------------------------
+
+        musicSource.clip = endingMusic;
+        musicSource.time = 0f;
+        musicSource.loop = true;
+        musicSource.volume = 0f;
+        musicSource.Play();
+
+        // -----------------------------------------------------
+        // FADE IN ENDING MUSIC
+        // -----------------------------------------------------
+
+        float targetVolume = musicVolume;
+        float fadeInTime =
+            fadeInDuration > 0f
+                ? fadeInDuration
+                : endingMusicFadeInDuration;
+
+        if (fadeInTime > 0f)
+        {
+            float timer = 0f;
+
+            while (timer < fadeInTime)
+            {
+                timer += Time.unscaledDeltaTime;
+
+                musicSource.volume =
+                    Mathf.Lerp(
+                        0f,
+                        targetVolume,
+                        timer / fadeInTime
+                    );
+
+                yield return null;
+            }
+        }
+
+        musicSource.volume = targetVolume;
     }
 
 
