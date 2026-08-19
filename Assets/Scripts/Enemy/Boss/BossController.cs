@@ -633,6 +633,10 @@ public class BossController : MonoBehaviour
         PlayerController playerController =
             player.GetComponentInParent<PlayerController>();
 
+        // =====================================================
+        // DASH INVINCIBILITY
+        // =====================================================
+
         if (respectPlayerDashInvincibility &&
             playerController != null &&
             playerController.IsInvincible)
@@ -645,6 +649,40 @@ public class BossController : MonoBehaviour
 
         if (stats == null)
             return;
+
+        // =====================================================
+        // SHIELD
+        // =====================================================
+
+        ShieldSpell shieldSpell = null;
+
+        if (playerController != null)
+        {
+            SpellCaster spellCaster =
+                playerController.GetComponent<SpellCaster>();
+
+            if (spellCaster != null)
+            {
+                shieldSpell =
+                    spellCaster.equippedSpell as ShieldSpell;
+            }
+        }
+
+        /*
+         * Nếu Shield đang active:
+         * - Chặn damage
+         * - Không bị stun
+         * - Phát Shield Hit SFX
+         */
+        if (shieldSpell != null &&
+            shieldSpell.TryBlockDamage(playerController))
+        {
+            return;
+        }
+
+        // =====================================================
+        // DAMAGE + STUN
+        // =====================================================
 
         PlayerStatusEffects statusEffects =
             player.GetComponentInParent<PlayerStatusEffects>();
