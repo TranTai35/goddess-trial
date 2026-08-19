@@ -47,8 +47,8 @@ public static class SaveGameManager
     public const float DefaultDamage = 10f;
     public const float DefaultMoveSpeed = 5f;
 
-    public const int DefaultGold = 500;
-    public const int DefaultDiamond = 200;
+    public const int DefaultGold = 600;
+    public const int DefaultDiamond = 400;
 
     public const string DefaultScene = "Village";
 

@@ -469,18 +469,58 @@ public class Projectile : MonoBehaviour
             );
 
         PlayerController player =
-            other.GetComponentInParent<
-                PlayerController>();
+    other.GetComponentInParent<PlayerController>();
 
-        if (player != null &&
-            player.IsInvincible)
+        if (player != null)
         {
-            Impact(
-                hitPosition,
-                hitNormal
-            );
+            // =====================================================
+            // SHIELD
+            // =====================================================
 
-            return;
+            SpellCaster spellCaster =
+                player.GetComponent<SpellCaster>();
+
+            ShieldSpell shieldSpell = null;
+
+            if (spellCaster != null &&
+                spellCaster.equippedSpell != null)
+            {
+                shieldSpell =
+                    spellCaster.equippedSpell as ShieldSpell;
+            }
+
+            if (shieldSpell != null &&
+                shieldSpell.IsActiveFor(player))
+            {
+                // Shield chặn toàn bộ:
+                // - Damage
+                // - Stun
+                // - Slow
+                // - Burn
+                shieldSpell.TryBlockDamage(player);
+
+                Impact(
+                    hitPosition,
+                    hitNormal
+                );
+
+                return;
+            }
+
+            // =====================================================
+            // INVINCIBILITY
+            // Dash / Ultimate
+            // =====================================================
+
+            if (player.IsInvincible)
+            {
+                Impact(
+                    hitPosition,
+                    hitNormal
+                );
+
+                return;
+            }
         }
 
         PlayerStats stats =

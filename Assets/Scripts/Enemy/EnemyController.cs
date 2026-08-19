@@ -383,6 +383,22 @@ public class EnemyController : MonoBehaviour
         currentHP -= damage;
         Debug.Log("HP: " + currentHP);
 
+        if (damageTextPrefab != null)
+        {
+            // Lấy object từ pool
+            GameObject obj = PoolManager.Instance.GetObject(damageTextPrefab);
+
+            // Đặt vị trí trên đầu quái
+            obj.transform.position = transform.position + Vector3.up * 2f;
+
+            // Đặt rotation nhìn về phía Camera (hoặc để mặc định)
+            obj.transform.rotation = Quaternion.identity;
+
+            // Gọi hàm setup
+            DamageText dt = obj.GetComponent<DamageText>();
+            dt.Setup((int)damage, isCritical);
+        }
+
         if (currentHP <= 0)
         {
             Die();
@@ -399,21 +415,7 @@ public class EnemyController : MonoBehaviour
             StartCoroutine(
                 TakeDamageRoutine());
 
-        if (damageTextPrefab != null)
-        {
-            // Lấy object từ pool
-            GameObject obj = PoolManager.Instance.GetObject(damageTextPrefab);
-
-            // Đặt vị trí trên đầu quái
-            obj.transform.position = transform.position + Vector3.up * 2f;
-
-            // Đặt rotation nhìn về phía Camera (hoặc để mặc định)
-            obj.transform.rotation = Quaternion.identity;
-
-            // Gọi hàm setup
-            DamageText dt = obj.GetComponent<DamageText>();
-            dt.Setup((int)damage, isCritical);
-        }
+        
 
 
     }

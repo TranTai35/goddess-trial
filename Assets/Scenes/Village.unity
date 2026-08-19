@@ -15450,7 +15450,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   npcName: Knight
   knightSFX: {fileID: 8300000, guid: e1245ecd9b37fc14eaac54c630e05c4b, type: 3}
-  knightSFXVolume: 1
+  knightSFXVolume: 0.05
 --- !u!136 &393359587
 CapsuleCollider:
   m_ObjectHideFlags: 0
